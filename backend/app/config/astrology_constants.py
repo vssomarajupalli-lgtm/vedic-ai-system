@@ -74,3 +74,17 @@ D10_SCORES = {
 }
 
 VARGOTTAMA_BONUS = 15.0
+
+# --- Dasha Constants (Phase 6) ---
+
+DASHA_SCORING_MATRIX = {
+    "relationship_scalars": {
+        "1_1": 1.00,   # Same planet
+        "2_12": 0.75,  # Loss / Dissolution
+        "3_11": 1.15,  # Growth / Gain
+        "4_10": 1.20,  # Kendra / Action
+        "5_9": 1.25,   # Trikona / Dharma
+        "6_8": 0.80,   # Dusthana / Challenge
+        "1_7": 1.10    # Direct aspect / Partnership
+    }
+}

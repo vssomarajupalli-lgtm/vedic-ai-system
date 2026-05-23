@@ -37,10 +37,7 @@ class JsonNormalizer:
                 "sav_chart": {},
                 "bav_charts": {}
             },
-            "dashas": {           # Placeholder for Phase 6 Dasha Engine
-                "current_mahadasha": None,
-                "current_antardasha": None
-            },
+            "dashas": self._normalize_dashas(raw_data.get("raw_dashas", {})),
             "transits": {         # Placeholder for Phase 7 Transit Engine
                 "active_modifiers": []
             }
@@ -102,6 +99,20 @@ class JsonNormalizer:
                     "is_vargottama": bool(varga_sign and d1_sign and varga_sign == d1_sign)
                 }
         return normalized
+
+    def _normalize_dashas(self, raw_dashas: dict) -> dict:
+        """Structures the active time periods extracted from the PDF timeline."""
+        return {
+            "mahadasha": {
+                "lord": self._clean_name(raw_dashas.get("mahadasha", ""), self.planet_map)
+            },
+            "antardasha": {
+                "lord": self._clean_name(raw_dashas.get("antardasha", ""), self.planet_map)
+            },
+            "pratyantardasha": {
+                "lord": self._clean_name(raw_dashas.get("pratyantardasha", ""), self.planet_map)
+            }
+        }
 
     # --- Isolated Helper Methods ---
 
