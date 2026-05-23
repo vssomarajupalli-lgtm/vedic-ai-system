@@ -1,6 +1,7 @@
 from app.parsers.json_normalizer import JsonNormalizer
 from app.engines.planet_strength_engine import PlanetStrengthEngine
 from app.engines.house_strength_engine import HouseStrengthEngine
+from app.engines.varga_engine import VargaEngine
 
 class PipelineRunner:
     """
@@ -14,6 +15,7 @@ class PipelineRunner:
         self.normalizer = JsonNormalizer()
         self.planet_engine = PlanetStrengthEngine()
         self.house_engine = HouseStrengthEngine()
+        self.varga_engine = VargaEngine()
 
     def process(self, raw_input_data: dict) -> dict:
         """
@@ -52,12 +54,17 @@ class PipelineRunner:
             # Calculate house strength using the newly injected dependency
             house_results[str(house_id)] = self.house_engine.calculate_strength(house_data)
             
-        # 4. Combine and Return Standardized Outputs
+        # 4. Varga Engine Execution (Phase 5 Refinement)
+        # Safely pass the D1 planet scores as read-only dependencies
+        varga_results = self.varga_engine.evaluate(normalized_payload, dependency_scores=planet_results)
+            
+        # 5. Combine and Return Standardized Outputs
         return {
             "metadata": normalized_payload.get("metadata", {}),
             "engine_outputs": {
                 "planets": planet_results,
-                "houses": house_results
+                "houses": house_results,
+                "vargas": varga_results
             }
         }
 
@@ -83,6 +90,20 @@ if __name__ == "__main__":
                 "house": "8",
                 "house_type": "dusthana",
                 "dignity": "own_sign"
+            }
+        },
+        "raw_vargas": {
+            "D9": {
+                "planets": {
+                    "Surya": {
+                        "sign": "Tula",          # D1 Aries -> D9 Libra (Debilitated) = Contradicted
+                        "dignity": "debilitated"
+                    },
+                    "Kuja": {
+                        "sign": "Vrishchika",    # D1 Scorpio -> D9 Scorpio = Vargottama
+                        "dignity": "own_house"
+                    }
+                }
             }
         }
     }
