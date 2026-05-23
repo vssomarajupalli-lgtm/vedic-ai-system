@@ -27,11 +27,12 @@ class JsonNormalizer:
 
     def normalize(self, raw_data: dict) -> dict:
         """Main entry point to normalize a complete raw extraction dictionary."""
+        normalized_planets = self._normalize_planets(raw_data.get("raw_planets", {}))
         return {
             "metadata": self._normalize_metadata(raw_data.get("raw_metadata", {})),
-            "planets": self._normalize_planets(raw_data.get("raw_planets", {})),
+            "planets": normalized_planets,
             "houses": {},         # Placeholder for House Engine extraction mapping
-            "vargas": {},         # Placeholder for Phase 5 Varga Engine
+            "vargas": self._normalize_vargas(raw_data.get("raw_vargas", {}), normalized_planets),
             "ashtakavarga": {     # Placeholder for Phase 3/4 integration
                 "sav_chart": {},
                 "bav_charts": {}
@@ -78,6 +79,28 @@ class JsonNormalizer:
                 "varga_data": {},
                 "bav_points": self._extract_int(p_data.get("bav", 0))
             }
+        return normalized
+
+    def _normalize_vargas(self, raw_vargas: dict, d1_planets: dict) -> dict:
+        """Structures Varga data and automatically detects Vargottama alignments."""
+        normalized = {}
+        for varga_id, varga_data in raw_vargas.items():
+            v_id = varga_id.upper() # e.g., "D9", "D10"
+            normalized[v_id] = {"planets": {}}
+            
+            for raw_name, p_data in varga_data.get("planets", {}).items():
+                std_name = self._clean_name(raw_name, self.planet_map)
+                if not std_name:
+                    continue # Skip junk
+                    
+                varga_sign = self._clean_name(p_data.get("sign", ""), self.sign_map)
+                d1_sign = d1_planets.get(std_name, {}).get("sign", "")
+                
+                normalized[v_id]["planets"][std_name] = {
+                    "sign": varga_sign,
+                    "dignity": self._clean_string(p_data.get("dignity", "neutral")),
+                    "is_vargottama": bool(varga_sign and d1_sign and varga_sign == d1_sign)
+                }
         return normalized
 
     # --- Isolated Helper Methods ---

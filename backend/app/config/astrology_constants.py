@@ -50,3 +50,27 @@ HOUSE_SCORING_MATRIX = {
 
 NATURAL_BENEFICS = ["jupiter", "venus", "moon", "mercury"]
 NATURAL_MALEFICS = ["saturn", "mars", "sun", "rahu", "ketu"]
+
+# --- Varga Constants ---
+
+D9_SCORES = {
+    "exalted": 15.0,
+    "moolatrikona": 10.0,
+    "own_house": 10.0,
+    "friendly": 5.0,
+    "neutral": 0.0,
+    "enemy": -5.0,
+    "debilitated": -10.0
+}
+
+D10_SCORES = {
+    "exalted": 10.0,
+    "moolatrikona": 5.0,
+    "own_house": 5.0,
+    "friendly": 2.5,
+    "neutral": 0.0,
+    "enemy": -2.5,
+    "debilitated": -5.0
+}
+
+VARGOTTAMA_BONUS = 15.0

@@ -69,6 +69,37 @@ class TestJsonNormalizer(unittest.unittest.TestCase):
         self.assertEqual(moon["bav_points"], 0) # Fallback for bad string cast
         self.assertEqual(moon["dignity"], "neutral") # Safe default
 
+    def test_normalize_vargas_and_vargottama(self):
+        """
+        Tests that Varga data is normalized and Vargottama is correctly calculated
+        by comparing against D1 planet placements.
+        """
+        raw_data = {
+            "raw_planets": {
+                "Su": {"sign": "Mesha"}, # D1 Aries
+                "Mo": {"sign": "Karka"}  # D1 Cancer
+            },
+            "raw_vargas": {
+                "D9": {
+                    "planets": {
+                        "Su": {"sign": "Mesha", "dignity": "Exalted"}, # Matches D1 (Vargottama)
+                        "Mo": {"sign": "Tula", "dignity": "Enemy"}     # Different from D1
+                    }
+                }
+            }
+        }
+        
+        result = self.normalizer.normalize(raw_data)
+        
+        d9_planets = result["vargas"]["D9"]["planets"]
+        
+        # Sun should be Vargottama
+        self.assertEqual(d9_planets["sun"]["sign"], "aries")
+        self.assertTrue(d9_planets["sun"]["is_vargottama"])
+        
+        # Moon should NOT be Vargottama
+        self.assertFalse(d9_planets["moon"]["is_vargottama"])
+
     def test_schema_stability(self):
         """Ensure the top-level keys always exist for the engines to access."""
         result = self.normalizer.normalize({})
