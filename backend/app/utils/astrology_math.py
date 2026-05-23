@@ -21,3 +21,17 @@ def calculate_planetary_axis(house_1: int, house_2: int) -> str:
     
     axis_pair = sorted([diff_1, diff_2])
     return f"{axis_pair[0]}_{axis_pair[1]}"
+
+def clamp_score(score: float, min_val: int = 0, max_val: int = 100) -> int:
+    """
+    Deterministically clamps a calculated astrological score within safe boundaries.
+    
+    Args:
+        score (float): The raw calculated score.
+        min_val (int): Minimum allowable bound (default 0).
+        max_val (int): Maximum allowable bound (default 100).
+        
+    Returns:
+        int: The clamped integer score.
+    """
+    return max(min_val, min(max_val, int(score)))

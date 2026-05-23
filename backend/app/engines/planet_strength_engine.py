@@ -1,4 +1,5 @@
 from app.config.astrology_constants import PLANET_SCORING_MATRIX
+from app.utils.astrology_math import clamp_score
 
 class PlanetStrengthEngine:
     """
@@ -62,7 +63,7 @@ class PlanetStrengthEngine:
             total_score += varga_score
 
         # Clamp final score between 0 and 100
-        final_score = max(0, min(100, total_score))
+        final_score = clamp_score(total_score)
 
         return {
             "metadata": {

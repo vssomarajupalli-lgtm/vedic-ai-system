@@ -1,4 +1,5 @@
 from app.config.astrology_constants import HOUSE_SCORING_MATRIX, NATURAL_BENEFICS, NATURAL_MALEFICS
+from app.utils.astrology_math import clamp_score
 
 class HouseStrengthEngine:
     """
@@ -53,7 +54,7 @@ class HouseStrengthEngine:
             total_score += sav_score
 
         # Clamp final score between 0 and 100
-        final_score = max(0, min(100, int(total_score)))
+        final_score = clamp_score(total_score)
 
         return {
             "metadata": {
