@@ -22,6 +22,9 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         
         result = self.engine.calculate_strength(planet_data)
         
+        self.assertEqual(result["metadata"]["entity_id"], "sun")
+        self.assertEqual(result["metadata"]["entity_type"], "planet")
+        self.assertEqual(result["raw_score"], 65.0)
         self.assertEqual(result["final_score"], 65)
         self.assertEqual(result["breakdown"]["dignity"], 35)
         self.assertEqual(result["breakdown"]["house_placement"], 20)
@@ -45,6 +48,9 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         
         result = self.engine.calculate_strength(planet_data)
         
+        self.assertEqual(result["metadata"]["entity_id"], "saturn")
+        self.assertEqual(result["raw_score"], -35.0)
+        self.assertIn("clamped_to_zero", result["confidence_flags"])
         self.assertEqual(result["final_score"], 0) # Clamped
         self.assertEqual(result["breakdown"]["dignity"], 0)
         self.assertEqual(result["breakdown"]["house_placement"], -10)

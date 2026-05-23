@@ -56,9 +56,22 @@ class HouseStrengthEngine:
         final_score = max(0, min(100, int(total_score)))
 
         return {
-            "house": house_data.get("house", "Unknown"),
+            "metadata": {
+                "entity_id": str(house_data.get("house", "unknown")),
+                "entity_type": "house"
+            },
             "final_score": final_score,
-            "breakdown": breakdown
+            "raw_score": float(total_score),
+            "breakdown": breakdown,
+            "modifiers": {
+                "varga_refinement": 0.0,
+                "ashtakavarga_support": 0.0
+            },
+            "temporal_activation": {
+                "timing_multiplier": 1.0,
+                "transit_modifier": 0.0
+            },
+            "confidence_flags": self._generate_confidence_flags(total_score, final_score)
         }
 
     # --- Isolated Helper Methods ---
@@ -87,3 +100,14 @@ class HouseStrengthEngine:
         """Stub for future integration of Sarvashtakavarga (SAV) bindus."""
         # Example future logic: (sav_points - 28) * multiplier
         pass
+
+    def _generate_confidence_flags(self, raw_score: float, final_score: int) -> list:
+        flags = []
+        if raw_score < 0:
+            flags.append("clamped_to_zero")
+            flags.append("severely_afflicted")
+        elif raw_score > 100:
+            flags.append("clamped_to_100")
+        elif raw_score > 75:
+            flags.append("strongly_supported")
+        return flags
