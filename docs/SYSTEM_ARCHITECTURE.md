@@ -1,26 +1,28 @@
 # SYSTEM ARCHITECTURE
-# Vedic Astrology Intelligence System
+# Vedic Astrology Intelligence Framework
 
 ---
 
 # 1. SYSTEM OVERVIEW
 
-The software is a local desktop-based deterministic Vedic astrology intelligence engine.
+The software is a local desktop-based deterministic Vedic astrology intelligence framework.
 
 Purpose:
 - extract horoscope PDF data
 - calculate strengths
-- reconcile astrology layers
+- reconcile astrology layers via Event Domains
 - generate probability-based outputs
 
 ---
 
 # 2. MAIN ARCHITECTURE FLOW
 
+(Optional Workflow)
 PDF
 ↓
 PDF Extraction Engine
 ↓
+(Primary Workflow)
 Structured JSON
 ↓
 Planet Engine
@@ -216,7 +218,7 @@ transit severity and support score.
 # 13. PROBABILITY ENGINE
 
 Purpose:
-combine all engines.
+combine all engines deterministically via Event Domain configuration mappings.
 
 Responsibilities:
 - weighted reconciliation
@@ -229,7 +231,7 @@ Responsibilities:
 # 14. INTERPRETATION ENGINE
 
 Purpose:
-enhance classical phalita.
+translate math scores into classical text explanations.
 
 Important:
 Do NOT generate random astrology.

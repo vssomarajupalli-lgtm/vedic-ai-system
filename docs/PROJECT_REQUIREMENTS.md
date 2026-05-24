@@ -1,12 +1,13 @@
 # PROJECT REQUIREMENTS
-# Vedic Astrology Intelligence System
+# Vedic Astrology Intelligence Framework
 
 ---
 
 # 1. PROJECT PURPOSE
 
-Develop a deterministic Vedic astrology intelligence system that:
+Develop a deterministic Vedic astrology intelligence framework that:
 
+- supports direct normalized JSON processing OR PDF-driven workflows
 - extracts horoscope data from PDF reports
 - calculates planetary and house strengths
 - integrates Shodasha Vargas
@@ -21,6 +22,7 @@ The system should:
 - preserve classical astrology
 - add quantified intelligence
 - provide explainable probability-based outputs
+- prevent tightly coupled spaghetti logic via strict Event Domain abstraction
 
 ---
 
@@ -50,7 +52,7 @@ This is NOT:
 - a static astrology software
 
 This IS:
-- a deterministic astrology intelligence engine
+- a deterministic astrology intelligence framework
 - a probability-based prediction system
 - a layered reconciliation engine
 
@@ -58,7 +60,10 @@ This IS:
 
 # 4. PRIMARY INPUT
 
-Primary input source:
+Primary input sources (Dual Workflow):
+
+A) Direct normalized JSON payloads (API/Backend workflow).
+B) Optional PDF Extraction Workflow:
 
 - horoscope PDF reports
 - approximately 80–100 pages
@@ -177,7 +182,7 @@ calculate current triggering effects.
 Inputs:
 - current transit
 - natal interaction
-- SAV/BAV support
+- Ashtakavarga reinforcement matrix
 - Sade Sati framework
 
 Output:
@@ -188,7 +193,7 @@ Transit intensity and event triggering probability.
 ## 6.7 Probability Engine
 
 Purpose:
-consolidate all engines.
+consolidate all engines deterministically via Event Domains.
 
 Final output:
 - manifestation probability
@@ -201,10 +206,11 @@ Final output:
 ## 6.8 Interpretation Engine
 
 Purpose:
-enhance existing classical phalita.
+enhance existing classical phalita and translate math to text.
 
 Important:
 The system should NOT replace classical predictions.
+The AI MUST NOT generate mathematical probabilities or astrological scores.
 
 The system should:
 - append intelligent analysis
@@ -383,7 +389,7 @@ No web application initially.
 
 # 13. FINAL GOAL
 
-Create a professional Vedic astrology intelligence system that:
+Create a professional Vedic astrology intelligence framework that:
 - preserves classical astrology
 - adds quantified intelligence
 - produces explainable prediction probabilities
