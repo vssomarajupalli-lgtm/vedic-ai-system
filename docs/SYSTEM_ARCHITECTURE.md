@@ -1,62 +1,82 @@
 # SYSTEM ARCHITECTURE
-# Vedic Astrology Intelligence Framework
+# Deterministic Vedic Astrology Calculation Platform
 
 ---
 
 # 1. SYSTEM OVERVIEW
 
-The software is a local desktop-based deterministic Vedic astrology intelligence framework.
+The software is a local desktop-based deterministic Vedic astrology calculation platform.
 
-Purpose:
+The software is designed to:
+
 - extract horoscope PDF data
-- calculate strengths
-- reconcile astrology layers via Event Domains
-- generate probability-based outputs
+- normalize extracted data into structured JSON
+- calculate Graha (planetary) strengths
+- calculate Bhava/Rasi (house) strengths
+- generate deterministic explainable outputs
+
+The software prioritizes:
+- deterministic calculations
+- modular architecture
+- explainable outputs
+- lightweight execution
+- maintainable structure
 
 ---
 
-# 2. MAIN ARCHITECTURE FLOW
+# 2. CURRENT SOFTWARE WORKFLOW
 
-(Optional Workflow)
-PDF
+CURRENT IMPLEMENTATION FLOW:
+
+PDF/Input JSON
 ↓
 PDF Extraction Engine
 ↓
-(Primary Workflow)
-Structured JSON
+JSON Normalization Engine
 ↓
-Planet Engine
+Planet Strength Engine
 ↓
-House Engine
+House Strength Engine
 ↓
-Varga Engine
+Varga Refinement Engine
 ↓
-Dasha Engine
-↓
-Transit Engine
-↓
-Probability Engine
-↓
-Interpretation Engine
-↓
-Final Report
+Deterministic Output Reports
 
 ---
 
-# 3. MAIN PROJECT STRUCTURE
+# 3. FUTURE ROADMAP WORKFLOW
+
+The following systems are future roadmap phases and are NOT current implementation priorities:
+
+- Dasha Engine
+- Transit Engine
+- Event-domain systems
+- Probability synthesis systems
+- AI interpretation systems
+
+Future roadmap systems should begin only after:
+- extraction stabilization
+- normalization stabilization
+- deterministic testing stabilization
+- core engine correctness validation
+
+---
+
+# 4. MAIN PROJECT STRUCTURE
 
 vedic-ai-system/
 │
 ├── backend/
 ├── docs/
-├── sample_reports/
 ├── extracted_json/
 ├── outputs/
+├── sample_reports/
+├── source_pdfs/
 └── temp/
 
 ---
 
-# 4. BACKEND STRUCTURE
+# 5. BACKEND STRUCTURE
 
 backend/
 │
@@ -66,283 +86,292 @@ backend/
 
 ---
 
-# 5. APP STRUCTURE
+# 6. APP STRUCTURE
 
 app/
 │
-├── database/
 ├── engines/
-├── interpretations/
-├── models/
 ├── parsers/
 ├── utils/
+├── tests/
 └── config/
 
 ---
 
-# 6. PARSERS MODULE
+# 7. PARSERS MODULE
 
 Purpose:
-extract and structure PDF data.
+extract and structure astrology PDF data.
 
-Files:
+Current parser responsibilities:
+
+- PDF text extraction
+- table extraction
+- heading identification
+- section identification
+- structured JSON generation
+
+Current parser files may include:
 
 - pdf_extractor.py
 - table_parser.py
+- heading_parser.py
 - json_builder.py
 
+---
+
+# 8. JSON NORMALIZATION LAYER
+
+Purpose:
+normalize extracted astrology data into deterministic structured contracts.
+
 Responsibilities:
-- extract text
-- extract tables
-- identify headings
-- create structured JSON
+
+- schema validation
+- safe defaults
+- type normalization
+- payload consistency
+- engine-ready structured inputs
+
+Important:
+All engines should consume normalized JSON only.
+
+Engines must NOT depend directly on:
+- PDFs
+- OCR systems
+- raw extraction logic
 
 ---
 
-# 7. ENGINES MODULE
+# 9. PLANET STRENGTH ENGINE
 
 Purpose:
-astrology intelligence calculations.
+calculate deterministic Graha strength percentages.
 
-Files:
+Possible inputs include:
 
-- planet_engine.py
-- house_engine.py
-- varga_engine.py
-- dasha_engine.py
-- transit_engine.py
-- probability_engine.py
-- consolidation_engine.py
-
----
-
-# 8. PLANET ENGINE
-
-Purpose:
-calculate 9-planet strength percentages.
-
-Inputs:
 - Graha Bala
 - Shadbala
-- Ishta/Kashta
-- D1 dignity
-- aspects
+- dignity
 - conjunctions
-- BAV
-- D9 validation
+- aspects
+- positional strength
 
 Output:
-0–100 score.
+0–100 deterministic planetary strength score.
+
+Important:
+All calculations must remain:
+- deterministic
+- explainable
+- reproducible
 
 ---
 
-# 9. HOUSE ENGINE
+# 10. HOUSE STRENGTH ENGINE
 
 Purpose:
-calculate 12-house strength percentages.
+calculate deterministic House/Bhava strength percentages.
 
-Inputs:
+Possible inputs include:
+
 - Bhava Bala
-- SAV
 - house lord strength
-- karaka strength
+- karaka support
 - aspects
 - occupants
 
 Output:
-0–100 score.
+0–100 deterministic house strength score.
+
+Important:
+All calculations must remain:
+- deterministic
+- explainable
+- reproducible
 
 ---
 
-# 10. VARGA ENGINE
+# 11. VARGA REFINEMENT ENGINE
 
 Purpose:
-refine manifestation potential.
+provide structural refinement support for D1 interpretation.
 
-Important:
-Vargas should support D1.
-They should not override D1 completely.
-
-Main Vargas:
-- D2
-- D3
-- D4
-- D7
+Current implementation focus:
 - D9
 - D10
-- D12
-- D16
-- D20
-- D24
-- D27
-- D30
-- D40
-- D45
-- D60
+
+Vargas should:
+- refine interpretation
+- support D1 analysis
+- provide structural context
+
+Vargas must NOT:
+- overwrite D1
+- dominate foundational calculations
+- mutate D1 core logic
+
+Additional Vargas remain future expansion phases.
 
 ---
 
-# 11. DASHA ENGINE
+# 12. PIPELINE RUNNER
 
 Purpose:
-calculate activation probability.
-
-Inputs:
-- Mahadasha
-- Antardasha
-- related planets
-- related houses
-- Vargas support
-
-Output:
-manifestation probability.
-
----
-
-# 12. TRANSIT ENGINE
-
-Purpose:
-calculate event triggering intensity.
-
-Inputs:
-- transit planets
-- natal interaction
-- SAV/BAV support
-- Sade Sati logic
-
-Output:
-transit severity and support score.
-
----
-
-# 13. PROBABILITY ENGINE
-
-Purpose:
-combine all engines deterministically via Event Domain configuration mappings.
+orchestrate deterministic execution flow.
 
 Responsibilities:
-- weighted reconciliation
-- severity calculation
-- manifestation probability
-- final confidence score
 
----
-
-# 14. INTERPRETATION ENGINE
-
-Purpose:
-translate math scores into classical text explanations.
+- manage execution sequence
+- pass normalized payloads
+- coordinate engines
+- preserve deterministic flow
 
 Important:
-Do NOT generate random astrology.
+Engines must NEVER directly call each other.
 
-The engine should:
-- preserve existing phalita
-- append intelligence layer
-- append probability layer
-- append final conclusion
+PipelineRunner remains the central orchestrator.
 
 ---
 
-# 15. JSON FLOW
+# 13. DETERMINISTIC ARCHITECTURE RULES
 
-PDF
-↓
-Raw Extraction JSON
-↓
-Cleaned JSON
+Core architecture rules:
+
+Rule 1:
+Keep calculations deterministic.
+
+Rule 2:
+Keep engines stateless.
+
+Rule 3:
+Keep modules independent.
+
+Rule 4:
+Avoid overengineering.
+
+Rule 5:
+Separate calculations from interpretation.
+
+Rule 6:
+Preserve D1 immutability.
+
+Rule 7:
+AI must NEVER generate astrology math.
+
+---
+
+# 14. D1 FOUNDATION PRINCIPLE
+
+The D1 chart represents foundational astrology structure.
+
+D1 must remain:
+
+- foundational
+- deterministic
+- immutable
+- explainable
+
+Future refinement systems may support interpretation but must NOT overwrite D1 foundation logic.
+
+---
+
+# 15. OUTPUT FLOW
+
+PDF/Input JSON
 ↓
 Normalized JSON
 ↓
-Engine Inputs
+Deterministic Engine Outputs
 ↓
-Calculated Scores
-↓
-Final Output JSON
+Structured Reports
+
+Current outputs include:
+
+- normalized JSON
+- Graha strength reports
+- House strength reports
+- deterministic explainable outputs
 
 ---
 
-# 16. OUTPUT TYPES
+# 16. TESTING ARCHITECTURE
 
-Outputs include:
+Testing should remain:
 
-- planet strength report
-- house strength report
-- dasha report
-- transit report
-- intelligent prediction report
+- deterministic
+- isolated
+- reproducible
+- schema-validated
 
----
+Testing focus areas:
 
-# 17. IMPORTANT DEVELOPMENT PRINCIPLES
-
-Rule 1:
-Keep modules independent.
-
-Rule 2:
-One engine at a time.
-
-Rule 3:
-Avoid overengineering.
-
-Rule 4:
-Keep astrology logic deterministic.
-
-Rule 5:
-Keep interpretation separated from calculations.
+- extraction stability
+- normalization correctness
+- deterministic score consistency
+- D1 immutability
+- output reproducibility
 
 ---
 
-# 18. INITIAL DEVELOPMENT ORDER
+# 17. CURRENT IMPLEMENTATION STATUS
 
-Phase 1:
-PDF extraction
+Currently implemented or partially stabilized:
 
-Phase 2:
-JSON structuring
+- project structure
+- parser separation
+- JSON normalization foundation
+- Planet Strength Engine
+- House Strength Engine
+- Pipeline Runner
+- deterministic testing structure
 
-Phase 3:
-Planet engine
+Partially stabilized:
+- PDF extraction
+- Varga refinement
+- schema refinement
 
-Phase 4:
-House engine
-
-Phase 5:
-Varga engine
-
-Phase 6:
-Dasha engine
-
-Phase 7:
-Transit engine
-
-Phase 8:
-Probability consolidation
-
-Phase 9:
-Final report generation
+Not yet implemented:
+- Dasha systems
+- Transit systems
+- Event-domain systems
+- Probability synthesis
+- AI interpretation systems
 
 ---
 
-# 19. CURRENT TECHNOLOGY STACK
+# 18. TECHNOLOGY STACK
+
+Current technology stack:
 
 - Python
 - VS Code
-- Local desktop environment
-- JSON data flow
+- local desktop execution
+- JSON-based workflow
 
-No web application initially.
-No cloud dependency initially.
+The current software does NOT require:
+
+- cloud infrastructure
+- distributed systems
+- databases
+- always-running services
+
+The software should remain lightweight and modular.
 
 ---
 
-# 20. FUTURE POSSIBILITY
+# 19. FUTURE EXPANSION POLICY
 
-Future optional upgrades:
-- Electron desktop UI
-- AI interpretation layer
-- Telugu narration
-- multilingual reports
-- conversational assistant
+Future systems should be added gradually and only after stabilization of:
 
-Core astrology engine should remain deterministic.
+- extraction
+- normalization
+- deterministic testing
+- core engine correctness
+
+Avoid premature expansion into:
+- excessive framework abstraction
+- unnecessary orchestration complexity
+- oversized synthesis systems
+
+The software should evolve carefully and remain maintainable.

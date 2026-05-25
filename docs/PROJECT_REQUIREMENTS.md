@@ -1,92 +1,115 @@
 # PROJECT REQUIREMENTS
-# Vedic Astrology Intelligence Framework
+# Deterministic Vedic Astrology Calculation Platform
 
 ---
 
 # 1. PROJECT PURPOSE
 
-Develop a deterministic Vedic astrology intelligence framework that:
+The purpose of this software is to develop a deterministic Vedic astrology calculation platform capable of:
 
-- supports direct normalized JSON processing OR PDF-driven workflows
-- extracts horoscope data from PDF reports
-- calculates planetary and house strengths
-- integrates Shodasha Vargas
-- evaluates Mahadasha / Antardasha
-- evaluates transit effects
-- calculates manifestation probability
-- enhances existing classical phalita text with intelligent analysis
+- extracting astrology data from horoscope PDFs
+- generating normalized structured JSON
+- calculating Graha (planetary) strengths
+- calculating Bhava/Rasi (house) strengths
+- generating deterministic explainable outputs
 
-The system should NOT generate random astrology predictions.
+The software must preserve classical astrology principles while providing structured computational analysis.
 
-The system should:
-- preserve classical astrology
-- add quantified intelligence
-- provide explainable probability-based outputs
-- prevent tightly coupled spaghetti logic via strict Event Domain abstraction
+The software should NOT generate random astrology predictions.
 
----
-
-# 2. CORE PHILOSOPHY
-
-## Main Principle
-
-D1 = Foundation Karma
-
-Planets = Operational Strength
-
-Houses = Life Domain Strength
-
-Vargas = Manifestation Refinement
-
-Dashas = Activation Timing
-
-Transits = Event Triggering
+The software should:
+- remain deterministic
+- remain modular
+- remain explainable
+- separate calculations from interpretation
+- preserve D1 foundational logic
 
 ---
 
-# 3. SOFTWARE TYPE
+# 2. CURRENT IMPLEMENTATION PRIORITY
 
-This is NOT:
-- a chatbot
-- a random AI astrology generator
-- a static astrology software
+The CURRENT implementation phase focuses ONLY on:
 
-This IS:
-- a deterministic astrology intelligence framework
-- a probability-based prediction system
-- a layered reconciliation engine
+1. PDF extraction
+2. JSON normalization
+3. Graha strength calculations
+4. House strength calculations
+5. deterministic outputs
+6. deterministic testing
 
----
-
-# 4. PRIMARY INPUT
-
-Primary input sources (Dual Workflow):
-
-A) Direct normalized JSON payloads (API/Backend workflow).
-B) Optional PDF Extraction Workflow:
-
-- horoscope PDF reports
-- approximately 80–100 pages
-- structured astrology tables
-- existing phalita text included
+The current project is NOT yet focused on:
+- autonomous prediction systems
+- continuous transit monitoring
+- AI-generated astrology
+- large probabilistic synthesis systems
 
 ---
 
-# 5. PDF CONTENTS EXPECTED
+# 3. SOFTWARE IDENTITY
 
-The PDF may contain:
+Current project identity:
 
-- D1 chart
-- Shodasha Vargas
-- Graha Bala
-- Shadbala
-- Bhava Bala
-- Ashtakavarga
-- Bhinna Ashtakavarga
-- Sarvashtakavarga
-- Dasha tables
-- Transit tables
-- Existing phalita sections
+DETERMINISTIC ASTROLOGY CALCULATION PLATFORM
+
+The software currently focuses on:
+- extraction
+- normalization
+- deterministic scoring
+- explainable outputs
+
+Future expansion phases may later include:
+- Dasha systems
+- Transit systems
+- Event-domain abstractions
+- Probability synthesis
+- AI-assisted interpretation
+
+These remain FUTURE roadmap phases and are NOT current implementation priorities.
+
+---
+
+# 4. CORE DEVELOPMENT PRINCIPLES
+
+Rule 1:
+Keep calculations deterministic.
+
+Rule 2:
+Keep modules independent.
+
+Rule 3:
+Avoid overengineering.
+
+Rule 4:
+One engine at a time.
+
+Rule 5:
+Separate calculations from interpretation.
+
+Rule 6:
+Keep D1 foundational and immutable.
+
+Rule 7:
+AI must NEVER generate astrology math.
+
+---
+
+# 5. MAIN SOFTWARE WORKFLOW
+
+CURRENT IMPLEMENTATION FLOW:
+
+PDF/Input JSON
+↓
+Extraction
+↓
+Normalized JSON
+↓
+Planet Strength Engine
+↓
+House Strength Engine
+↓
+Varga Refinement
+↓
+Deterministic Output Reports
 
 ---
 
@@ -98,300 +121,234 @@ Purpose:
 - extract text
 - extract tables
 - identify headings
-- convert data into structured JSON
+- generate structured JSON
+
+Responsibilities:
+- PDF reading
+- section identification
+- table extraction
+- structured data preparation
 
 ---
 
-## 6.2 Planet Strength Engine
+## 6.2 JSON Normalization Engine
 
 Purpose:
-calculate final planetary strength percentage.
+- normalize extracted data
+- enforce schema consistency
+- provide safe defaults
+- prepare deterministic engine inputs
 
-Inputs include:
+Responsibilities:
+- schema validation
+- missing field handling
+- type normalization
+- standardized payload generation
+
+---
+
+## 6.3 Planet Strength Engine
+
+Purpose:
+calculate deterministic Graha strength percentages.
+
+Inputs may include:
 - Graha Bala
 - Shadbala
-- Ishta/Kashta
-- D1 dignity
-- House placement
-- Aspects
-- Conjunctions
-- BAV points
-- D9 validation
+- dignity
+- conjunctions
+- aspects
+- positional strength
 
 Output:
-0–100 planetary strength score.
+0–100 deterministic planetary strength score.
 
 ---
 
-## 6.3 House Strength Engine
+## 6.4 House Strength Engine
 
 Purpose:
-calculate life-domain strength.
+calculate deterministic House/Bhava strength percentages.
 
-Inputs include:
+Inputs may include:
 - Bhava Bala
-- SAV
-- House lord strength
-- Occupants
-- Aspects
-- Karaka strength
+- house lord strength
+- karaka support
+- aspects
+- occupants
 
 Output:
-0–100 house strength score.
+0–100 deterministic house strength score.
 
 ---
 
-## 6.4 Shodasha Varga Engine
+## 6.5 Varga Refinement Engine
 
 Purpose:
-calculate contextual manifestation refinement.
-
-Important rule:
-Vargas should refine house strength.
-Vargas should NOT dominate D1.
-
-Each Varga should have:
-- separate scoring
-- weighted contribution
-- contextual interpretation
-
----
-
-## 6.5 Dasha Engine
-
-Purpose:
-calculate activation probability.
-
-Inputs:
-- Mahadasha lord
-- Antardasha lord
-- related houses
-- related Vargas
-- planetary strengths
-
-Output:
-Dasha manifestation probability.
-
----
-
-## 6.6 Transit Engine
-
-Purpose:
-calculate current triggering effects.
-
-Inputs:
-- current transit
-- natal interaction
-- Ashtakavarga reinforcement matrix
-- Sade Sati framework
-
-Output:
-Transit intensity and event triggering probability.
-
----
-
-## 6.7 Probability Engine
-
-Purpose:
-consolidate all engines deterministically via Event Domains.
-
-Final output:
-- manifestation probability
-- severity
-- quality
-- timing strength
-
----
-
-## 6.8 Interpretation Engine
-
-Purpose:
-enhance existing classical phalita and translate math to text.
+provide structural refinement support without overriding D1.
 
 Important:
-The system should NOT replace classical predictions.
-The AI MUST NOT generate mathematical probabilities or astrological scores.
+Vargas refine interpretation.
+They must NOT overwrite D1 foundation.
 
-The system should:
-- append intelligent analysis
-- attach probability scores
-- attach strength analysis
-- attach severity modulation
+Current implementation focus:
+- D9
+- D10
+
+Additional Vargas remain future expansion phases.
 
 ---
 
-# 7. PREDICTION PHILOSOPHY
+# 7. FUTURE ROADMAP MODULES
 
-The software should:
-- preserve original astrology phalita
-- enhance it using calculated intelligence
+The following systems are FUTURE implementation phases and are NOT current development priorities:
 
-Example:
+- Dasha Engine
+- Transit Engine
+- Event-domain systems
+- Probability synthesis systems
+- AI interpretation layer
+- conversational astrology assistant
 
-Original phalita:
-"Career growth may occur."
+---
 
-Software enhancement:
-- Jupiter strength
-- 10th house strength
-- D10 support
-- Transit support
-- Final probability
+# 8. D1 FOUNDATION PRINCIPLE
 
-Final output should become:
+The D1 chart represents foundational karma.
+
+All future systems must treat D1 as:
+- foundational
+- deterministic
+- immutable
 - explainable
-- quantified
+
+Future layers may refine interpretation but must NOT overwrite D1.
+
+---
+
+# 9. DETERMINISTIC CALCULATION PRINCIPLE
+
+All astrology calculations must remain:
+
+- deterministic
+- explainable
+- reproducible
+- auditable
+
+Every score modification should be traceable.
+
+The system should avoid:
+- hidden calculations
+- random outputs
+- AI-generated scoring
+- unexplained modifiers
+
+---
+
+# 10. AI USAGE POLICY
+
+AI may later assist with:
+- explanation
+- formatting
+- report enhancement
+- readable summaries
+
+AI must NEVER:
+- generate astrology math
+- override deterministic scores
+- invent probabilities
+- mutate engine calculations
+
+AI remains optional and secondary to deterministic calculations.
+
+---
+
+# 11. OUTPUT GOALS
+
+Current output goals:
+
+- normalized JSON outputs
+- Graha strength reports
+- House strength reports
+- deterministic explainable outputs
+
+Outputs should remain:
+- readable
+- explainable
+- structured
 - deterministic
 
 ---
 
-# 8. OUTPUT TYPES
+# 12. TESTING PHILOSOPHY
 
-The software should generate:
-
-## 8.1 Planet Strength Report
-- 9 planets
-- final strength %
-
----
-
-## 8.2 House Strength Report
-- 12 houses
-- final strength %
-
----
-
-## 8.3 Dasha Report
-- active Mahadasha
-- Antardasha
-- manifestation probability
-
----
-
-## 8.4 Transit Report
-- current transit effects
-- severity
-
----
-
-## 8.5 Final Intelligent Prediction Report
-
-Should contain:
-- original phalita
-- software intelligence layer
-- probability layer
-- final conclusion
-
----
-
-# 9. ARCHITECTURE PRINCIPLES
-
-The project must remain:
+Testing should remain:
 
 - deterministic
-- modular
-- explainable
-- scalable
-- locally runnable
-- AI-compatible
-- not AI-dependent
+- isolated
+- reproducible
+- schema-validated
+
+Tests should focus on:
+- extraction stability
+- normalization correctness
+- score consistency
+- D1 immutability
+- deterministic outputs
 
 ---
 
-# 10. IMPORTANT DEVELOPMENT RULES
+# 13. CURRENT PRACTICAL GOAL
 
-## Rule 1
-Do NOT overengineer.
+Current practical goal:
 
----
+Create a stable deterministic astrology calculation platform capable of:
 
-## Rule 2
-One engine at a time.
+- extracting astrology PDFs
+- generating normalized JSON
+- calculating explainable Graha strengths
+- calculating explainable House strengths
+- producing deterministic reports
 
----
+Current implementation priority remains:
 
-## Rule 3
-Freeze architecture before scaling.
-
----
-
-## Rule 4
-Keep astrology logic separated from UI.
+DETERMINISTIC CALCULATION CORRECTNESS
+AND
+EXTRACTION STABILITY
 
 ---
 
-## Rule 5
-Keep each engine independent.
+# 14. FUTURE EXPANSION POLICY
+
+Future systems should be added only after:
+
+- extraction stabilization
+- contract stabilization
+- deterministic testing stabilization
+- core engine correctness
+
+Avoid premature expansion into:
+- massive synthesis systems
+- excessive architecture abstraction
+- unnecessary framework complexity
+
+The software should evolve gradually and remain maintainable.
 
 ---
 
-# 11. DEVELOPMENT PHASES
+# 15. TECHNOLOGY DIRECTION
 
-## Phase 1
-PDF Extraction
-
----
-
-## Phase 2
-JSON Structuring
-
----
-
-## Phase 3
-Planet Strength Engine
-
----
-
-## Phase 4
-House Strength Engine
-
----
-
-## Phase 5
-Shodasha Varga Engine
-
----
-
-## Phase 6
-Dasha Engine
-
----
-
-## Phase 7
-Transit Engine
-
----
-
-## Phase 8
-Probability Consolidation
-
----
-
-## Phase 9
-Final Report Generation
-
----
-
-# 12. TECHNOLOGY STACK
-
-Current stack:
+Current technology direction:
 
 - Python
-- VS Code
-- Local desktop environment
-- JSON-based data flow
+- Local desktop execution
+- JSON-based workflow
+- deterministic modular engines
 
-No cloud dependency initially.
+Current project does NOT require:
+- cloud infrastructure
+- databases
+- distributed systems
+- always-running services
 
-No web application initially.
-
----
-
-# 13. FINAL GOAL
-
-Create a professional Vedic astrology intelligence framework that:
-- preserves classical astrology
-- adds quantified intelligence
-- produces explainable prediction probabilities
-- supports future AI interpretation layers
-- remains deterministic at the core
+The software should remain lightweight, modular, and locally executable.

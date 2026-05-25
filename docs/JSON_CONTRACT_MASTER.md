@@ -1,58 +1,96 @@
-# MASTER JSON CONTRACT
-# Vedic Astrology Intelligence Framework
-**Version:** 2.0 (Staged Pipeline Architecture)
-
-## Purpose
-This document defines the absolute, immutable JSON schema that flows through the Unidirectional DAG. Every Engine must conform to this schema. Schema drift is strictly forbidden.
+# JSON CONTRACT MASTER
+# Deterministic Vedic Astrology Calculation Platform
 
 ---
 
-## 1. Type A: Static Entity Contract
-Used strictly by Phase 3, 4, and 5 (Planets, Houses, Vargas).
+# PURPOSE OF THIS FILE
+
+This document defines the active JSON contract philosophy and current normalized payload structure for the software.
+
+Its purpose is to:
+
+- maintain schema consistency
+- stabilize deterministic engine inputs
+- prevent payload confusion
+- support modular engine design
+- simplify future testing and validation
+
+This file reflects CURRENT implementation contracts.
+
+Future roadmap contracts should remain clearly separated from current active schemas.
+
+---
+
+# 1. CURRENT CONTRACT PHILOSOPHY
+
+Current implementation contracts primarily support:
+
+- PDF extraction normalization
+- deterministic Graha calculations
+- deterministic House calculations
+- Varga refinement support
+- deterministic output generation
+
+The current implementation does NOT yet require:
+
+- event-domain contracts
+- probability synthesis contracts
+- AI interpretation contracts
+- large temporal orchestration payloads
+
+Those remain future roadmap phases.
+
+---
+
+# 2. NORMALIZATION PRINCIPLE
+
+All engines must consume:
+
+NORMALIZED JSON ONLY
+
+Engines must NEVER directly depend on:
+
+- PDFs
+- OCR systems
+- raw extraction text
+- parser-specific formats
+
+The normalization layer is responsible for:
+
+- schema consistency
+- safe defaults
+- type normalization
+- missing field handling
+- payload stabilization
+
+---
+
+# 3. CURRENT HIGH-LEVEL JSON FLOW
+
+PDF/Input JSON
+↓
+Raw Extraction JSON
+↓
+Cleaned JSON
+↓
+Normalized JSON
+↓
+Engine Inputs
+↓
+Deterministic Outputs
+
+---
+
+# 4. CURRENT ACTIVE CONTRACT STRUCTURE
+
+Current active normalized payload structure:
 
 ```json
 {
-  "metadata": {
-    "entity_id": "string (e.g., 'sun', '1', 'D9')",
-    "entity_type": "string (e.g., 'planet', 'house', 'varga')"
-  },
-  
-  // IMMUTABLE D1 PROMISE
-  "final_score": 0,       // Integer 0-100 (Clamped)
-  "raw_score": 0.0,       // Float (Unclamped, for debugging)
-  
-  // EXPLAINABILITY 
-  // Note: Currently flat for simplicity. Future versions will evolve this into:
-  // "breakdown": [{"rule": "exalted", "score": 35, "category": "dignity", "trace": "v1"}]
-  "breakdown": {
-    "rule_name": 15       // Key-value pairs of exact points added/subtracted
-  },
-  
-  // STRUCTURAL CAPACITY (Math-safe modifiers)
-  "modifiers": {
-    "varga_bonus": 0.0
-  },
-  
-  // AI CONTEXT & SYNTHESIS TAGS
-  "confidence_flags": [
-    "string_context_tag",
-    "highly_dignified"
-  ]
+  "birth_details": {},
+  "d1_chart": {},
+  "vargas": {},
+  "planet_strength_inputs": {},
+  "house_strength_inputs": {},
+  "metadata": {}
 }
-```
-
-## Pipeline State Object (The Global Payload)
-The `PipelineRunner` manages this global object and passes sections of it to the engines.
-
-```json
-{
-  "metadata": {},         // Base birth info, ayanamsa, etc.
-  "engine_outputs": {
-    "planets": {},        // Dictionary of Universal Entity Payloads
-    "houses": {},         // Dictionary of Universal Entity Payloads
-    "vargas": {},         // Dictionary of Universal Entity Payloads
-    "dashas": {},         // Current active periods and multipliers
-    "transits": {}        // Snapshot of current/future gochara triggers
-  }
-}
-```
