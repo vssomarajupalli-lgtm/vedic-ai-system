@@ -48,11 +48,14 @@ class PipelineRunner:
             if lord_name in planet_results:
                 lord_score = planet_results[lord_name].get("final_score", 50)
             
-            # Inject the dependency into the house data
-            house_data["lord_strength_score"] = lord_score
-            
-            # Calculate house strength using the newly injected dependency
-            house_results[str(house_id)] = self.house_engine.calculate_strength(house_data)
+            # Create a shallow copy to preserve D1 immutability
+            house_eval_payload = dict(house_data)
+            house_eval_payload["lord_strength_score"] = lord_score
+
+            # Calculate house strength using copied payload
+            house_results[str(house_id)] = self.house_engine.calculate_strength(
+            house_eval_payload
+)
             
         # 4. Varga Engine Execution (Phase 5 Refinement)
         # Safely pass the D1 planet scores as read-only dependencies
