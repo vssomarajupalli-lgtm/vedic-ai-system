@@ -68,11 +68,9 @@ class JsonNormalizer:
                 "is_retrograde": self._extract_boolean(p_data.get("retrograde")),
                 "is_combust": self._extract_boolean(p_data.get("combust")),
                 "conjunctions": [self._clean_name(c, self.planet_map) for c in p_data.get("conjunctions", []) if self._clean_name(c, self.planet_map)],
-                "aspects_received": {
-                    "benefic_aspects_count": self._extract_int(p_data.get("benefic_aspects", 0)),
-                    "malefic_aspects_count": self._extract_int(p_data.get("malefic_aspects", 0)),
-                    "aspected_by": [self._clean_name(a, self.planet_map) for a in p_data.get("aspected_by", []) if self._clean_name(a, self.planet_map)]
-                },
+                "benefic_aspects_count": self._extract_int(p_data.get("benefic_aspects", 0)),
+                "malefic_aspects_count": self._extract_int(p_data.get("malefic_aspects", 0)),
+                "aspected_by": [self._clean_name(a, self.planet_map) for a in p_data.get("aspected_by", []) if self._clean_name(a, self.planet_map)],
                 "varga_data": {},
                 "bav_points": self._extract_int(p_data.get("bav", 0))
             }
