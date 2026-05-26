@@ -103,3 +103,22 @@ class TestPipelineRunner(unittest.TestCase):
         self.assertIn("varga_contradicted", varga_sun["confidence_flags"])
         self.assertIn("D9_vargottama", varga_mars["confidence_flags"])
         self.assertEqual(varga_mars["modifiers"]["D9_vargottama_bonus"], 15.0)
+
+    def test_missing_dependency_fallback(self):
+        """Ensure the PipelineRunner safely falls back to a neutral score (50) if a dependency is missing."""
+        # Inject a house with an unknown lord into the mocked payload
+        self.mock_normalized_payload["houses"]["2"] = {
+            "house": 2,
+            "house_type": "neutral",
+            "lord": "unknown_planet",
+            "occupants": [],
+            "aspected_by": []
+        }
+        
+        # Re-execute pipeline with the mutated payload
+        results = self.runner.process({})
+        house_2 = results["engine_outputs"]["houses"]["2"]
+        
+        # Neutral house base (10) + Default unknown lord (50 * 0.25 = 12.5) = 22.5 -> Clamped to 22
+        self.assertEqual(house_2["breakdown"]["lord_contribution"], 12.5)
+        self.assertEqual(house_2["final_score"], 22)
