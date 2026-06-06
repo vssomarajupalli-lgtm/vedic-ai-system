@@ -1,189 +1,158 @@
-# VERIFIED SOURCE CODE AUDIT (MANUALLY VERIFIED)
+# VEDIC_AI_VERIFIED_SOURCE_AUDIT.md
 
-The following files were directly inspected and confirmed to contain real executable code.
+## Verified Source Tree
 
-## VERIFIED IMPLEMENTED FILES
+backend/
 
-### backend/app/pipeline_runner.py
+app/
 
-Status: VERIFIED IMPLEMENTED
+pipeline_runner.py
 
-Purpose:
+engines/
 
-* orchestrates deterministic execution pipeline
-* connects normalizer and engines
-* manages dependency passing
+planet_strength_engine.py
 
-Verified Components:
+house_strength_engine.py
 
-* JsonNormalizer integration
-* PlanetStrengthEngine integration
-* HouseStrengthEngine integration
-* VargaEngine integration
+varga_engine.py
 
----
+dasha_engine.py
 
-### backend/app/parsers/json_normalizer.py
+parsers/
 
-Status: VERIFIED IMPLEMENTED
+index_reader.py
 
-Purpose:
+pdf_text_extractor.py
 
-* schema normalization
-* alias mapping
-* data cleaning
-* deterministic defaults
+table_parser.py
 
-Verified Features:
+json_normalizer.py
 
-* metadata normalization
-* planet normalization
-* varga normalization
-* dasha normalization
-* Telugu/Sanskrit alias handling
+tests/
 
----
+test_pipeline_runner.py
 
-### backend/app/parsers/table_parser.py
+test_planet_strength_engine.py
 
-Status: VERIFIED IMPLEMENTED
+test_index_reader.py
 
-Purpose:
+test_pdf_text_extractor.py
 
-* converts extracted table grids into structured dictionaries
+test_table_parser.py
 
-Verified Features:
-
-* malformed row rejection
-* empty row handling
-* deterministic parsing
-* extraction metadata generation
+test_json_normalizer.py
 
 ---
 
-### backend/app/engines/planet_strength_engine.py
+## Verified Implementations
 
-Status: VERIFIED IMPLEMENTED
+PipelineRunner
 
-Verified Features:
+Status:
+VERIFIED
 
-* dignity scoring
-* house placement scoring
-* combustion modifiers
-* retrograde modifiers
-* benefic aspect scoring
-* malefic aspect scoring
-* confidence flags
-* score clamping
+PlanetStrengthEngine
 
-Pending:
+Status:
+VERIFIED
 
-* Ashtakavarga integration
-* advanced varga support
+HouseStrengthEngine
 
----
+Status:
+VERIFIED
 
-### backend/app/engines/house_strength_engine.py
+VargaEngine
 
-Status: VERIFIED IMPLEMENTED
+Status:
+VERIFIED
 
-Verified Features:
+DashaEngine
 
-* house type scoring
-* lord contribution scoring
-* occupant evaluation
-* aspect evaluation
-* confidence flags
-
-Pending:
-
-* SAV integration
+Status:
+VERIFIED FOUNDATION
 
 ---
 
-### backend/app/engines/varga_engine.py
+## Verified Parsers
 
-Status: VERIFIED IMPLEMENTED
+IndexReader
 
-Verified Features:
+Status:
+VERIFIED
 
-* D9 evaluation
-* D10 evaluation
-* Vargottama evaluation
-* Neecha Bhanga detection
-* contradiction detection
-* immutable D1 preservation
+PdfTextExtractor
 
----
+Status:
+VERIFIED
 
-### backend/app/engines/dasha_engine.py
+TableParser
 
-Status: VERIFIED IMPLEMENTED
+Status:
+VERIFIED
 
-Verified Features:
+JsonNormalizer
 
-* Mahadasha activation
-* Antardasha activation
-* planetary relationship analysis
-* timing multipliers
-* temporal activation payload generation
+Status:
+VERIFIED
 
 ---
 
-### backend/app/config/astrology_constants.py
+## Missing Engines
 
-Status: VERIFIED IMPLEMENTED
+RasiStrengthEngine
 
-Verified Constants:
+AshtakavargaEngine
 
-* PLANET_SCORING_MATRIX
-* HOUSE_SCORING_MATRIX
-* NATURAL_BENEFICS
-* NATURAL_MALEFICS
-* D9_SCORES
-* D10_SCORES
-* VARGOTTAMA_BONUS
-* DASHA_SCORING_MATRIX
+YogaEngine
 
----
+TransitEngine
 
-# VERIFIED TEST FILES
+QuestionEngine
 
-Confirmed Present:
+MasterProbabilityEngine
 
-* test_pipeline_runner.py
-* test_json_normalizer.py
-* test_pdf_text_extractor.py
-* test_planet_strength_engine.py
-* test_table_parser.py
-* test_index_reader.py
+TimingEngine
 
 ---
 
-# FILES PRESENT BUT NOT YET INSPECTED
+## Missing Specifications
 
-Need source verification:
+EVENT_DOMAIN_SPECIFICATION.md
 
-* pdf_text_extractor.py
-* index_reader.py
-* astrology_math.py
-* run.py
+PDF_EXTRACTION_BLUEPRINT.md
+
+PLANET_STRENGTH_SPECIFICATION.md
+
+RASI_STRENGTH_SPECIFICATION.md
+
+TRANSIT_ENGINE_SPECIFICATION.md
+
+MASTER_SYNTHESIS_ENGINE.md
 
 ---
 
-# VERIFIED STUBS / PENDING IMPLEMENTATIONS
+## Verified Sample Source
 
-Ashtakavarga:
+Sample File:
 
-* BAV integration pending
-* SAV integration pending
+raju.pdf
 
-Advanced Prediction Layer:
+Pages:
+87
 
-* Transit Engine
-* Master Synthesis Engine
-* Prediction Runtime
-* Narration Engine
-* Question Engine
+Contains:
 
-Not yet verified in source code.
+* Birth Details
+* Planet Positions
+* Shodasha Vargas
+* Ashtakavarga
+* Sarvashtakavarga
+* Bhava Bala
+* Ishta Phala
+* Kashta Phala
+* Dasha Sections
+* Prediction Sections
+
+Status:
+
+APPROVED AS MASTER REFERENCE SOURCE
