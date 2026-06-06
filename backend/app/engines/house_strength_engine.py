@@ -47,11 +47,13 @@ class HouseStrengthEngine:
         breakdown["aspects_impact"] = aspect_score
         total_score += aspect_score
 
-        # 5. Future Extensibility: Ashtakavarga & Vargas (Phase 4/5 enhancements)
-        sav_score = self._evaluate_sav_support(house_data.get("sav_points", 0)) or 0
-        if sav_score:
-            breakdown["sav_support"] = sav_score
-            total_score += sav_score
+        # 5. SAV (Sarvashtakavarga) Environment
+        # Contribution is signed [-10, +10]: above-average SAV helps; below-average SAV hurts.
+        # Houses with 28+ bindus (average) get a neutral or positive contribution.
+        sav_score = self._evaluate_sav_support(house_data.get("sav_points", 0))
+        breakdown["sav_support"] = sav_score
+        total_score += sav_score
+
 
         # Clamp final score between 0 and 100
         final_score = clamp_score(total_score)
@@ -95,12 +97,56 @@ class HouseStrengthEngine:
                 score += self.scoring_matrix[context]["malefic"]
         return score
 
-    # --- Future Extensibility Stubs ---
+    def _evaluate_sav_support(self, sav_points: int) -> float:
+        """
+        Computes SAV (Sarvashtakavarga) contribution to house strength.
 
-    def _evaluate_sav_support(self, sav_points: int) -> int:
-        """Stub for future integration of Sarvashtakavarga (SAV) bindus."""
-        # Example future logic: (sav_points - 28) * multiplier
-        pass
+        Uses the official piecewise linear anchor table from the master architecture.
+        Deviation from neutral (50 = 28 bindus) is scaled by sav_weight (0.20).
+
+        Formula:
+            sav_score    = piecewise_linear(sav_points, anchors)   → [0, 100]
+            contribution = (sav_score - 50) × sav_weight           → [-10, +10]
+
+        Reference points (Raju chart):
+            H11: 40 bindus → score 100 → contribution +10
+            H9:  25 bindus → score  50 → contribution   0
+            H4:  30 bindus → score  70 → contribution  +4
+            H12:  0 bindus → score   0 → contribution -10
+
+        Returns:
+            float: SAV contribution in the range [-10, +10].
+        """
+        anchors = [
+            (0,  0.0),
+            (20, 30.0),
+            (25, 50.0),
+            (30, 70.0),
+            (35, 85.0),
+            (40, 100.0),
+            (56, 100.0)    # upper bound guard
+        ]
+        bindus = int(sav_points or 0)
+
+        # Piecewise linear interpolation
+        if bindus <= anchors[0][0]:
+            sav_score = anchors[0][1]
+        elif bindus >= anchors[-1][0]:
+            sav_score = anchors[-1][1]
+        else:
+            sav_score = 50.0  # safe fallback
+            for i in range(len(anchors) - 1):
+                lo_b, lo_s = anchors[i]
+                hi_b, hi_s = anchors[i + 1]
+                if lo_b <= bindus <= hi_b:
+                    t = (bindus - lo_b) / (hi_b - lo_b)
+                    sav_score = lo_s + t * (hi_s - lo_s)
+                    break
+
+        weight       = self.scoring_matrix.get("sav_weight", 0.20)
+        contribution = (sav_score - 50.0) * weight
+        return round(contribution, 2)
+
 
     def _generate_confidence_flags(self, raw_score: float, final_score: int) -> list:
         flags = []

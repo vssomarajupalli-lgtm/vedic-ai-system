@@ -20,9 +20,56 @@ class JsonNormalizer:
         }
         
         self.sign_map = {
-            "ar": "aries", "mesha": "aries",
-            "ta": "taurus", "vrishabha": "taurus",
-            # ... other signs will be added here
+            # --- Aries ---
+            "ar": "aries", "ari": "aries", "mesha": "aries", "mesh": "aries",
+
+            # --- Taurus ---
+            "ta": "taurus", "tau": "taurus",
+            "vrishabha": "taurus", "vrishaba": "taurus", "vrushabha": "taurus",
+
+            # --- Gemini ---
+            "ge": "gemini", "gem": "gemini",
+            "mithuna": "gemini", "mithun": "gemini", "mithunam": "gemini",
+
+            # --- Cancer ---
+            "ca": "cancer", "can": "cancer",
+            "kataka": "cancer", "karka": "cancer", "karkataka": "cancer",
+            "katakam": "cancer",
+
+            # --- Leo ---
+            "le": "leo",
+            "simha": "leo", "singh": "leo", "simham": "leo",
+
+            # --- Virgo ---
+            "vi": "virgo", "vir": "virgo",
+            "kanya": "virgo", "kani": "virgo", "kanyam": "virgo",
+
+            # --- Libra ---
+            "li": "libra", "lib": "libra",
+            "tula": "libra", "thula": "libra", "tulam": "libra",
+
+            # --- Scorpio ---
+            "sc": "scorpio", "sco": "scorpio",
+            "vrishchika": "scorpio", "vrischika": "scorpio", "vrischikam": "scorpio",
+            "vruschika": "scorpio", "scorpius": "scorpio",
+
+            # --- Sagittarius ---
+            "sa": "sagittarius", "sag": "sagittarius",
+            "dhanu": "sagittarius", "dhanus": "sagittarius", "dhanush": "sagittarius",
+            "dhanussu": "sagittarius",
+
+            # --- Capricorn ---
+            "cp": "capricorn", "cap": "capricorn",
+            "makara": "capricorn", "makar": "capricorn", "makaram": "capricorn",
+
+            # --- Aquarius ---
+            "aq": "aquarius", "aqu": "aquarius",
+            "kumbha": "aquarius", "kumbam": "aquarius",
+
+            # --- Pisces ---
+            "pi": "pisces", "pis": "pisces",
+            "meena": "pisces", "meen": "pisces", "meenam": "pisces",
+            "meena rasi": "pisces",
         }
 
     def normalize(self, raw_data: dict) -> dict:
@@ -31,12 +78,9 @@ class JsonNormalizer:
         return {
             "metadata": self._normalize_metadata(raw_data.get("raw_metadata", {})),
             "planets": normalized_planets,
-            "houses": {},         # Placeholder for House Engine extraction mapping
+            "houses": self._normalize_houses(raw_data.get("raw_houses", {})),
             "vargas": self._normalize_vargas(raw_data.get("raw_vargas", {}), normalized_planets),
-            "ashtakavarga": {     # Placeholder for Phase 3/4 integration
-                "sav_chart": {},
-                "bav_charts": {}
-            },
+            "ashtakavarga": self._normalize_ashtakavarga(raw_data.get("raw_ashtakavarga", {})),
             "dashas": self._normalize_dashas(raw_data.get("raw_dashas", {})),
             "transits": {         # Placeholder for Phase 7 Transit Engine
                 "active_modifiers": []
@@ -110,6 +154,118 @@ class JsonNormalizer:
             "pratyantardasha": {
                 "lord": self._clean_name(raw_dashas.get("pratyantardasha", ""), self.planet_map)
             }
+        }
+
+    def _normalize_houses(self, raw_houses: dict) -> dict:
+        """
+        Normalizes raw house data for all 12 bhavas.
+
+        Accepts the raw_houses dict passed through by HoroscopeSourceLoader.
+        Each key is a house number string ("1"–"12").
+
+        Normalized fields per house:
+            house        (int)  : House number 1–12
+            house_type   (str)  : Kendra / Trikona / Dusthana / Upachaya / Neutral
+            sign         (str)  : Zodiac sign of the house (normalized via sign_map)
+            lord         (str)  : Ruling planet (normalized via planet_map)
+            occupants    (list) : Planets present in the house (planet_map normalized)
+            aspected_by  (list) : Planets aspecting the house (planet_map normalized)
+            sav_points   (int)  : Sarvashtakavarga bindus (0 if absent)
+
+        Houses with missing or unparseable keys receive safe neutral defaults.
+        Houses beyond 1–12 range are silently rejected.
+        """
+        normalized = {}
+
+        for raw_key, h_data in raw_houses.items():
+            # --- Validate and extract house number ---
+            house_num = self._extract_int(raw_key)
+            if house_num < 1 or house_num > 12:
+                continue  # Reject out-of-range keys defensively
+
+            if not isinstance(h_data, dict):
+                continue  # Reject malformed entries
+
+            # --- Normalize occupants: raw planet names → standard system names ---
+            raw_occupants = h_data.get("occupants", [])
+            occupants = [
+                self._clean_name(p, self.planet_map)
+                for p in raw_occupants
+                if self._clean_name(p, self.planet_map)
+            ]
+
+            # --- Normalize aspected_by: same planet_map pass-through ---
+            raw_aspects = h_data.get("aspected_by", [])
+            aspected_by = [
+                self._clean_name(p, self.planet_map)
+                for p in raw_aspects
+                if self._clean_name(p, self.planet_map)
+            ]
+
+            # --- Assemble normalized house record ---
+            normalized[str(house_num)] = {
+                "house":       house_num,
+                "house_type":  self._clean_string(h_data.get("house_type", "neutral")),
+                "sign":        self._clean_name(h_data.get("sign", ""), self.sign_map),
+                "lord":        self._clean_name(h_data.get("lord", ""), self.planet_map),
+                "occupants":   occupants,
+                "aspected_by": aspected_by,
+                "sav_points":  self._extract_int(h_data.get("sav_points", 0))
+            }
+
+        return normalized
+
+    def _normalize_ashtakavarga(self, raw_av: dict) -> dict:
+        """
+        Normalizes the raw Ashtakavarga data extracted by HoroscopeSourceLoader.
+
+        SAV Chart normalization:
+            - Keys normalized to str(1)–str(12)
+            - Bindu values coerced to int via _extract_int()
+
+        BAV Charts normalization:
+            - Planet name keys normalized through planet_map
+            - House keys normalized to str(1)–str(12)
+            - Bindu values coerced to int via _extract_int()
+            - Rahu and Ketu are excluded (no BAV charts in classical Parashari AV)
+            - Out-of-range house keys (< 1 or > 12) silently rejected
+
+        Returns safe empty dicts on missing or malformed input.
+        """
+        if not raw_av or not isinstance(raw_av, dict):
+            return {"sav_chart": {}, "bav_charts": {}}
+
+        # --- Normalize SAV chart ---
+        sav_normalized = {}
+        for raw_house, bindus in raw_av.get("sav_chart", {}).items():
+            house_num = self._extract_int(raw_house)
+            if 1 <= house_num <= 12:
+                sav_normalized[str(house_num)] = self._extract_int(bindus)
+
+        # --- Normalize BAV charts ---
+        # Classical Parashari AV includes 7 planets (excludes Rahu/Ketu)
+        excluded_planets = {"rahu", "ketu"}
+        bav_normalized = {}
+
+        for raw_planet, house_bindus in raw_av.get("bav_charts", {}).items():
+            std_planet = self._clean_name(raw_planet, self.planet_map)
+            if not std_planet or std_planet in excluded_planets:
+                continue
+            if not isinstance(house_bindus, dict):
+                continue
+
+            planet_bav = {}
+            for raw_house, bindus in house_bindus.items():
+                house_num = self._extract_int(raw_house)
+                if 1 <= house_num <= 12:
+                    planet_bav[str(house_num)] = self._extract_int(bindus)
+
+            if planet_bav:
+                bav_normalized[std_planet] = planet_bav
+
+        return {
+            "sav_chart":  sav_normalized,
+            "bav_charts": bav_normalized
         }
 
     # --- Isolated Helper Methods ---
