@@ -22,7 +22,7 @@ class TestPipelineRunner(unittest.TestCase):
                     "name": "sun",
                     "sign": "aries",
                     "house_type": "kendra",
-                    "dignity": "exalted",     # D1 Exalted (35) + Kendra (20) = 55 Base Score
+                    "dignity": "exalted",     # D1 Exalted (50) + Kendra (30) = 80 Base Score (v1.1)
                     "is_combust": False,
                     "is_retrograde": False,
                 },
@@ -30,7 +30,7 @@ class TestPipelineRunner(unittest.TestCase):
                     "name": "mars",
                     "sign": "scorpio",
                     "house_type": "dusthana",
-                    "dignity": "own_sign",    # D1 Own Sign (25) + Dusthana (-10) = 15 Base Score
+                    "dignity": "own_sign",    # D1 Own Sign (35) + Dusthana (-15) = 20 Base Score (v1.1)
                     "is_combust": False,
                     "is_retrograde": False,
                 }
@@ -38,8 +38,8 @@ class TestPipelineRunner(unittest.TestCase):
             "houses": {
                 "1": {
                     "house": 1,
-                    "house_type": "kendra",   # Kendra = 20 Base Score
-                    "lord": "mars",           # Dependency: Needs Mars' score (15 * 0.25 = 3.75)
+                    "house_type": "kendra",   # Kendra Base = 20 in HouseStrengthEngine
+                    "lord": "mars",           # Dependency: Needs Mars' score (20 * 0.25 = 5.0) (v1.1)
                     "occupants": [],
                     "aspected_by": []
                 }
@@ -83,18 +83,19 @@ class TestPipelineRunner(unittest.TestCase):
         d1_sun_score = self.results["engine_outputs"]["planets"]["sun"]["final_score"]
         varga_sun_score = self.results["engine_outputs"]["vargas"]["sun"]["final_score"]
         
-        # Both should equal 55 (Exalted 35 + Kendra 20)
-        self.assertEqual(d1_sun_score, 55)
+        # Both should equal 80 (Exalted 50 + Kendra 30 — calibrated v1.1)
+        self.assertEqual(d1_sun_score, 80)
         self.assertEqual(d1_sun_score, varga_sun_score, "Varga Engine illegally modified the D1 final_score!")
 
     def test_safe_dependency_flow(self):
         """Ensure the PipelineRunner successfully passes the Mars D1 score into House 1."""
         house_1 = self.results["engine_outputs"]["houses"]["1"]
         
-        # Mars D1 score is 15. The house lord weight multiplier is 0.25. (15 * 0.25 = 3.75)
-        self.assertEqual(house_1["breakdown"]["lord_contribution"], 3.75)
-        # Kendra(20) + Lord(3.75) + SAV(-10.0, no sav_points=defaults 0) = 13.75 → clamped to 13
-        self.assertEqual(house_1["final_score"], 13)
+        # Mars D1 score is 20 (own_sign=35 + dusthana=-15, v1.1). The house lord weight is 0.25.
+        # Lord contribution: 20 * 0.25 = 5.0
+        self.assertEqual(house_1["breakdown"]["lord_contribution"], 5.0)
+        # Kendra(20) + Lord(5.0) + SAV(-10.0, no sav_points=defaults 0) = 15 → final=15
+        self.assertEqual(house_1["final_score"], 15)
 
     def test_varga_confidence_flags_and_modifiers(self):
         """Ensure the Varga Engine correctly calculates structural modifiers and string flags."""

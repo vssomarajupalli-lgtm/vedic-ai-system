@@ -4,27 +4,37 @@ Centralizing these prevents magic numbers in the calculation engines
 and ensures absolute explainability for the final outputs.
 """
 
+# ---------------------------------------------------------------------------
+# Calibration note (v1.1):
+#   Additive formula: dignity + house + state + aspects → clamped [0, 100]
+#   Target ranges:
+#     Best case  (exalted + trikona + retrograde): 50+35+5 = 90
+#     Strong     (exalted + kendra, clean):        50+30   = 80  (≥ 70 axiom)
+#     Own+kendra (clean):                          35+30   = 65  (> 50 axiom)
+#     Worst case (debilitated + dusthana):          0-15   = 0   (≤ 25 axiom)
+# ---------------------------------------------------------------------------
 PLANET_SCORING_MATRIX = {
     "dignity": {
-        "exalted": 35,
-        "own_sign": 25,
-        "friendly": 15,
-        "neutral": 10,
-        "enemy": 5,
-        "debilitated": 0
+        "exalted":     50,   # Maximum dignity — exaltation sign (uccha)
+        "own_sign":    35,   # Own sign (swakshetra) — strong functional strength
+        "friendly":    20,   # Friendly sign — moderate support
+        "neutral":     10,   # Neutral sign — baseline
+        "enemy":        5,   # Enemy sign — weakened
+        "debilitated":  0    # Debilitation (neecha) — minimum dignity
     },
     "house_placement": {
-        "kendra": 20,    # 1, 4, 7, 10
-        "trikona": 25,   # 5, 9
-        "dusthana": -10, # 6, 8, 12
-        "neutral": 10    # 2, 3, 11
+        "trikona":  35,   # 5, 9 — highest house type in Parashari
+        "kendra":   30,   # 1, 4, 7, 10 — angular strength
+        "upachaya": 20,   # 3, 6, 10, 11 — growth houses
+        "neutral":  10,   # 2, 11, etc — functional
+        "dusthana": -15   # 6, 8, 12 — houses of challenge
     },
     "state_modifiers": {
-        "combust": -15,
-        "retrograde": 5  # Simplified V1: Retrogression generally adds Cheshta Bala (motion strength)
+        "combust":    -20,  # Combustion loses planetary agency (within Sun's orb)
+        "retrograde":   5   # Cheshta Bala: retrograde motion adds strength
     },
     "aspects": {
-        "benefic_aspect": 10,
+        "benefic_aspect":  10,
         "malefic_aspect": -10
     }
 }
@@ -257,8 +267,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1: reduced from 0.07 (SAV is primary timing indicator)
+            "sav":            0.05,   # Calibrated v1.1: raised from 0.03 (SAV bindus are major classical indicator)
         }
     },
     "career": {
@@ -270,8 +280,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "wealth": {
@@ -283,8 +293,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "education": {
@@ -296,8 +306,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.25,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "children": {
@@ -309,8 +319,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "property": {
@@ -322,8 +332,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "health": {
@@ -336,8 +346,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
     "spirituality": {
@@ -349,8 +359,8 @@ DOMAIN_CONFIG = {
             "support_houses": 0.20,
             "karaka":         0.25,
             "lord":           0.15,
-            "varga":          0.07,
-            "sav":            0.03,
+            "varga":          0.05,   # Calibrated v1.1
+            "sav":            0.05,   # Calibrated v1.1
         }
     },
 }
