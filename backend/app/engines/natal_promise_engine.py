@@ -51,6 +51,7 @@ class NatalPromiseEngine:
         rasi_results:      Dict[str, Any],
         varga_results:     Dict[str, Any],
         av_results:        Dict[str, Any],
+        yoga_results:      Dict[str, Any],
         normalized_houses: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
@@ -71,17 +72,13 @@ class NatalPromiseEngine:
         affliction_flags = self._detect_affliction_flags(
             normalized_houses, planet_results
         )
-        # Pre-compute yoga bonus flags once
-        bonus_flags = self._detect_bonus_flags(
-            normalized_houses, planet_results
-        )
 
         result = {}
         for domain in self.domains:
             result[domain] = self._score_domain(
                 domain, planet_results, house_results,
                 varga_results, av_results, normalized_houses,
-                affliction_flags, bonus_flags
+                affliction_flags, yoga_results
             )
         return result
 
@@ -98,7 +95,7 @@ class NatalPromiseEngine:
         av_results:        dict,
         normalized_houses: dict,
         affliction_flags:  List[str],
-        bonus_flags:       List[str],
+        yoga_results:      dict,
     ) -> dict:
         cfg     = self.config[domain]
         weights = cfg["weights"]
@@ -145,7 +142,20 @@ class NatalPromiseEngine:
         )
 
         # --- Yoga bonuses ---
-        bonus_total = self._compute_bonuses(domain, bonus_flags)
+        # Map YogaEngine output categories to specific domains
+        bonus_total = 0.0
+        y_cats = yoga_results.get("category_summaries", {})
+        
+        if domain == "wealth":
+            bonus_total += y_cats.get("Dhana Yoga", {}).get("max_strength", 0) * 0.15
+        elif domain == "career":
+            bonus_total += y_cats.get("Raja Yoga", {}).get("max_strength", 0) * 0.15
+            bonus_total += y_cats.get("Neecha Bhanga Raja Yoga", {}).get("max_strength", 0) * 0.10
+        elif domain == "health":
+            bonus_total -= y_cats.get("Arishta Yoga", {}).get("max_strength", 0) * 0.15
+        elif domain in ["education", "spirituality"]:
+            bonus_total += y_cats.get("Gaja Kesari Yoga", {}).get("max_strength", 0) * 0.10
+            
         raw += bonus_total
 
         # --- Affliction penalties (capped) ---
@@ -427,43 +437,6 @@ class NatalPromiseEngine:
 
         return flags
 
-    def _detect_bonus_flags(
-        self,
-        normalized_houses: dict,
-        planet_results:    dict,
-    ) -> List[str]:
-        """
-        Detects classical yoga bonus conditions.
-        Returns list of active bonus flag names (matching DOMAIN_BONUSES keys).
-        """
-        flags = []
-
-        # Dhana Yoga: 2nd lord + 11th lord in same sign
-        lord2 = normalized_houses.get("2", {}).get("lord", "")
-        lord11 = normalized_houses.get("11", {}).get("lord", "")
-        if lord2 and lord11:
-            lord2_sign  = planet_results.get(lord2,  {}).get("sign", "")
-            lord11_sign = planet_results.get(lord11, {}).get("sign", "")
-            if lord2 == lord11 or (lord2_sign and lord2_sign == lord11_sign):
-                flags.append("same_2_11_lords")
-
-        # Jupiter in H2 or H11
-        h2_occ  = normalized_houses.get("2",  {}).get("occupants", [])
-        h11_occ = normalized_houses.get("11", {}).get("occupants", [])
-        if "jupiter" in h2_occ or "jupiter" in h11_occ:
-            flags.append("jupiter_in_2_or_11")
-
-        # Venus in H2
-        if "venus" in h2_occ:
-            flags.append("venus_in_2")
-
-        # Ketu strong in moksha houses (H9, H12, H5)
-        ketu_score = planet_results.get("ketu", {}).get("final_score", 0)
-        if ketu_score > 50:
-            for h in ["9", "12", "5"]:
-                if "ketu" in normalized_houses.get(h, {}).get("occupants", []):
-                    flags.append("ketu_strong_in_moksha")
-                    break
 
         # Jupiter aspects H7 (standard Vedic aspect from H4, H5, H9, H10 relative)
         h7_aspected = normalized_houses.get("7", {}).get("aspected_by", [])

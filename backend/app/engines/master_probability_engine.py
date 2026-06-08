@@ -7,13 +7,13 @@ from app.utils.astrology_math import clamp_score
 # Source: VEDIC_AI_MASTER_ARCHITECTURE.md
 # ---------------------------------------------------------------------------
 MASTER_WEIGHTS = {
-    "natal_promise":   0.40,   # Extracted natal predictions  [stub: Phase N]
+    "natal_promise":   0.40,   # Domain promise scores (8 domains)  [live]
     "planet_strength": 0.15,   # Avg BAV-adjusted planet score [live]
     "house_strength":  0.10,   # Avg SAV-adjusted house score  [live]
     "rasi_strength":   0.10,   # Avg sign environment score    [live]
     "varga_validation":0.10,   # Varga D9/D10 dignity          [live]
     "dasha_activation":0.10,   # Temporal activation score     [live]
-    "transit_trigger": 0.05,   # Transit overlay               [stub: Phase T]
+    "transit_trigger": 0.05,   # Transit overlay               [live]
 }
 
 # Neutral score for unimplemented stubs
@@ -27,13 +27,13 @@ class MasterProbabilityEngine:
     Consumes all downstream engine outputs and produces a single
     weighted probability score per the master architecture formula:
 
-        Natal Promise      = 40%  [stub until Natal Promise Engine built]
+        Natal Promise      = 40%  [live — avg of 8 NatalPromiseEngine domain scores]
         Planet Strength    = 15%  [live — BAV-adjusted final_score avg]
         House Strength     = 10%  [live — SAV-adjusted final_score avg]
         Rasi Strength      = 10%  [live — weighted sign score avg]
         Varga Validation   = 10%  [live — D9/D10 modifier avg]
         Dasha Activation   = 10%  [live — base × timing_multiplier]
-        Transit Trigger    =  5%  [stub until Transit Engine built]
+        Transit Trigger    =  5%  [live — TransitEngine Gochara activation_score]
 
     Architecture Rules:
         - Zero astrological recalculation. Consumes pre-computed scores only.
@@ -64,6 +64,24 @@ class MasterProbabilityEngine:
         """
         factors = self._compute_all_factors(engine_outputs)
         raw     = self._weighted_sum(factors)
+        
+        # Apply global yoga modifier
+        yogas = engine_outputs.get("yogas", {}).get("category_summaries", {})
+        yoga_modifier = 0.0
+        
+        # Major positive yogas add to global score
+        if yogas.get("Raja Yoga", {}).get("max_strength", 0) > 70:
+            yoga_modifier += 5.0
+        if yogas.get("Dhana Yoga", {}).get("max_strength", 0) > 70:
+            yoga_modifier += 3.0
+        if yogas.get("Pancha Mahapurusha Yoga", {}).get("max_strength", 0) > 70:
+            yoga_modifier += 4.0
+            
+        # Arishta acts as a global penalty
+        if yogas.get("Arishta Yoga", {}).get("max_strength", 0) > 60:
+            yoga_modifier -= 5.0
+            
+        raw += yoga_modifier
         score   = clamp_score(round(raw))
         grade   = self._grade(score)
 
@@ -73,10 +91,10 @@ class MasterProbabilityEngine:
             "grade":        grade,
             "breakdown":    factors,
             "weights":      self.weights,
-            "stub_factors": ["natal_promise", "transit_trigger"],
+            "stub_factors": [],
             "live_factors": [
-                "planet_strength", "house_strength", "rasi_strength",
-                "varga_validation", "dasha_activation"
+                "natal_promise", "planet_strength", "house_strength", "rasi_strength",
+                "varga_validation", "dasha_activation", "transit_trigger"
             ]
         }
 
@@ -92,14 +110,15 @@ class MasterProbabilityEngine:
             "rasi_strength":    self._rasi_strength(engine_outputs.get("rasis", {})),
             "varga_validation": self._varga_validation(engine_outputs.get("vargas", {})),
             "dasha_activation": self._dasha_activation(engine_outputs.get("dashas", {})),
-            "transit_trigger":  self._transit_trigger_stub(),
+            "transit_trigger":  self._transit_trigger(engine_outputs.get("transit", {})),
         }
 
     def _natal_promise(self, natal_results: dict) -> float:
         """
         Aggregates NatalPromiseEngine domain scores into a single float.
         Strategy: average of all 8 domain scores.
-        Returns neutral 50 if natal_promise is not yet available (stub fallback).
+        # Natal Promise: average of all 8 domain promise scores from NatalPromiseEngine.
+        # Falls back to stub score (50, neutral) if natal_promise is absent.
 
         Note: In a domain-specific query (e.g. "Will I get married?"), the
         MasterProbabilityEngine should receive the SINGLE domain's natal promise
@@ -231,13 +250,15 @@ class MasterProbabilityEngine:
         )
         return clamp_score(round(base * multiplier, 2))
 
-    def _transit_trigger_stub(self) -> float:
+    def _transit_trigger(self, transit_results: dict) -> float:
         """
-        Stub: Transit Trigger = 5% weight.
-        Returns neutral 50 until TransitEngine is built.
-        Source: Swiss Ephemeris integration (future phase).
+        Reads the activation_score from TransitEngine output.
+
+        Falls back to STUB_SCORE (50, neutral) if transit_results is absent or
+        empty — this preserves backward compatibility when no transit_positions
+        are supplied to PipelineRunner (all existing tests remain unaffected).
         """
-        return self.stub
+        return float(transit_results.get("activation_score", self.stub))
 
     # -------------------------------------------------------------------------
     # Helpers

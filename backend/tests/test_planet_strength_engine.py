@@ -71,5 +71,37 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         
         self.assertEqual(result["final_score"], 20)
 
+    def test_dignity_scores(self):
+        """Test specific dignity modifiers."""
+        planet_data = {"name": "venus", "dignity": "friendly", "house_type": "neutral"}
+        res1 = self.engine.calculate_strength(planet_data)
+        self.assertEqual(res1["breakdown"]["dignity"], 20)
+        
+        planet_data["dignity"] = "enemy"
+        res2 = self.engine.calculate_strength(planet_data)
+        self.assertEqual(res2["breakdown"]["dignity"], 5)
+
+    def test_house_placement_scores(self):
+        """Test specific house modifiers."""
+        planet_data = {"name": "moon", "dignity": "neutral", "house_type": "upachaya"}
+        res1 = self.engine.calculate_strength(planet_data)
+        self.assertEqual(res1["breakdown"]["house_placement"], 20)
+
+    def test_retrograde_bonus(self):
+        """Test Cheshta Bala (+5 for retrograde)."""
+        planet_data = {"name": "mercury", "dignity": "neutral", "house_type": "neutral", "is_retrograde": True}
+        res1 = self.engine.calculate_strength(planet_data)
+        self.assertEqual(res1["breakdown"]["state_modifiers"], 5)
+
+    def test_mixed_aspects(self):
+        """Test combinations of benefic and malefic aspects."""
+        planet_data = {
+            "name": "jupiter", "dignity": "neutral", "house_type": "neutral",
+            "benefic_aspects_count": 2, "malefic_aspects_count": 1
+        }
+        res1 = self.engine.calculate_strength(planet_data)
+        # 2 benefic (+20) + 1 malefic (-10) = +10
+        self.assertEqual(res1["breakdown"]["aspects"], 10)
+
 if __name__ == '__main__':
     unittest.main()

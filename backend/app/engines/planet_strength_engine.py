@@ -87,10 +87,18 @@ class PlanetStrengthEngine:
     # --- Isolated Helper Methods ---
 
     def _evaluate_dignity(self, dignity: str) -> int:
-        return self.scoring_matrix["dignity"].get(dignity.lower(), self.scoring_matrix["dignity"]["neutral"])
+        # Normalise: lower-case and replace spaces with underscores so that
+        # both 'Own Sign' (raw PDF form) and 'own_sign' (canonical form) resolve
+        # correctly to the matrix key.  Without this, 'own sign' falls back to
+        # 'neutral' (10) instead of 'own_sign' (35) — a silent scoring error.
+        key = dignity.lower().replace(" ", "_")
+        return self.scoring_matrix["dignity"].get(key, self.scoring_matrix["dignity"]["neutral"])
 
     def _evaluate_house(self, house_type: str) -> int:
-        return self.scoring_matrix["house_placement"].get(house_type.lower(), self.scoring_matrix["house_placement"]["neutral"])
+        # Same normalisation as dignity: 'Own House' -> 'own_house', etc.
+        key = house_type.lower().replace(" ", "_")
+        return self.scoring_matrix["house_placement"].get(key, self.scoring_matrix["house_placement"]["neutral"])
+
 
     def _evaluate_state(self, is_combust: bool, is_retrograde: bool) -> int:
         score = 0

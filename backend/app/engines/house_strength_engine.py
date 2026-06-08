@@ -1,4 +1,4 @@
-from app.config.astrology_constants import HOUSE_SCORING_MATRIX, NATURAL_BENEFICS, NATURAL_MALEFICS
+from app.config.astrology_constants import HOUSE_SCORING_MATRIX, NATURAL_BENEFICS, NATURAL_MALEFICS, PROBABILITY_GRADES
 from app.utils.astrology_math import clamp_score
 
 class HouseStrengthEngine:
@@ -55,6 +55,12 @@ class HouseStrengthEngine:
         total_score += sav_score
 
 
+        # Apply Lagna Floor (prevent H1 from dropping to 0 due to compounding penalties)
+        if str(house_data.get("house")) == "1" and total_score < 15:
+            total_score = 15
+            if "clamped_to_zero" in breakdown: 
+                del breakdown["clamped_to_zero"] # In case used later
+
         # Clamp final score between 0 and 100
         final_score = clamp_score(total_score)
 
@@ -64,8 +70,9 @@ class HouseStrengthEngine:
                 "entity_type": "house"
             },
             "final_score": final_score,
-            "raw_score": float(total_score),
-            "breakdown": breakdown,
+            "grade":       self._assign_grade(final_score),
+            "raw_score":   float(total_score),
+            "breakdown":   breakdown,
             "modifiers": {
                 "varga_refinement": 0.0,
                 "ashtakavarga_support": 0.0
@@ -76,6 +83,7 @@ class HouseStrengthEngine:
             },
             "confidence_flags": self._generate_confidence_flags(total_score, final_score)
         }
+
 
     # --- Isolated Helper Methods ---
 
@@ -148,6 +156,22 @@ class HouseStrengthEngine:
         return round(contribution, 2)
 
 
+    def _assign_grade(self, score: int) -> str:
+        """Maps a house final_score to a PROBABILITY_GRADES label.
+        
+        Uses the same grade thresholds as all other engines so that house
+        grades are directly comparable to planet and master grades:
+            EXCELLENT  ≥ 80  — strongly supported bhava
+            VERY GOOD  ≥ 65  — well supported
+            GOOD       ≥ 50  — favorable environment
+            WEAK       ≥ 35  — limited support
+            TOO WEAK    < 35 — severely afflicted bhava
+        """
+        for threshold, label in PROBABILITY_GRADES:
+            if score >= threshold:
+                return label
+        return "TOO WEAK"
+
     def _generate_confidence_flags(self, raw_score: float, final_score: int) -> list:
         flags = []
         if raw_score < 0:
@@ -157,4 +181,4 @@ class HouseStrengthEngine:
             flags.append("clamped_to_100")
         elif raw_score > 75:
             flags.append("strongly_supported")
-        return flags
+        return flags

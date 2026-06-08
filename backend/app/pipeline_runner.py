@@ -7,6 +7,10 @@ from app.engines.rasi_strength_engine import RasiStrengthEngine
 from app.engines.ashtakavarga_engine import AshtakavargaEngine
 from app.engines.master_probability_engine import MasterProbabilityEngine
 from app.engines.natal_promise_engine import NatalPromiseEngine
+from app.engines.transit_engine import TransitEngine
+from app.engines.yoga_engine import YogaEngine
+from app.utils.ephemeris_service import EphemerisService
+from app.config.astrology_constants import SIGNS_IN_ORDER
 
 class PipelineRunner:
     """
@@ -25,7 +29,10 @@ class PipelineRunner:
         self.rasi_engine     = RasiStrengthEngine()
         self.av_engine       = AshtakavargaEngine()
         self.natal_engine    = NatalPromiseEngine()
+        self.transit_engine  = TransitEngine()
+        self.yoga_engine     = YogaEngine()
         self.master_engine   = MasterProbabilityEngine()
+        self.ephemeris       = EphemerisService()
 
     def process(self, raw_input_data: dict) -> dict:
         """
@@ -66,6 +73,10 @@ class PipelineRunner:
             house_results[str(house_id)] = self.house_engine.calculate_strength(
             house_eval_payload
 )
+
+        # 3.5. Yoga Engine Execution
+        # Requires pre-computed planet results to calculate true yoga potency
+        yoga_results = self.yoga_engine.evaluate(normalized_payload, planet_results, house_results)
             
         # 4. Varga Engine Execution (Phase 5 Refinement)
         # Safely pass the D1 planet scores as read-only dependencies
@@ -106,7 +117,7 @@ class PipelineRunner:
         # Combines all engine outputs into a single weighted probability score.
         # Weights: Natal Promise 40% | Planet 15% | House 10% | Rasi 10%
         #          Varga 10% | Dasha 10% | Transit 5%
-        # Natal Promise and Transit are stubs returning neutral 50 until built.
+        # Transit is the only remaining stub — returns neutral 50 until TransitEngine is built.
         engine_outputs = {
             "planets":      planet_results,
             "houses":       house_results,
@@ -125,9 +136,45 @@ class PipelineRunner:
             rasi_results      = rasi_results,
             varga_results     = varga_results,
             av_results        = av_results,
+            yoga_results      = yoga_results,
             normalized_houses = normalized_payload.get("houses", {})
         )
         engine_outputs["natal_promise"] = natal_results
+
+        # 7.75 Transit Engine (Timing Layer)
+        # 1. Fetch stateless sidereal planet transits for "right now"
+        raw_transits = self.ephemeris.generate_transit_snapshot()
+        
+        # 2. Contextualize transits using the native's D1 Lagna
+        # Formula: house = ((transit_sign - lagna_sign + 12) % 12) + 1
+        asc_sign = normalized_payload.get("metadata", {}).get("ascendant_sign", "aries").lower()
+        try:
+            lagna_idx = SIGNS_IN_ORDER.index(asc_sign)
+        except ValueError:
+            lagna_idx = 0
+            
+        contextual_transits = {"planets": {}}
+        for p, data in raw_transits.get("planets", {}).items():
+            try:
+                t_sign_idx = SIGNS_IN_ORDER.index(data["sign"])
+                house = ((t_sign_idx - lagna_idx + 12) % 12) + 1
+            except ValueError:
+                house = 1
+            # Merge with raw ephemeris data
+            contextual_transits["planets"][p] = {**data, "house": house}
+
+        # 3. Evaluate transit impact using pre-computed natal + timing scores
+        transit_results = self.transit_engine.evaluate(
+            transit_payload       = contextual_transits,
+            natal_payload         = normalized_payload,
+            dasha_results         = dasha_results,
+            av_results            = av_results,
+            natal_promise_results = natal_results,
+        )
+        engine_outputs["transit"] = transit_results
+        
+        # Add yoga results to outputs for the master engine
+        engine_outputs["yogas"] = yoga_results
 
         # 9. Master Probability Engine (Synthesis Layer)
         # Combines all engine outputs into a single weighted probability score.

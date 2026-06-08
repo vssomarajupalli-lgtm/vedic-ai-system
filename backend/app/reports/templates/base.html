@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedic-AI Report</title>
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --border: #e5e7eb;
+        }
+
+        @media print {
+            body { background-color: white; }
+            .page-break { page-break-before: always; }
+            .card { border: none; box-shadow: none; border-bottom: 1px solid var(--border); }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Vedic-AI Comprehensive Report</h1>
+            <p class="text-muted">Generated at: {{ report.generated_at }}</p>
+        </div>
+
+        <!-- Client Info -->
+        <div class="card">
+            <h2>Client Profile</h2>
+            <div class="grid-2">
+                <div>
+                    <div class="data-row"><span>Name:</span> <strong>{{ report.client_info.get('name', 'Unknown') }}</strong></div>
+                    <div class="data-row"><span>DOB:</span> <strong>{{ report.client_info.get('dob', 'Unknown') }}</strong></div>
+                </div>
+                <div>
+                    <div class="data-row"><span>TOB:</span> <strong>{{ report.client_info.get('tob', 'Unknown') }}</strong></div>
+                    <div class="data-row"><span>POB:</span> <strong>{{ report.client_info.get('pob', 'Unknown') }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Master Synthesis -->
+        <div class="card">
+            <h2>{{ report.master_probability.title }}</h2>
+            <p>{{ report.master_probability.summary_text }}</p>
+            <div class="grid-2">
+                <div class="data-row"><span>Final Score:</span> <strong>{{ report.master_probability.data_points.get('final_score') }} / 100</strong></div>
+                <div class="data-row"><span>Grade:</span> <span class="badge">{{ report.master_probability.data_points.get('grade') }}</span></div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="card">
+            <h2>{{ report.executive_summary.title }}</h2>
+            <p>{{ report.executive_summary.summary_text }}</p>
+            <div class="data-row"><span>Top Domains:</span> <strong>{{ report.executive_summary.data_points.get('top_domains') | join(', ') }}</strong></div>
+        </div>
+
+        <!-- Yogas -->
+        <div class="card page-break">
+            <h2>{{ report.yoga_analysis.title }}</h2>
+            <p>{{ report.yoga_analysis.summary_text }}</p>
+            {% for yoga, strength in report.yoga_analysis.data_points.get('summary_map', {}).items() %}
+            <div class="data-row">
+                <span>{{ yoga }}</span>
+                <span class="badge">Strength: {{ strength }}</span>
+            </div>
+            {% endfor %}
+            {% if not report.yoga_analysis.data_points.get('summary_map') %}
+            <p class="text-muted">No major classical yogas detected in this chart.</p>
+            {% endif %}
+        </div>
+
+        <!-- Natal Promise -->
+        <div class="card page-break">
+            <h2>{{ report.natal_promise_analysis.title }}</h2>
+            <p>{{ report.natal_promise_analysis.summary_text }}</p>
+            <div class="grid-2">
+            {% for domain, details in report.natal_promise_analysis.data_points.items() %}
+                <div style="border: 1px solid var(--border); padding: 12px; border-radius: 6px;">
+                    <h3 style="margin: 0 0 8px 0; text-transform: capitalize;">{{ domain }}</h3>
+                    <div class="data-row"><span>Score:</span> <strong>{{ details.get('score') }}</strong></div>
+                    <div class="data-row"><span>Grade:</span> <span class="badge">{{ details.get('grade') }}</span></div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

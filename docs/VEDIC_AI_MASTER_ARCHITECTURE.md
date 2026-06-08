@@ -1,300 +1,58 @@
 # VEDIC_AI_MASTER_ARCHITECTURE.md
 
 ## Project Vision
+Vedic-AI is a deterministic Vedic Astrology Intelligence System. It executes mathematical rules on parsed data without AI hallucination.
 
-Vedic-AI is a deterministic Vedic Astrology Intelligence System.
+## Core Engines (Fully Implemented)
 
-It is NOT:
+### 1. Planet Strength Engine
+Calculates classical dignity, placement, aspects, and state modifiers. Output: 0-100%
 
-* A chatbot
-* A generic horoscope generator
-* A random prediction engine
+### 2. House Strength Engine
+Calculates Bhava Bala, lord contribution, occupants, and aspects. Output: 0-100%
 
-It IS:
+### 3. Rasi Strength Engine
+Calculates strength of the 12 signs using SAV Bindus and Rasi Lord strength. Output: 0-100%
 
-* A deterministic astrology calculation framework
-* A probability-based prediction system
-* A question-answering astrology intelligence platform
+### 4. Ashtakavarga Engine
+Integrates SAV and BAV bindu counts to evaluate support.
 
----
+### 5. Dasha Activation Engine
+Calculates Vimshottari Mahadasha and Antardasha temporal mapping. Output: 0-100%
 
-## Relationship Between Projects
+### 6. Varga Engine
+Validates planetary dignity across divisional charts (D9, D10).
 
-Raw Horoscope PDF
-↓
-HoroscopeCleaner_Final
-↓
-Canonical PDF
-Canonical JSON
-Canonical Sections
-Canonical Page Map
-↓
-Vedic AI System
-↓
-Prediction Intelligence
+### 7. Yoga Engine
+Detects and mathematically scores major classical Parashari Yogas (Raja, Dhana, Arishta, Gaja Kesari, Pancha Mahapurusha, Neecha Bhanga). 
 
----
+### 8. Transit Engine
+Integrates live Gochara using Swiss Ephemeris (`swisseph`) for dynamic activation timing. Includes a synthetic orbit fallback for offline/development environments.
 
-## Core Philosophy
+### 9. Natal Promise Engine
+Synthesizes planetary, house, and yoga strengths into core Life Domains (Wealth, Career, Health, Marriage, Education, Spirituality).
 
-The source horoscope PDF already contains:
+### 10. Master Probability Engine
+Aggregates all pipelines into a final deterministic probability score, generating a definitive Master Grade (e.g., EXCELLENT, WEAK).
 
-* Shadbala
-* Bhava Bala
-* Ishta Phala
-* Kashta Phala
-* Ashtakavarga
-* Sarvashtakavarga
-* Shodasha Vargas
-* Dasha Tables
-* Predictions
-
-Vedic-AI should EXTRACT these values.
-
-Vedic-AI should NOT recalculate them unless absolutely necessary.
-
-The primary role of Vedic-AI is:
-
-Extract
-→ Validate
-→ Weight
-→ Combine
-→ Synthesize
+### 11. Question Engine
+Uses the Master Probability engine outputs to ground Natural Language Queries, safely prompting LLMs for domain-specific readings.
 
 ---
 
-## Core Engines
+## Technical Architecture Layers (Phase 4 Complete)
 
-### Planet Strength Engine
+### 1. Extraction Pipeline (HoroscopeCleaner_Final)
+Responsible for producing the mandatory `machine_index.json` and `canonical_content.json`.
 
-Inputs:
+### 2. Deterministic Calculation Core (Python)
+The pure math layer containing the 11 engines. Completely stateless and strictly tested (619 assertions).
 
-* Shadbala
-* Dignity
-* House Placement
-* Aspects
-* Combustion
-* Retrogression
-* Varga Support
+### 3. REST API (FastAPI)
+Exposes the calculation core via stateless endpoints (`/process-chart`, `/ask-question`, `/generate-report`). Enforces strict `Pydantic` schema validation.
 
-Weighting:
+### 4. Report Generation
+Consumes API output to build professional, deterministic templates in JSON, HTML (`Jinja2`), and PDF (`WeasyPrint`).
 
-Shadbala = 40%
-Dignity = 20%
-Placement = 10%
-Aspects = 10%
-State Modifiers = 10%
-Varga Support = 10%
-
-Output:
-
-Planet Strength %
-
----
-
-### House Strength Engine
-
-Inputs:
-
-* Bhava Bala
-* Lord Strength
-* Occupants
-* Aspects
-
-Weighting:
-
-Bhava Bala = 50%
-Lord Strength = 30%
-Occupants = 10%
-Aspects = 10%
-
-Output:
-
-House Strength %
-
----
-
-### Rasi Strength Engine
-
-Inputs:
-
-* Sarvashtakavarga Bindus
-* Rasi Lord Strength
-
-Formula:
-
-Rasi Strength =
-70% SAV Bindus
-+
-30% Rasi Lord Strength
-
-Example Mapping:
-
-20 Bindus = 30%
-25 Bindus = 50%
-30 Bindus = 70%
-35 Bindus = 85%
-40 Bindus = 100%
-
-Output:
-
-Rasi Strength %
-
----
-
-### Varga Validation Engine
-
-Marriage → D9
-Career → D10
-Children → D7
-Property → D4
-Spiritual → D20
-
-Purpose:
-
-Validate Natal Promise.
-
----
-
-### Dasha Activation Engine
-
-Inputs:
-
-* Mahadasha
-* Antardasha
-* Pratyantardasha
-
-Uses:
-
-* Planet Strength
-* Varga Support
-* Ashtakavarga Support
-
-Output:
-
-Dasha Activation %
-
----
-
-### Transit Engine
-
-Phase 1:
-
-Use Transit Information Available In PDF.
-
-Phase 2:
-
-Swiss Ephemeris Integration.
-
-Purpose:
-
-Future Date Calculations.
-
----
-
-## Event Domain Engines
-
-Marriage Engine
-Career Engine
-Finance Engine
-Property Engine
-Health Engine
-Children Engine
-Education Engine
-Spiritual Engine
-
----
-
-## Master Probability Engine
-
-Natal Promise = 40%
-Planet Strength = 15%
-House Strength = 10%
-Rasi Strength = 10%
-Varga Validation = 10%
-Dasha Activation = 10%
-Transit Trigger = 5%
-
-Output:
-
-Manifestation Probability %
-
----
-
-## Protection / Resistance Engine
-
-Examples:
-
-* Sade Sati
-* Ashtama Shani
-* Rahu Transit
-* Ketu Transit
-
-Formula:
-
-## Damage Potential
-
-# Protection Factors
-
-Effective Impact
-
-Protection Factors:
-
-* Planet Strength
-* House Strength
-* Rasi Strength
-* Ashtakavarga
-* Vargas
-
----
-
-## Question Engine
-
-Question
-↓
-Event Domain
-↓
-Natal Promise
-↓
-Dasha Activation
-↓
-Transit Trigger
-↓
-Probability
-↓
-Timing Window
-↓
-Answer
-
----
-
-## Swiss Ephemeris
-
-Required Only For:
-
-* Future Marriage Timing
-* Future Career Timing
-* Future Property Timing
-* Future Transit Prediction
-
-Not Required For:
-
-* PDF Reading
-* Existing Prediction Validation
-* Current Dasha Analysis
-
----
-
-## Development Priority
-
-1. HoroscopeCleaner_Final
-2. PDF Extraction Blueprint
-3. Core Extraction Pipeline
-4. Planet Strength
-5. House Strength
-6. Rasi Strength
-7. Dasha Activation
-8. Question Engine
-9. Transit Engine
-10. Swiss Ephemeris
-11. Master Synthesis
+### 5. Frontend UI (React + Vite PWA)
+A mobile-first, installable Progressive Web App. Uses `Zustand` for stateless in-memory storage of the calculation payload, enabling instant navigation between Dashboard, Results, Question Engine, and Export components.

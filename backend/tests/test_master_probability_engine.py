@@ -64,13 +64,12 @@ class TestMasterProbabilityEngine(unittest.TestCase):
 
     def test_stub_factors_listed(self):
         result = self.engine.evaluate({})
-        self.assertIn("natal_promise",  result["stub_factors"])
-        self.assertIn("transit_trigger", result["stub_factors"])
+        self.assertEqual(len(result["stub_factors"]), 0)
 
     def test_live_factors_listed(self):
         result = self.engine.evaluate({})
-        for f in ("planet_strength", "house_strength", "rasi_strength",
-                  "varga_validation", "dasha_activation"):
+        for f in ("natal_promise", "planet_strength", "house_strength", "rasi_strength",
+                  "varga_validation", "dasha_activation", "transit_trigger"):
             self.assertIn(f, result["live_factors"])
 
     def test_weights_sum_to_1(self):

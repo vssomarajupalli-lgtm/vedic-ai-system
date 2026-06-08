@@ -422,6 +422,8 @@ DOMAIN_BONUSES = {
     # Wealth — Dhana Yogas
     "same_2_11_lords":       {"wealth": +8},    # 2nd lord + 11th lord conjoined/same sign
     "jupiter_in_2_or_11":    {"wealth": +5},
+    "jupiter_in_9":          {"wealth": +5, "spirituality": +8},
+    "jupiter_in_5":          {"wealth": +5, "spirituality": +5},
     "venus_in_2":            {"wealth": +5},
     # Spirituality — Ketu amplifier
     "ketu_strong_in_moksha": {"spirituality": +10},  # Ketu (score>50) in H9/H12/H5
@@ -432,4 +434,126 @@ DOMAIN_BONUSES = {
 
 # Dusthana house numbers (for lord-in-dusthana checks)
 DUSTHANA_HOUSES = {"6", "8", "12"}
+
+# ---------------------------------------------------------------------------
+# Transit Engine Constants
+# ---------------------------------------------------------------------------
+
+# Classical Parashari Gochara transit quality per planet per house.
+# Key: planet system name → dict of {house_number: quality_score}
+# Positive score (+12): planet transiting this house is classically auspicious.
+# Negative score (-8):  planet transiting this house is classically inauspicious.
+# 0 (absent from dict):  neutral — house not listed for this planet.
+#
+# Source: Brihat Parasara Hora Sastra, Gochara Phala chapter.
+TRANSIT_HOUSE_QUALITY = {
+    "sun": {
+        3: +12, 6: +12, 10: +12, 11: +12,
+        1: -8,  2: -8,  4: -8,  5: -8,  7: -8,  8: -8,  9: -8,  12: -8
+    },
+    "moon": {
+        1: +12, 3: +12, 6: +12, 7: +12, 10: +12, 11: +12,
+        2: -8,  4: -8,  5: -8,  8: -8,  9: -8,  12: -8
+    },
+    "mars": {
+        3: +12, 6: +12, 11: +12,
+        1: -8,  2: -8,  4: -8,  5: -8,  7: -8,  8: -8,  9: -8, 10: -8, 12: -8
+    },
+    "mercury": {
+        2: +12, 4: +12, 6: +12, 8: +12, 10: +12, 11: +12,
+        1: -8,  3: -8,  5: -8,  7: -8,  9: -8,  12: -8
+    },
+    "jupiter": {
+        2: +12, 5: +12, 7: +12, 9: +12, 11: +12,
+        1: -8,  3: -8,  4: -8,  6: -8,  8: -8,  10: -8, 12: -8
+    },
+    "venus": {
+        1: +12, 2: +12, 3: +12, 4: +12, 5: +12, 8: +12, 9: +12, 11: +12, 12: +12,
+        6: -8,  7: -8,  10: -8
+    },
+    "saturn": {
+        3: +12, 6: +12, 11: +12,
+        1: -8,  2: -8,  4: -8,  5: -8,  7: -8,  8: -8,  9: -8, 10: -8, 12: -8
+    },
+    "rahu": {
+        3: +12, 6: +12, 10: +12, 11: +12,
+        1: -8,  2: -8,  4: -8,  5: -8,  7: -8,  8: -8,  9: -8, 12: -8
+    },
+    "ketu": {
+        3: +12, 6: +12, 11: +12,
+        1: -8,  2: -8,  4: -8,  5: -8,  7: -8,  8: -8,  9: -8, 10: -8, 12: -8
+    },
+}
+
+# Classical Vedha (obstruction) house pairs.
+# If a benefic transits house H and a natural malefic simultaneously transits
+# VEDHA_PAIRS[H], the benefic transit's positive effect is cancelled.
+# Source: Parashari Gochara — Vedha Sthanas.
+VEDHA_PAIRS = {
+    1: 8,   2: 12,  3: 6,   4: 5,
+    5: 4,   6: 3,   7: 2,   8: 1,
+    9: 12,  10: 3,  11: 6,  12: 9,
+}
+
+# Transit planet conjuncting natal planet — conjunction score table.
+# Key: (transit_planet, natal_planet_nature) → signed score.
+# "benefic" = jupiter, venus, moon, mercury (natural benefics).
+# "malefic" = saturn, mars, sun, rahu, ketu (natural malefics).
+#
+# Benefic transits amplify benefic natal planets and moderate malefics.
+# Malefic transits suppress benefic natals and compound malefic ones.
+TRANSIT_CONJUNCTION_MATRIX = {
+    ("jupiter", "benefic"): +12,  ("jupiter", "malefic"): +3,
+    ("venus",   "benefic"): +8,   ("venus",   "malefic"): +2,
+    ("moon",    "benefic"): +6,   ("moon",    "malefic"):  0,
+    ("mercury", "benefic"): +5,   ("mercury", "malefic"):  0,
+    ("sun",     "benefic"): +4,   ("sun",     "malefic"): -2,
+    ("mars",    "benefic"): -8,   ("mars",    "malefic"): -4,
+    ("saturn",  "benefic"): -10,  ("saturn",  "malefic"): -5,
+    ("rahu",    "benefic"): -6,   ("rahu",    "malefic"): -6,
+    ("ketu",    "benefic"): -6,   ("ketu",    "malefic"): -6,
+}
+
+# Transit aspect weights for 7th-house (universal) aspect.
+# Format: (transit_nature, natal_nature) → score
+# Applied when transit planet aspects (7th from its position) a natal planet's house.
+TRANSIT_ASPECT_WEIGHTS = {
+    ("benefic", "benefic"): +6,
+    ("malefic", "benefic"): -5,
+    ("benefic", "malefic"): +2,
+    ("malefic", "malefic"): -3,
+}
+
+# Special aspects for Saturn (3rd, 10th), Jupiter (5th, 9th), Mars (4th, 8th).
+# Applied at TRANSIT_SPECIAL_ASPECT_WEIGHT fraction of the 7th-aspect weight.
+TRANSIT_SPECIAL_ASPECTS = {
+    "saturn":  [3, 7, 10],   # 3rd, 7th, 10th aspect
+    "jupiter": [5, 7, 9],    # 5th, 7th, 9th aspect
+    "mars":    [4, 7, 8],    # 4th, 7th, 8th aspect
+}
+
+# Non-7th special aspects are 60% as strong as the universal 7th aspect.
+TRANSIT_SPECIAL_ASPECT_WEIGHT = 0.6
+
+# TransitEngine sub-system weights — must sum to 1.0.
+TRANSIT_WEIGHTS = {
+    "house_activation":  0.30,
+    "bav_support":       0.20,
+    "planet_activation": 0.20,
+    "dasha_sync":        0.20,
+    "vedha_layer":       0.10,
+}
+
+# Maximum Vedha penalty per evaluation run (capped to prevent over-penalisation).
+TRANSIT_VEDHA_CAP = -15
+
+# Dasha-Transit sync bonus scores (added to the 50 neutral baseline).
+TRANSIT_DASHA_SYNC_BONUSES = {
+    "transit_is_md_lord":         20,   # transit planet == active Mahadasha lord
+    "transit_is_ad_lord":         12,   # transit planet == active Antardasha lord
+    "transit_aspects_md_natal":    8,   # transit planet 7th-aspects MD lord natal house
+    "transit_aspects_ad_natal":    5,   # transit planet 7th-aspects AD lord natal house
+    "transit_same_sign_as_md":     6,   # transit planet in same house as MD lord natal
+    "md_transit_bav_high":         8,   # MD lord's BAV in its transit house >= 5 bindus
+}
 

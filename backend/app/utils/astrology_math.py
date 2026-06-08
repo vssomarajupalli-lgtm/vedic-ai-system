@@ -32,6 +32,7 @@ def clamp_score(score: float, min_val: int = 0, max_val: int = 100) -> int:
         max_val (int): Maximum allowable bound (default 100).
         
     Returns:
-        int: The clamped integer score.
+        int: The clamped integer score, rounded (not truncated) from float.
+             Example: raw=0.8 → 1 (not 0). raw=-0.3 → 0 (clamped at min).
     """
-    return max(min_val, min(max_val, int(score)))
+    return max(min_val, min(max_val, round(score)))
