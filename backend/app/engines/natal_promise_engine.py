@@ -80,6 +80,7 @@ class NatalPromiseEngine:
                 varga_results, av_results, normalized_houses,
                 affliction_flags, yoga_results
             )
+        print("NatalPromiseEngine output sample (Marriage):", result.get("marriage", {}).get("score"))
         return result
 
     # -------------------------------------------------------------------------

@@ -26,8 +26,8 @@ class ReportBuilder:
         # Generic extractors for raw passthrough with titles
         self.planet_extractor = GenericSection("planets", "Planetary Strength Analysis")
         self.house_extractor = GenericSection("houses", "House Strength Analysis")
-        self.dasha_extractor = GenericSection("dasha", "Vimshottari Dasha Analysis")
-        self.transit_extractor = GenericSection("transits", "Gochara (Transit) Analysis")
+        self.dasha_extractor = GenericSection("dashas", "Vimshottari Dasha Analysis")
+        self.transit_extractor = GenericSection("transit", "Gochara (Transit) Analysis")
         self.av_extractor = GenericSection("ashtakavarga", "Ashtakavarga Analysis")
 
     def build_json_report(self, pipeline_data: Dict[str, Any], machine_index: Dict[str, Any], questions: List[Dict[str, str]] = None) -> FinalReportSchema:
@@ -37,8 +37,16 @@ class ReportBuilder:
         
         # Extract basic client info if available
         client_info = {}
+        native = {}
         if machine_index:
-            native = machine_index.get("native_info", {})
+            if isinstance(machine_index, list):
+                for item in machine_index:
+                    if isinstance(item, dict) and "native_info" in item:
+                        native = item["native_info"]
+                        break
+            elif isinstance(machine_index, dict):
+                native = machine_index.get("native_info", {})
+                
             client_info = {
                 "name": native.get("name", "Unknown"),
                 "dob": native.get("dob", "Unknown"),

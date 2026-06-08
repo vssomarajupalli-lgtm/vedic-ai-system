@@ -53,7 +53,13 @@ export default function Upload() {
       // 4. Redirect
       navigate('/results');
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || "An error occurred connecting to the backend.");
+      const detail = err.response?.data?.detail;
+      const errorMessage = typeof detail === 'string' 
+        ? detail 
+        : Array.isArray(detail) 
+          ? detail.map((e: any) => `${e.loc?.join('.') || 'Error'}: ${e.msg}`).join(' | ') 
+          : err.message || "An error occurred connecting to the backend.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -22,13 +22,15 @@ class TestReportBuilder(unittest.TestCase):
         Tests the basic happy path extraction.
         """
         mock_pipeline = {
-            "master_synthesis": {"final_score": 85.5, "grade": "EXCELLENT"},
-            "natal_promises": {
-                "wealth": {"score": 90, "grade": "HIGH"},
-                "career": {"score": 50, "grade": "MODERATE"}
-            },
-            "dasha": {"current_dasha": {"mahadasha": "Venus", "antardasha": "Jupiter"}},
-            "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
+            "master_probability": {"final_score": 85.5, "grade": "EXCELLENT"},
+            "engine_outputs": {
+                "natal_promise": {
+                    "wealth": {"score": 90, "grade": "HIGH"},
+                    "career": {"score": 50, "grade": "MODERATE"}
+                },
+                "dashas": {"current_dasha": {"mahadasha": "Venus", "antardasha": "Jupiter"}},
+                "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
+            }
         }
         
         mock_machine = {

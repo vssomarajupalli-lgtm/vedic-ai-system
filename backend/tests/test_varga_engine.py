@@ -34,16 +34,17 @@ class TestVargaEngine(unittest.TestCase):
         results = self.engine.evaluate(normalized_data, dependency_scores)
         
         # Sun: D9 exalted (+15), D10 own_house (+5)
-        sun_mods = results["sun"]["modifiers"]
-        self.assertEqual(sun_mods.get("D9_dignity_modifier"), 15.0)
-        self.assertEqual(sun_mods.get("D10_dignity_modifier"), 5.0)
-        self.assertIn("D9_exalted", results["sun"]["confidence_flags"])
-        self.assertIn("D10_own_house", results["sun"]["confidence_flags"])
+        sun_d9_mods = results["D9"]["planets"]["sun"]["modifiers"]
+        sun_d10_mods = results["D10"]["planets"]["sun"]["modifiers"]
+        self.assertEqual(sun_d9_mods.get("D9_dignity_modifier"), 15.0)
+        self.assertEqual(sun_d10_mods.get("D10_dignity_modifier"), 5.0)
+        self.assertIn("D9_exalted", results["D9"]["planets"]["sun"]["confidence_flags"])
+        self.assertIn("D10_own_house", results["D10"]["planets"]["sun"]["confidence_flags"])
         
         # Moon: D9 debilitated (-10)
-        moon_mods = results["moon"]["modifiers"]
-        self.assertEqual(moon_mods.get("D9_dignity_modifier"), -10.0)
-        self.assertIn("D9_debilitated", results["moon"]["confidence_flags"])
+        moon_d9_mods = results["D9"]["planets"]["moon"]["modifiers"]
+        self.assertEqual(moon_d9_mods.get("D9_dignity_modifier"), -10.0)
+        self.assertIn("D9_debilitated", results["D9"]["planets"]["moon"]["confidence_flags"])
 
     def test_vargottama_bonus(self):
         normalized_data = {
@@ -60,9 +61,9 @@ class TestVargaEngine(unittest.TestCase):
         }
         results = self.engine.evaluate(normalized_data, {})
         
-        mars_mods = results["mars"]["modifiers"]
+        mars_mods = results["D9"]["planets"]["mars"]["modifiers"]
         self.assertEqual(mars_mods.get("D9_vargottama_bonus"), 15.0)
-        self.assertIn("D9_vargottama", results["mars"]["confidence_flags"])
+        self.assertIn("D9_vargottama", results["D9"]["planets"]["mars"]["confidence_flags"])
 
     def test_neecha_bhanga_varga_and_contradiction(self):
         normalized_data = {
@@ -81,8 +82,8 @@ class TestVargaEngine(unittest.TestCase):
         }
         results = self.engine.evaluate(normalized_data, {})
         
-        self.assertIn("neecha_bhanga_varga", results["jupiter"]["confidence_flags"])
-        self.assertIn("varga_contradicted", results["venus"]["confidence_flags"])
+        self.assertIn("neecha_bhanga_varga", results["D9"]["planets"]["jupiter"]["confidence_flags"])
+        self.assertIn("varga_contradicted", results["D9"]["planets"]["venus"]["confidence_flags"])
 
     def test_base_score_immutability(self):
         normalized_data = {"planets": {"saturn": {}}}
@@ -90,7 +91,7 @@ class TestVargaEngine(unittest.TestCase):
         
         results = self.engine.evaluate(normalized_data, dependency_scores)
         
-        self.assertEqual(results["saturn"]["final_score"], 75.0)
+        self.assertEqual(results["D9"]["planets"]["saturn"]["final_score"], 75.0)
 
 if __name__ == '__main__':
     unittest.main()

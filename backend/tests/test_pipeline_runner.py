@@ -81,7 +81,7 @@ class TestPipelineRunner(unittest.TestCase):
     def test_immutable_d1_rule(self):
         """Architecture Rule 1: Vargas MUST NOT overwrite the D1 final_score."""
         d1_sun_score = self.results["engine_outputs"]["planets"]["sun"]["final_score"]
-        varga_sun_score = self.results["engine_outputs"]["vargas"]["sun"]["final_score"]
+        varga_sun_score = self.results["engine_outputs"]["vargas"]["D9"]["planets"]["sun"]["final_score"]
         
         # Both should equal 80 (Exalted 50 + Kendra 30 — calibrated v1.1)
         self.assertEqual(d1_sun_score, 80)
@@ -99,8 +99,8 @@ class TestPipelineRunner(unittest.TestCase):
 
     def test_varga_confidence_flags_and_modifiers(self):
         """Ensure the Varga Engine correctly calculates structural modifiers and string flags."""
-        varga_sun = self.results["engine_outputs"]["vargas"]["sun"]
-        varga_mars = self.results["engine_outputs"]["vargas"]["mars"]
+        varga_sun = self.results["engine_outputs"]["vargas"]["D9"]["planets"]["sun"]
+        varga_mars = self.results["engine_outputs"]["vargas"]["D9"]["planets"]["mars"]
 
         self.assertIn("varga_contradicted", varga_sun["confidence_flags"])
         self.assertIn("D9_vargottama", varga_mars["confidence_flags"])

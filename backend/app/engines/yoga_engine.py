@@ -99,7 +99,7 @@ class YogaEngine:
             if p not in p_houses:
                 continue
             house = p_houses[p]
-            dignity = p_results.get(p, {}).get("dignity", "neutral")
+            dignity = payload.get("planets", {}).get(p, {}).get("dignity", "neutral").lower().replace(" ", "_")
             
             if house in self.kendra_houses and dignity in ["exalted", "own_sign", "moolatrikona"]:
                 yogas.append({
@@ -122,8 +122,9 @@ class YogaEngine:
             dist = ((jup_h - moon_h + 12) % 12) + 1
             if dist in self.kendra_houses:
                 # Neither debilitated
-                if p_results.get("jupiter", {}).get("dignity") != "debilitated" and \
-                   p_results.get("moon", {}).get("dignity") != "debilitated":
+                jup_dignity = payload.get("planets", {}).get("jupiter", {}).get("dignity", "neutral").lower()
+                moon_dignity = payload.get("planets", {}).get("moon", {}).get("dignity", "neutral").lower()
+                if jup_dignity != "debilitated" and moon_dignity != "debilitated":
                     yogas.append({
                         "yoga_name": "Gaja Kesari Yoga",
                         "category": "Gaja Kesari Yoga",
@@ -253,7 +254,8 @@ class YogaEngine:
         h_lords = {int(h): d.get("lord") for h, d in payload.get("houses", {}).items() if d.get("lord")}
         
         for p, res in p_results.items():
-            if res.get("dignity") == "debilitated":
+            p_dignity = payload.get("planets", {}).get(p, {}).get("dignity", "neutral").lower()
+            if p_dignity == "debilitated":
                 # Find its dispositor (lord of the house it is in)
                 house = p_houses.get(p)
                 if not house: continue

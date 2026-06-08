@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 
-// Placeholder Pages
-const Dashboard = () => <div className="p-8 text-center text-xl text-slate-500">Dashboard Page Coming Soon</div>;
-const Upload = () => <div className="p-8 text-center text-xl text-slate-500">Upload Page Coming Soon</div>;
-const Results = () => <div className="p-8 text-center text-xl text-slate-500">Results Page Coming Soon</div>;
-const QuestionEngine = () => <div className="p-8 text-center text-xl text-slate-500">Question Engine Coming Soon</div>;
-const ExportReport = () => <div className="p-8 text-center text-xl text-slate-500">Export Page Coming Soon</div>;
+import Dashboard from './pages/Dashboard';
+import Upload from './pages/Upload';
+import Results from './pages/Results';
+import QuestionEngine from './pages/QuestionEngine';
+import ExportReport from './pages/ExportReport';
 
 function App() {
   return (

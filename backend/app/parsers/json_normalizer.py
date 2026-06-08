@@ -74,14 +74,17 @@ class JsonNormalizer:
 
     def normalize(self, raw_data: dict) -> dict:
         """Main entry point to normalize a complete raw extraction dictionary."""
-        normalized_planets = self._normalize_planets(raw_data.get("raw_planets", {}))
+        print("====== DEBUG START ======")
+        print("JsonNormalizer received keys:", list(raw_data.keys()))
+        normalized_planets = self._normalize_planets(raw_data.get("raw_planets") or raw_data.get("planets", {}))
+        print("Normalized Planets Count:", len(normalized_planets))
         return {
-            "metadata": self._normalize_metadata(raw_data.get("raw_metadata", {})),
+            "metadata": self._normalize_metadata(raw_data.get("raw_metadata") or raw_data.get("metadata") or raw_data.get("birth_data", {})),
             "planets": normalized_planets,
-            "houses": self._normalize_houses(raw_data.get("raw_houses", {})),
-            "vargas": self._normalize_vargas(raw_data.get("raw_vargas", {}), normalized_planets),
-            "ashtakavarga": self._normalize_ashtakavarga(raw_data.get("raw_ashtakavarga", {})),
-            "dashas": self._normalize_dashas(raw_data.get("raw_dashas", {})),
+            "houses": self._normalize_houses(raw_data.get("raw_houses") or raw_data.get("houses", {})),
+            "vargas": self._normalize_vargas(raw_data.get("raw_vargas") or raw_data.get("vargas", {}), normalized_planets),
+            "ashtakavarga": self._normalize_ashtakavarga(raw_data.get("raw_ashtakavarga") or raw_data.get("ashtakavarga", {})),
+            "dashas": self._normalize_dashas(raw_data.get("raw_dashas") or raw_data.get("dashas", {})),
             "transits": {         # Placeholder for Phase 7 Transit Engine
                 "active_modifiers": []
             }

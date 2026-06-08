@@ -28,20 +28,24 @@ def process_chart(request: ChartProcessRequest) -> Any:
         outputs = pipeline.process(raw_data)
         
         # Extract master synthesis block
-        master_synth = outputs.get("master_synthesis", {})
+        master_synth = outputs.get("master_probability", {})
         if not master_synth:
-            raise ValueError("Pipeline did not produce master_synthesis block")
+            raise ValueError("Pipeline did not produce master_probability block")
             
-        yogas = outputs.get("yogas", {}).get("active_yogas", [])
+        yogas = outputs.get("engine_outputs", {}).get("yogas", {}).get("active_yogas", [])
         
         log.info(f"Chart processed successfully. Score: {master_synth.get('final_score')}")
         
-        return ChartProcessResponse(
+        response_obj = ChartProcessResponse(
             final_score=master_synth.get("final_score", 0.0),
             probability_grade=master_synth.get("grade", "UNKNOWN"),
             breakdown=outputs,
             yogas=yogas
         )
+        print("API Response /process-chart Final Score:", response_obj.final_score)
+        print("API Response /process-chart Yogas Count:", len(response_obj.yogas))
+        print("====== DEBUG END ======")
+        return response_obj
         
     except Exception as e:
         log.error(f"Error during chart processing: {str(e)}\n{traceback.format_exc()}")

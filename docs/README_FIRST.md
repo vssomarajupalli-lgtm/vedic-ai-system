@@ -3,14 +3,15 @@
 ## IMPORTANT
 
 Before making any code changes, read the following files in order:
-
 1. VEDIC_AI_SOURCE_OF_TRUTH.md
-2. VEDIC_AI_MASTER_ARCHITECTURE.md
-3. VEDIC_AI_MASTER_DEVELOPMENT_ROADMAP.md
-4. VEDIC_AI_PROBABILITY_ENGINE_ARCHITECTURE.md
-5. PROJECT_STATUS_MASTER.md
-6. ARCHITECTURE_RULES.md
 
+2. VEDIC-AI SYSTEM – PROJECT HANDOVER STATUS (June 2026).md
+
+3. CHATGPT_IMPLEMENTATION_MEMORY.md
+
+4. ARCHITECTURE_RULES.md
+
+5. reference/*
 ---
 
 # Project Relationship
@@ -43,15 +44,6 @@ Primary source files:
 * machine_index.json
 * canonical_content.json
 
-Supporting source files:
-
-* canonical_sections.json
-* canonical_page_map.json
-
-Human verification files:
-
-* cleaned.pdf
-* canonical.pdf
 
 ---
 

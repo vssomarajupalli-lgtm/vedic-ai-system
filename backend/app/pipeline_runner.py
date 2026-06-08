@@ -182,11 +182,13 @@ class PipelineRunner:
         master_result = self.master_engine.evaluate(engine_outputs)
 
         # 9. Combine and Return Standardized Outputs
-        return {
+        final_output = {
             "metadata":           normalized_payload.get("metadata", {}),
             "master_probability": master_result,
             "engine_outputs":     engine_outputs
         }
+        print("PipelineRunner Final Output Score:", final_output["master_probability"]["final_score"])
+        return final_output
 
     # -------------------------------------------------------------------------
     # Step 7.5 — BAV Modifier Injection

@@ -4,7 +4,7 @@ from app.reports.sections.base import BaseReportSection
 
 class MasterProbabilitySection(BaseReportSection):
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
-        master = pipeline_data.get("master_synthesis", {})
+        master = pipeline_data.get("master_probability", {})
         score = master.get("final_score", 0.0)
         grade = master.get("grade", "UNKNOWN")
         
@@ -16,7 +16,7 @@ class MasterProbabilitySection(BaseReportSection):
 
 class YogaAnalysisSection(BaseReportSection):
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
-        yogas_block = pipeline_data.get("yogas", {})
+        yogas_block = pipeline_data.get("engine_outputs", {}).get("yogas", {})
         active_yogas = yogas_block.get("active_yogas", [])
         
         data_points = {y.get("yoga_name", "Unknown"): y.get("strength", 0) for y in active_yogas}
@@ -34,14 +34,14 @@ class YogaAnalysisSection(BaseReportSection):
 
 class NatalPromiseSection(BaseReportSection):
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
-        promise = pipeline_data.get("natal_promises", {})
+        promise = pipeline_data.get("engine_outputs", {}).get("natal_promise", {})
         
         # Format the domains for easy rendering
         formatted_domains = {}
         for domain, details in promise.items():
             formatted_domains[domain] = {
                 "score": details.get("score", 0),
-                "grade": details.get("grade", "UNKNOWN"),
+                "grade": details.get("promise", "UNKNOWN"),
                 "primary_house": details.get("primary_house", "")
             }
             
@@ -54,8 +54,8 @@ class NatalPromiseSection(BaseReportSection):
 class ExecutiveSummarySection(BaseReportSection):
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
         # A lightweight synthesis of top domains and current dasha
-        promise = pipeline_data.get("natal_promises", {})
-        dasha = pipeline_data.get("dasha", {}).get("current_dasha", {})
+        promise = pipeline_data.get("engine_outputs", {}).get("natal_promise", {})
+        dasha = pipeline_data.get("engine_outputs", {}).get("dashas", {}).get("current_dasha", {})
         
         top_domains = sorted(
             promise.items(), 
@@ -82,7 +82,7 @@ class GenericSection(BaseReportSection):
         self.title = title
 
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
-        data = pipeline_data.get(self.key, {})
+        data = pipeline_data.get("engine_outputs", {}).get(self.key, {})
         return ReportSectionData(
             title=self.title,
             summary_text=f"Detailed analysis of {self.title.lower()}.",

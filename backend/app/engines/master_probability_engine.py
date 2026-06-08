@@ -194,17 +194,20 @@ class MasterProbabilityEngine:
         if not varga_results:
             return self.stub
 
-        per_planet = []
-        for data in varga_results.values():
-            mods = data.get("modifiers", {})
-            if not mods:
-                per_planet.append(self.stub)
-                continue
-            net   = sum(mods.values())
-            score = clamp_score(self.stub + net)
-            per_planet.append(score)
+        per_planet = {}
+        for varga_chart in varga_results.values():
+            for planet, data in varga_chart.get("planets", {}).items():
+                mods = data.get("modifiers", {})
+                net = sum(mods.values())
+                if planet not in per_planet:
+                    per_planet[planet] = 0.0
+                per_planet[planet] += net
 
-        return round(sum(per_planet) / len(per_planet), 2) if per_planet else self.stub
+        scores = []
+        for planet, net in per_planet.items():
+            scores.append(clamp_score(self.stub + net))
+
+        return round(sum(scores) / len(scores), 2) if scores else self.stub
 
     def _dasha_activation(self, dasha_results: dict) -> float:
         """
