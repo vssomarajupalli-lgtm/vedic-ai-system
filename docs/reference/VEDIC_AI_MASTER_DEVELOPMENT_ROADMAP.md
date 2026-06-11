@@ -516,15 +516,15 @@ Excellent
 
 ---
 
-# 11. DASHA ACTIVATION ENGINE
+# 11. DASHA EXTRACTION & ACTIVATION ENGINE
 
-## 11.1 Mahadasha Layer
+## 11.1 Canonical Extraction Layer
+* Extract pre-calculated MD/AD/PD values from `canonical_content.json` (Treat as authoritative, do NOT recalculate).
 
-## 11.2 Antardasha Layer
-
-## 11.3 Pratyantardasha Layer
-
-## 11.4 Sookshma Layer
+## 11.2 Mahadasha Layer
+## 11.3 Antardasha Layer
+## 11.4 Pratyantardasha Layer
+## 11.5 Sookshma Layer
 
 ---
 
@@ -769,47 +769,36 @@ Finance
 Phase 1
 
 Data Layer
-
 Ascendant Layer
-
 Planet Strength
 
 Phase 2
 
 Rasi
-
 House
-
 Dosha
-
 Yoga
 
 Phase 3
 
 Varga
-
 Natal Promise
 
 Phase 4
 
-Dasha
-
-Transit
+Dasha (Extraction Only - No Recalculation)
 
 Phase 5
 
+Transit (Gochara Engine - Largest Remaining Module)
 Domain Evaluation
-
 Probability
-
 Question Engine
-
 Master Synthesis
 
 Phase 6
 
 Remedies
-
 Future Research
 
 END OF MASTER ROADMAP
