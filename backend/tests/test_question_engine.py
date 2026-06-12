@@ -1,5 +1,6 @@
 import unittest
 from app.engines.question_engine import QuestionEngine, DOMAIN_KEYWORDS, DOMAIN_PRIORITY
+from app.pipeline_runner import PipelineRunner
 
 
 class TestQuestionEngineRouting(unittest.TestCase):
@@ -165,10 +166,10 @@ class TestQuestionEngineRouting(unittest.TestCase):
 
 
 class TestQuestionEngineAnswer(unittest.TestCase):
-    """Tests for full answer() output schema and scoring."""
+    """Tests for full answer_question() output schema and scoring via PipelineRunner."""
 
     def setUp(self):
-        self.engine = QuestionEngine()
+        self.runner = PipelineRunner()
 
     # -----------------------------------------------------------------------
     # Fixture: minimal pipeline output
@@ -199,6 +200,7 @@ class TestQuestionEngineAnswer(unittest.TestCase):
                 "rasis":    {},
                 "vargas":   {},
                 "dashas":   dasha_data,
+                "transit":  {"activation_score": 50},
                 "ashtakavarga": {
                     "dasha_bav_support": {
                         "timing_confidence": "moderate",
@@ -216,26 +218,26 @@ class TestQuestionEngineAnswer(unittest.TestCase):
     def test_answer_has_required_keys(self):
         """answer() must return all required top-level keys."""
         output = self._pipeline_output(natal_scores={"marriage": 60})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         for key in ("question", "domain", "routed", "probability",
-                    "natal_promise", "timing", "factor_breakdown", "answer_text"):
+                    "natal_promise", "timing", "transit", "factor_breakdown", "answer_text"):
             self.assertIn(key, result, f"Missing key: {key}")
 
     def test_probability_has_score_grade_raw(self):
         output = self._pipeline_output(natal_scores={"marriage": 60})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         for key in ("score", "grade", "raw"):
             self.assertIn(key, result["probability"])
 
     def test_natal_promise_has_required_fields(self):
         output = self._pipeline_output(natal_scores={"career": 55})
-        result = self.engine.answer("Will my career improve?", output)
+        result = self.runner.answer_question("Will my career improve?", output)
         for key in ("score", "promise", "karaka", "afflictions"):
             self.assertIn(key, result["natal_promise"])
 
     def test_timing_has_required_fields(self):
         output = self._pipeline_output(natal_scores={"wealth": 45})
-        result = self.engine.answer("Will I have money?", output)
+        result = self.runner.answer_question("Will I have money?", output)
         for key in ("mahadasha", "antardasha", "bav_timing_confidence",
                     "activation_level"):
             self.assertIn(key, result["timing"])
@@ -246,13 +248,13 @@ class TestQuestionEngineAnswer(unittest.TestCase):
 
     def test_routed_true_for_known_domain(self):
         output = self._pipeline_output(natal_scores={"marriage": 50})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertTrue(result["routed"])
         self.assertEqual(result["domain"], "marriage")
 
     def test_routed_false_for_unknown_question(self):
         output = self._pipeline_output(natal_scores={"marriage": 50})
-        result = self.engine.answer("What is my lucky number?", output)
+        result = self.runner.answer_question("What is my lucky number?", output)
         self.assertFalse(result["routed"])
         self.assertIsNone(result["domain"])
 
@@ -266,8 +268,8 @@ class TestQuestionEngineAnswer(unittest.TestCase):
                           "health": 50, "education": 50, "children": 50,
                           "property": 50, "spirituality": 50}
         )
-        marriage_result = self.engine.answer("Will I get married?", output)
-        career_result   = self.engine.answer("When will I get a job?",  output)
+        marriage_result = self.runner.answer_question("Will I get married?", output)
+        career_result   = self.runner.answer_question("When will I get a job?",  output)
 
         self.assertGreater(
             marriage_result["probability"]["score"],
@@ -278,7 +280,7 @@ class TestQuestionEngineAnswer(unittest.TestCase):
     def test_natal_score_reflected_in_natal_promise(self):
         """Domain-specific natal score must appear in natal_promise.score."""
         output = self._pipeline_output(natal_scores={"children": 35})
-        result = self.engine.answer("Will I have children?", output)
+        result = self.runner.answer_question("Will I have children?", output)
         self.assertEqual(result["natal_promise"]["score"], 35)
 
     # -----------------------------------------------------------------------
@@ -287,17 +289,17 @@ class TestQuestionEngineAnswer(unittest.TestCase):
 
     def test_promise_strong_for_high_natal(self):
         output = self._pipeline_output(natal_scores={"health": 75})
-        result = self.engine.answer("How is my health?", output)
+        result = self.runner.answer_question("How is my health?", output)
         self.assertEqual(result["natal_promise"]["promise"], "STRONG")
 
     def test_promise_present_for_low_natal(self):
         output = self._pipeline_output(natal_scores={"marriage": 20})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertEqual(result["natal_promise"]["promise"], "PRESENT")
 
     def test_promise_moderate_for_mid_natal(self):
         output = self._pipeline_output(natal_scores={"career": 55})
-        result = self.engine.answer("Will my career improve?", output)
+        result = self.runner.answer_question("Will my career improve?", output)
         self.assertEqual(result["natal_promise"]["promise"], "MODERATE")
 
     # -----------------------------------------------------------------------
@@ -306,13 +308,13 @@ class TestQuestionEngineAnswer(unittest.TestCase):
 
     def test_probability_score_within_0_100(self):
         output = self._pipeline_output(natal_scores={"marriage": 90})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertGreaterEqual(result["probability"]["score"], 0)
         self.assertLessEqual(result["probability"]["score"],    100)
 
     def test_probability_not_zero_with_moderate_inputs(self):
         output = self._pipeline_output(natal_scores={"education": 55})
-        result = self.engine.answer("Will I pass the exam?", output)
+        result = self.runner.answer_question("Will I pass the exam?", output)
         self.assertGreater(result["probability"]["score"], 0)
 
     # -----------------------------------------------------------------------
@@ -329,7 +331,7 @@ class TestQuestionEngineAnswer(unittest.TestCase):
             }
         }
         output = self._pipeline_output(natal_scores={"wealth": 50}, dasha_data=dasha)
-        result = self.engine.answer("Will I have money?", output)
+        result = self.runner.answer_question("Will I have money?", output)
         self.assertEqual(result["timing"]["activation_level"], "HIGH")
 
     def test_timing_activation_neutral_for_1_0_multiplier(self):
@@ -342,7 +344,7 @@ class TestQuestionEngineAnswer(unittest.TestCase):
             }
         }
         output = self._pipeline_output(natal_scores={"career": 50}, dasha_data=dasha)
-        result = self.engine.answer("Will my career improve?", output)
+        result = self.runner.answer_question("Will my career improve?", output)
         self.assertEqual(result["timing"]["activation_level"], "NEUTRAL")
 
     def test_timing_mahadasha_lord_extracted(self):
@@ -354,7 +356,7 @@ class TestQuestionEngineAnswer(unittest.TestCase):
             }
         }
         output = self._pipeline_output(natal_scores={"wealth": 50}, dasha_data=dasha)
-        result = self.engine.answer("Will I become wealthy?", output)
+        result = self.runner.answer_question("Will I become wealthy?", output)
         self.assertEqual(result["timing"]["mahadasha"], "jupiter")
 
     # -----------------------------------------------------------------------
@@ -363,18 +365,18 @@ class TestQuestionEngineAnswer(unittest.TestCase):
 
     def test_answer_text_is_string(self):
         output = self._pipeline_output(natal_scores={"marriage": 50})
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertIsInstance(result["answer_text"], str)
         self.assertGreater(len(result["answer_text"]), 20)
 
     def test_answer_text_contains_domain(self):
         output = self._pipeline_output(natal_scores={"health": 40})
-        result = self.engine.answer("How is my health?", output)
+        result = self.runner.answer_question("How is my health?", output)
         self.assertIn("Health", result["answer_text"])
 
     def test_answer_text_unrouted_mentions_domain_unknown(self):
         output = self._pipeline_output(natal_scores={})
-        result = self.engine.answer("What is my lucky number?", output)
+        result = self.runner.answer_question("What is my lucky number?", output)
         self.assertIn("could not be determined", result["answer_text"])
 
     # -----------------------------------------------------------------------
@@ -387,32 +389,14 @@ class TestQuestionEngineAnswer(unittest.TestCase):
         self.assertEqual(QuestionEngine._activation_label(1.05), "NEUTRAL")
         self.assertEqual(QuestionEngine._activation_label(0.90), "SUPPRESSED")
 
-    # -----------------------------------------------------------------------
-    # _average_natal fallback
-    # -----------------------------------------------------------------------
-
-    def test_average_natal_empty_returns_50(self):
-        avg = self.engine._average_natal({})
-        self.assertAlmostEqual(avg, 50.0)
-
-    def test_average_natal_calculates_correctly(self):
-        natal = {
-            "marriage": {"score": 60},
-            "career":   {"score": 40},
-        }
-        avg = self.engine._average_natal(natal)
-        self.assertAlmostEqual(avg, 50.0)
-
 
 class TestQuestionEngineIntegration(unittest.TestCase):
     """
     Integration-style tests using PipelineRunner.
-    These tests are deliberately lightweight — they verify that the
-    QuestionEngine correctly wires into the live pipeline output shape.
     """
 
     def setUp(self):
-        self.engine = QuestionEngine()
+        self.runner = PipelineRunner()
 
     def _minimal_pipeline_output(self, natal_marriage=50):
         """Produce a pipeline-shaped output dict."""
@@ -430,6 +414,7 @@ class TestQuestionEngineIntegration(unittest.TestCase):
                 "houses":  {"7": {"final_score": 20}},
                 "rasis":   {},
                 "vargas":  {},
+                "transit": {"activation_score": 50},
                 "dashas":  {
                     "saturn":  {"final_score": 50, "temporal_activation": {"timing_multiplier": 1.21},
                                 "confidence_flags": ["active_mahadasha"]},
@@ -452,7 +437,7 @@ class TestQuestionEngineIntegration(unittest.TestCase):
         The affliction should appear in the answer's natal_promise.
         """
         output = self._minimal_pipeline_output(natal_marriage=20)
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertEqual(result["domain"], "marriage")
         self.assertIn("saturn_in_7", result["natal_promise"]["afflictions"])
         # Low natal promise → PRESENT
@@ -461,20 +446,19 @@ class TestQuestionEngineIntegration(unittest.TestCase):
     def test_answer_text_includes_dasha_lords(self):
         """Answer text must mention the Mahadasha lord."""
         output = self._minimal_pipeline_output()
-        result = self.engine.answer("Will I get married?", output)
+        result = self.runner.answer_question("Will I get married?", output)
         self.assertIn("Saturn", result["answer_text"])
 
     def test_probability_improves_with_better_natal(self):
         """High natal marriage promise → higher probability than low natal."""
         low  = self._minimal_pipeline_output(natal_marriage=15)
         high = self._minimal_pipeline_output(natal_marriage=80)
-        low_result  = self.engine.answer("Will I get married?", low)
-        high_result = self.engine.answer("Will I get married?", high)
+        low_result  = self.runner.answer_question("Will I get married?", low)
+        high_result = self.runner.answer_question("Will I get married?", high)
         self.assertGreater(
             high_result["probability"]["score"],
             low_result["probability"]["score"]
         )
-
 
 if __name__ == "__main__":
     unittest.main()

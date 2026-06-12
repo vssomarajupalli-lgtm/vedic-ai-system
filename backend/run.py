@@ -16,7 +16,6 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.parsers.horoscope_source_loader import HoroscopeSourceLoader
-from app.engines.question_engine import QuestionEngine
 from app.pipeline_runner import PipelineRunner
 
 # ---------------------------------------------------------------------------
@@ -244,7 +243,6 @@ def main():
     # --- Question Engine — Sample Q&A ---
     print(f"\n  QUESTION ENGINE — SAMPLE QUERIES")
     print(f"  {'-' * 60}")
-    q_engine   = QuestionEngine()
     questions  = [
         "Will I get married?",
         "Will my career improve?",
@@ -253,7 +251,7 @@ def main():
         "Will I become wealthy?",
     ]
     for q in questions:
-        ans    = q_engine.answer(q, output)
+        ans    = runner.answer_question(q, output)
         domain = ans["domain"] or "(unknown)"
         prob   = ans["probability"]
         natal  = ans["natal_promise"]

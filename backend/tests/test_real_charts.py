@@ -377,12 +377,11 @@ class TestRajuQuestionEngine(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        runner = PipelineRunner()
-        cls.pipeline_output = runner.process(RAJU_CANONICAL_RAW)
-        cls.question_engine = QuestionEngine()
+        cls.runner = PipelineRunner()
+        cls.pipeline_output = cls.runner.process(RAJU_CANONICAL_RAW)
 
     def _ask(self, question):
-        return self.question_engine.answer(question, self.pipeline_output)
+        return self.runner.answer_question(question, self.pipeline_output)
 
     def test_marriage_question_routes_correctly(self):
         """Marriage question must route to 'marriage' domain."""
@@ -447,7 +446,7 @@ class TestRajuQuestionEngine(unittest.TestCase):
         """QuestionEngine answer must contain all required structural keys."""
         result = self._ask("Will I get married?")
         for key in ("question", "domain", "routed", "probability",
-                    "natal_promise", "timing", "factor_breakdown", "answer_text"):
+                    "natal_promise", "timing", "transit", "factor_breakdown", "answer_text"):
             self.assertIn(key, result, f"Answer missing key: {key}")
 
 

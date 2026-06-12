@@ -6,9 +6,9 @@ Architecture:
         ↓
     Domain Router (keyword matching)
         ↓
-    Domain natal promise score (from NatalPromiseEngine output)
+    Returns domain to PipelineRunner (orchestrator)
         ↓
-    MasterProbabilityEngine re-evaluated with domain-specific natal score
+    PipelineRunner passes explicit components back to QuestionEngine
         ↓
     Structured answer: probability, grade, timing_confidence, domain
 
@@ -16,21 +16,14 @@ Rules:
     - Zero AI/ML. Pure keyword lookup for routing.
     - Domain routing is keyword-prefix, not semantic matching.
     - If no domain match: returns multi-domain summary (generic answer).
-    - MasterProbabilityEngine is called with domain natal promise replacing
-      the all-domain average used in the pipeline default.
+    - QuestionEngine MUST NOT instantiate or call MasterProbabilityEngine (DR-007).
+    - QuestionEngine must NOT collapse components (DR-008).
 """
 from app.config.astrology_constants import NATAL_PROMISE_GRADES, PROBABILITY_GRADES
-from app.engines.master_probability_engine import MasterProbabilityEngine
-from app.utils.astrology_math import clamp_score
-
 
 # ---------------------------------------------------------------------------
 # Domain Keyword Routing Table
 # ---------------------------------------------------------------------------
-# Each domain maps to a list of trigger keywords (lowercased).
-# Matching: any keyword found as a whole word or substring in the question.
-# Priority: first matched domain in DOMAIN_PRIORITY wins.
-
 DOMAIN_KEYWORDS = {
     "marriage":    [
         "marriage", "married", "wedding", "spouse", "husband", "wife",
@@ -79,98 +72,28 @@ DOMAIN_PRIORITY = [
 
 class QuestionEngine:
     """
-    Deterministic question router and probability synthesiser.
+    Deterministic question router and response composer.
 
     Usage:
         engine = QuestionEngine()
-        answer = engine.answer(
-            question="Will I get married?",
-            pipeline_output=runner.process(raw_data)
-        )
+        domain = engine.route_domain("Will I get married?")
+        # orchestrator gathers components
+        answer = engine.compose_response(...)
 
     Returns a structured answer dict with domain, probability score, grade,
-    natal promise, dasha confidence, and supporting evidence.
+    natal promise, dasha confidence, and transit evidence.
     """
 
     def __init__(self):
         self.keywords        = DOMAIN_KEYWORDS
         self.priority        = DOMAIN_PRIORITY
-        self.master_engine   = MasterProbabilityEngine()
         self.promise_grades  = NATAL_PROMISE_GRADES
 
     # -------------------------------------------------------------------------
     # Public Interface
     # -------------------------------------------------------------------------
 
-    def answer(self, question: str, pipeline_output: dict) -> dict:
-        """
-        Routes the question to a domain and computes domain-specific probability.
-
-        Args:
-            question (str): Free-text question from the user.
-            pipeline_output (dict): Full PipelineRunner.process() output.
-
-        Returns:
-            dict: Structured answer with probability, grade, domain breakdown.
-        """
-        engine_outputs = pipeline_output.get("engine_outputs", {})
-        natal_results  = engine_outputs.get("natal_promise", {})
-
-        # Step 1: Route to domain
-        domain = self._route(question)
-
-        # Step 2: Extract domain-specific natal promise score
-        if domain and domain in natal_results:
-            natal_score = natal_results[domain].get("score", 50)
-            natal_data  = natal_results[domain]
-            routed      = True
-        else:
-            # Generic fallback: average of all domains
-            natal_score = self._average_natal(natal_results)
-            natal_data  = {}
-            domain      = None
-            routed      = False
-
-        # Step 3: Re-evaluate master probability with domain natal score
-        probability = self._domain_probability(
-            natal_score, engine_outputs
-        )
-
-        # Step 4: Extract dasha and AV timing evidence
-        timing = self._timing_evidence(engine_outputs)
-
-        # Step 5: Assemble answer
-        return {
-            "question":      question,
-            "domain":        domain,
-            "routed":        routed,
-            "probability": {
-                "score": probability["final_score"],
-                "grade": probability["grade"],
-                "raw":   probability["raw_score"],
-            },
-            "natal_promise": {
-                "score":    natal_score,
-                "promise":  self._promise_grade(natal_score),
-                "karaka":   natal_data.get("karaka", ""),
-                "afflictions": natal_data.get("afflictions", []),
-            },
-            "timing": timing,
-            "factor_breakdown": probability.get("breakdown", {}),
-            "answer_text": self._compose_answer(
-                question, domain, natal_score, probability, timing, routed
-            ),
-        }
-
     def route_domain(self, question: str) -> str | None:
-        """Public accessor for domain routing (useful for testing)."""
-        return self._route(question)
-
-    # -------------------------------------------------------------------------
-    # Domain Routing
-    # -------------------------------------------------------------------------
-
-    def _route(self, question: str) -> str | None:
         """
         Keyword-based domain routing.
         Scans the question (lowercased) for each domain's keywords.
@@ -184,55 +107,40 @@ class QuestionEngine:
                     return domain
         return None
 
-    # -------------------------------------------------------------------------
-    # Domain Probability
-    # -------------------------------------------------------------------------
-
-    def _domain_probability(
+    def compose_response(
         self,
-        natal_score:    float,
-        engine_outputs: dict,
+        question: str,
+        domain: str | None,
+        natal_promise: dict,
+        dasha_activation: dict,
+        transit_activation: dict,
+        final_probability: dict,
+        bav_timing_confidence: str = "UNKNOWN"
     ) -> dict:
         """
-        Re-evaluates MasterProbabilityEngine with the domain-specific natal score
-        replacing the pipeline's all-domain average.
-
-        Injects natal_score as a synthetic single-domain natal_promise entry
-        so MasterProbabilityEngine reads it via _natal_promise().
+        Takes separated domain components from the orchestrator and composes the final 
+        response dict without performing any recalculation or collapsing layers.
+        
+        Args:
+            question (str): Free-text question from the user.
+            domain (str | None): The routed domain.
+            natal_promise (dict): The specific domain promise block.
+            dasha_activation (dict): The dasha engine outputs.
+            transit_activation (dict): The transit engine outputs.
+            final_probability (dict): The master probability block re-calculated for this domain.
+            bav_timing_confidence (str): Ashtakavarga confidence string.
+            
+        Returns:
+            dict: Structured answer with probability, grade, and separated components.
         """
-        # Build a synthetic natal_promise dict with only the domain score
-        synthetic_natal = {"__domain__": {"score": natal_score}}
+        routed = bool(domain)
+        natal_score = natal_promise.get("score", 50.0)
 
-        # Merge into a copy of engine_outputs so we don't mutate the pipeline output
-        domain_outputs = dict(engine_outputs)
-        domain_outputs["natal_promise"] = synthetic_natal
-
-        return self.master_engine.evaluate(domain_outputs)
-
-    def _average_natal(self, natal_results: dict) -> float:
-        """Fallback: average of all domain natal scores."""
-        if not natal_results:
-            return 50.0
-        scores = [d["score"] for d in natal_results.values()
-                  if isinstance(d, dict) and "score" in d]
-        return round(sum(scores) / len(scores), 2) if scores else 50.0
-
-    # -------------------------------------------------------------------------
-    # Timing Evidence
-    # -------------------------------------------------------------------------
-
-    def _timing_evidence(self, engine_outputs: dict) -> dict:
-        """
-        Extracts dasha timing confidence from dasha_results.
-        Returns a compact timing summary for the answer.
-        """
-        dasha_results = engine_outputs.get("dashas", {})
-        av_results    = engine_outputs.get("ashtakavarga", {})
-
+        # Step 1: Extract dasha timing evidence
         md_lord, md_mult = "", 1.0
         ad_lord, ad_mult = "", 1.0
 
-        for lord, data in dasha_results.items():
+        for lord, data in dasha_activation.items():
             temporal = data.get("temporal_activation", {})
             flags    = data.get("confidence_flags", [])
             if "active_mahadasha" in flags:
@@ -242,19 +150,67 @@ class QuestionEngine:
                 ad_lord = lord
                 ad_mult = temporal.get("timing_multiplier", 1.0)
 
-        db_support  = av_results.get("dasha_bav_support", {})
-        confidence  = db_support.get("timing_confidence", "unknown")
-        bav_mult    = db_support.get("timing_confidence_multiplier", 1.0)
+        timing = {
+            "mahadasha": md_lord,
+            "mahadasha_multiplier": md_mult,
+            "antardasha": ad_lord,
+            "antardasha_multiplier": ad_mult,
+            "bav_timing_confidence": bav_timing_confidence,
+            "activation_level": self._activation_label(md_mult),
+        }
+
+        # Step 2: Extract transit evidence
+        transit_score = transit_activation.get("activation_score", 50.0)
+
+        # Step 3: Compose text
+        prob_score = final_probability.get("final_score", 50)
+        prob_grade = final_probability.get("grade", "UNKNOWN")
+        promise    = self._promise_grade(natal_score)
+
+        if not routed:
+            answer_text = (
+                f"Domain could not be determined from: '{question}'. "
+                f"General probability: {prob_score}/100 ({prob_grade}). "
+                f"Active dasha: {md_lord.capitalize()} MD / {ad_lord.capitalize()} AD."
+            )
+        else:
+            domain_label = domain.capitalize()
+            lines = [
+                f"{domain_label} promise from natal chart: {natal_score}/100 ({promise}).",
+                f"Combined probability: {prob_score}/100 ({prob_grade}).",
+                f"Active dasha: {md_lord.capitalize()} Mahadasha / {ad_lord.capitalize()} Antardasha.",
+                f"Dasha activation: {timing['activation_level']} (timing multiplier: {md_mult:.2f}).",
+                f"Ashtakavarga timing confidence: {bav_timing_confidence.upper()}.",
+                f"Transit activation score: {transit_score}/100."
+            ]
+            answer_text = " ".join(lines)
 
         return {
-            "mahadasha":            md_lord,
-            "mahadasha_multiplier": md_mult,
-            "antardasha":           ad_lord,
-            "antardasha_multiplier": ad_mult,
-            "bav_timing_confidence": confidence,
-            "bav_multiplier":        bav_mult,
-            "activation_level":      self._activation_label(md_mult),
+            "question":      question,
+            "domain":        domain,
+            "routed":        routed,
+            "probability": {
+                "score": prob_score,
+                "grade": prob_grade,
+                "raw":   final_probability.get("raw_score", 50.0),
+            },
+            "natal_promise": {
+                "score":    natal_score,
+                "promise":  promise,
+                "karaka":   natal_promise.get("karaka", ""),
+                "afflictions": natal_promise.get("afflictions", []),
+            },
+            "timing": timing,
+            "transit": {
+                "activation_score": transit_score
+            },
+            "factor_breakdown": final_probability.get("breakdown", {}),
+            "answer_text": answer_text,
         }
+
+    # -------------------------------------------------------------------------
+    # Helpers
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def _activation_label(multiplier: float) -> str:
@@ -263,53 +219,6 @@ class QuestionEngine:
         if multiplier >= 1.10:  return "MODERATE"
         if multiplier >= 1.00:  return "NEUTRAL"
         return "SUPPRESSED"
-
-    # -------------------------------------------------------------------------
-    # Answer Composition
-    # -------------------------------------------------------------------------
-
-    def _compose_answer(
-        self,
-        question:    str,
-        domain:      str | None,
-        natal_score: float,
-        probability: dict,
-        timing:      dict,
-        routed:      bool,
-    ) -> str:
-        """
-        Composes a deterministic one-paragraph answer text.
-        No generative AI. Template-based from scored components.
-        """
-        prob_score = probability["final_score"]
-        prob_grade = probability["grade"]
-        promise    = self._promise_grade(natal_score)
-        md         = timing.get("mahadasha", "unknown").capitalize()
-        ad         = timing.get("antardasha", "unknown").capitalize()
-        activation = timing.get("activation_level", "NEUTRAL")
-        bav_conf   = timing.get("bav_timing_confidence", "unknown").upper()
-
-        if not routed:
-            return (
-                f"Domain could not be determined from: '{question}'. "
-                f"General probability: {prob_score}/100 ({prob_grade}). "
-                f"Active dasha: {md} MD / {ad} AD."
-            )
-
-        domain_label = domain.capitalize()
-        lines = [
-            f"{domain_label} promise from natal chart: {natal_score}/100 ({promise}).",
-            f"Combined probability: {prob_score}/100 ({prob_grade}).",
-            f"Active dasha: {md} Mahadasha / {ad} Antardasha.",
-            f"Dasha activation: {activation} (timing multiplier: "
-            f"{timing.get('mahadasha_multiplier', 1.0):.2f}).",
-            f"Ashtakavarga timing confidence: {bav_conf}.",
-        ]
-        return " ".join(lines)
-
-    # -------------------------------------------------------------------------
-    # Helpers
-    # -------------------------------------------------------------------------
 
     def _promise_grade(self, score: float) -> str:
         """4-tier promise classification."""

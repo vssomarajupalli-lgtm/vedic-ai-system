@@ -9,6 +9,7 @@ from app.engines.master_probability_engine import MasterProbabilityEngine
 from app.engines.natal_promise_engine import NatalPromiseEngine
 from app.engines.transit_engine import TransitEngine
 from app.engines.yoga_engine import YogaEngine
+from app.engines.question_engine import QuestionEngine
 from app.utils.ephemeris_service import EphemerisService
 from app.config.astrology_constants import SIGNS_IN_ORDER
 
@@ -31,6 +32,7 @@ class PipelineRunner:
         self.natal_engine    = NatalPromiseEngine()
         self.transit_engine  = TransitEngine()
         self.yoga_engine     = YogaEngine()
+        self.question_engine = QuestionEngine()
         self.master_engine   = MasterProbabilityEngine()
         self.ephemeris       = EphemerisService()
 
@@ -246,6 +248,58 @@ class PipelineRunner:
             temporal["timing_multiplier"]      = adj_mult
             temporal["base_timing_multiplier"] = base_mult
             temporal["bav_multiplier"]         = bav_mult
+
+    # -------------------------------------------------------------------------
+    # Question Orchestration (DR-007 Fix)
+    # -------------------------------------------------------------------------
+
+    def answer_question(self, question: str, pipeline_output: dict) -> dict:
+        """
+        Orchestrates domain routing, probability recalculation, and response 
+        composition for a specific user question.
+        
+        Args:
+            question (str): The natural language query.
+            pipeline_output (dict): The output from self.process().
+            
+        Returns:
+            dict: Structured answer payload from QuestionEngine.
+        """
+        domain = self.question_engine.route_domain(question)
+        
+        engine_outputs = pipeline_output.get("engine_outputs", {})
+        natal_results = engine_outputs.get("natal_promise", {})
+        
+        if domain and domain in natal_results:
+            natal_promise = natal_results[domain]
+        else:
+            # Fallback average if not routed
+            scores = [d["score"] for d in natal_results.values() if isinstance(d, dict) and "score" in d]
+            avg_score = round(sum(scores) / len(scores), 2) if scores else 50.0
+            natal_promise = {"score": avg_score}
+            
+        dasha_activation = engine_outputs.get("dashas", {})
+        transit_activation = engine_outputs.get("transit", {})
+        av_results = engine_outputs.get("ashtakavarga", {})
+        bav_confidence = av_results.get("dasha_bav_support", {}).get("timing_confidence", "unknown")
+        
+        # Recalculate Master Probability if routed
+        if domain:
+            synthetic_outputs = dict(engine_outputs)
+            synthetic_outputs["natal_promise"] = {"__domain__": natal_promise}
+            final_probability = self.master_engine.evaluate(synthetic_outputs)
+        else:
+            final_probability = pipeline_output.get("master_probability", {})
+            
+        return self.question_engine.compose_response(
+            question=question,
+            domain=domain,
+            natal_promise=natal_promise,
+            dasha_activation=dasha_activation,
+            transit_activation=transit_activation,
+            final_probability=final_probability,
+            bav_timing_confidence=bav_confidence
+        )
 
 # --- Sample Execution Example ---
 if __name__ == "__main__":

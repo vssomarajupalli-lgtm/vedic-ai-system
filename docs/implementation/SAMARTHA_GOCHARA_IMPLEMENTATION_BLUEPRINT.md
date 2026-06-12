@@ -2,6 +2,8 @@
 
 This blueprint defines the architecture for the proprietary Samartha Gochara system as mandated by `GOCHARA_ENGINE_MASTER.md`. It outlines the exact integration points required to transform the current classical transit calculator into a True Micro Gochara Engine, without violating DR-007 (Engine Isolation).
 
+**Authority Clarification:** Samartha Gochara is a proprietary micro-gochara system and not a standard transit engine.
+
 ---
 
 ## 1. COMPONENT AUDIT
@@ -72,8 +74,9 @@ The `transit_engine.py` will be expanded structurally without violating engine i
     *   Execute existing `_compute_bav_support` and `_compute_dasha_sync`.
 4.  **Special Event Builders**:
     *   Execute new `_build_elinati_shani(transit_payload, natal_payload)`.
-5.  **Final Scoring**:
+5.  **Final Scoring (DR-008 Compliance)**:
     *   Merge Classical Score + Micro Pada Score into the final `activation_score`.
+    *   Outputs must distinguish Potential, Activation, and Timing Window. Transit activation must not overwrite weak natal promise.
     *   Expand `confidence_flags` with the Elinati Shani phase string and Dasha-linked overlap strings.
 
 By integrating the Micro Gochara layers directly into the `TransitEngine` namespace, we preserve the stateless, deterministic pipeline controlled entirely by the `PipelineRunner`.

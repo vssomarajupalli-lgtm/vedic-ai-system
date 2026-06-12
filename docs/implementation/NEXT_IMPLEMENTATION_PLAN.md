@@ -30,8 +30,8 @@ This document organizes the remaining implementation work identified in the Gap 
 *   **File(s) Affected**: `backend/app/engines/dosha_engine.py` (NEW), `backend/app/pipeline_runner.py`
 *   **Dependencies**: `PlanetStrengthEngine`, `HouseStrengthEngine`.
 *   **Estimated Complexity**: Medium
-*   **Risks**: Kuja Dosha (Manglik) logic has many classical exceptions. Implementing it without exceptions could lead to false positives. 
-*   **Validation Requirements**: Unit tests for Kuja Dosha, Kala Sarpa Dosha, and Pitru Dosha. Verify that detecting a dosha correctly penalizes the associated domain probability (e.g., Marriage).
+*   **Risks**: Kuja Dosha extraction and validation requires careful handling of source data.
+*   **Validation Requirements**: Must follow DR-009 (Kuja Dosha Extraction Authority) to extract, validate, and interpret doshas strictly from canonical source data before attempting fallback verification. Verify that detecting a dosha correctly penalizes the associated domain probability.
 
 ### Task 4: Refactor `DashaEngine` to Pure Extraction (DR-001)
 *   **File(s) Affected**: `backend/app/engines/dasha_engine.py`
@@ -44,12 +44,12 @@ This document organizes the remaining implementation work identified in the Gap 
 
 ## 3. Major Modules (Heavy Data / Core Subsystems)
 
-### Task 5: Implement Transit Engine (Gochara System)
+### Task 5: Implement Transit Engine (Samartha Gochara System)
 *   **File(s) Affected**: `backend/app/engines/transit_engine.py`
 *   **Dependencies**: `canonical_content.json` (for extracted Phalithalu), `ephemeris_service.py`, `AshtakavargaEngine`, `NatalPromiseEngine`.
 *   **Estimated Complexity**: High
-*   **Risks**: Largest remaining subsystem. High risk of over-engineering or violating DR-003 if we calculate too much Ephemeris math instead of extracting pre-existing source data.
-*   **Validation Requirements**: Validate that Transit activation correctly influences the Master Probability score without overwriting the Natal Promise. Verify fallback mechanisms if `canonical_content.json` is missing transit data.
+*   **Risks**: High risk of over-engineering. Must strictly adhere to the proprietary micro-gochara system design (not a standard transit engine).
+*   **Validation Requirements**: Validate per DR-008 (Hybrid Probability Model). Transit activation must correctly separate Potential, Activation, and Timing Window without overriding the Natal Promise. Verify fallback mechanisms if `canonical_content.json` is missing transit data.
 
 ### Task 6: Implement Remedy Engine
 *   **File(s) Affected**: `backend/app/engines/remedy_engine.py` (NEW), `backend/app/pipeline_runner.py`

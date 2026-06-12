@@ -1,6 +1,8 @@
 # PROJECT GOVERNANCE SUMMARY
 
 ### 1. Current Authoritative Documents
+*   `PROJECT_REFERENCE_MASTER_2026-06-11_IST.md` (Permanent onboarding and project memory file)
+*   `CODING_AGENT_MEMORY_2026-06-11_IST.md` (Quick-start file for future coding agents)
 *   `AUTHORITY_LOCK_2026-06-11_18-15_IST.md` (Highest Authority, overrides assumptions)
 *   `DECISION_REGISTER.md` (Domain Expert decisions)
 

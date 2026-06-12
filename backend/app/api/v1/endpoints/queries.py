@@ -3,15 +3,13 @@ from typing import Any
 import traceback
 
 from app.schemas.question import QuestionRequest, QuestionResponse
-from app.engines.question_engine import QuestionEngine
+from app.pipeline_runner import PipelineRunner
 from app.core.logging import log
 
 router = APIRouter()
 
-# Instantiate the stateless QuestionEngine
-# Note: For it to answer properly, the OPENAI_API_KEY env var must be set,
-# though the architecture dictates we handle configuration gracefully.
-question_engine = QuestionEngine()
+# Instantiate the stateless PipelineRunner
+pipeline_runner = PipelineRunner()
 
 @router.post("/ask-question", response_model=QuestionResponse)
 def ask_question(request: QuestionRequest) -> Any:
@@ -22,11 +20,15 @@ def ask_question(request: QuestionRequest) -> Any:
     try:
         log.info(f"Processing question: {request.question_text[:50]}...")
         
-        # The QuestionEngine expects the full math payload in its context builder
-        answer, used_yogas = question_engine.answer(
+        # Use PipelineRunner as the orchestrator to answer the question
+        result = pipeline_runner.answer_question(
             question=request.question_text,
-            chart_results=request.engine_outputs
+            pipeline_output=request.engine_outputs
         )
+        
+        answer = result.get("answer_text", "")
+        # Deterministic engine currently doesn't track used yogas in response
+        used_yogas = []
         
         log.info("Question answered successfully.")
         
