@@ -10,6 +10,7 @@ from app.engines.natal_promise_engine import NatalPromiseEngine
 from app.engines.transit_engine import TransitEngine
 from app.engines.yoga_engine import YogaEngine
 from app.engines.question_engine import QuestionEngine
+from app.engines.functional_nature_engine import FunctionalNatureEngine
 from app.utils.ephemeris_service import EphemerisService
 from app.config.astrology_constants import SIGNS_IN_ORDER
 
@@ -33,6 +34,7 @@ class PipelineRunner:
         self.transit_engine  = TransitEngine()
         self.yoga_engine     = YogaEngine()
         self.question_engine = QuestionEngine()
+        self.functional_nature_engine = FunctionalNatureEngine()
         self.master_engine   = MasterProbabilityEngine()
         self.ephemeris       = EphemerisService()
 
@@ -48,6 +50,10 @@ class PipelineRunner:
         """
         # 1. Normalize the raw data into our strict deterministic schema
         normalized_payload = self.normalizer.normalize(raw_input_data)
+        
+        # 1.5 Functional Nature Mapping (Structural layer)
+        lagna = normalized_payload.get("metadata", {}).get("ascendant_sign", "aries")
+        functional_map = self.functional_nature_engine.get_functional_nature(lagna)
         
         # 2. Planet Engine Execution (Foundation Layer)
         planet_results = {}
@@ -121,6 +127,7 @@ class PipelineRunner:
         #          Varga 10% | Dasha 10% | Transit 5%
         # Transit is the only remaining stub — returns neutral 50 until TransitEngine is built.
         engine_outputs = {
+            "functional_nature": functional_map,
             "planets":      planet_results,
             "houses":       house_results,
             "vargas":       varga_results,

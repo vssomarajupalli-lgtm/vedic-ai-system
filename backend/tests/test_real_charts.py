@@ -150,7 +150,7 @@ class TestRajuRealChart(unittest.TestCase):
 
     def test_pipeline_produces_all_engine_outputs(self):
         """Full pipeline must produce all required engine output keys."""
-        for key in ("planets", "houses", "rasis", "vargas", "dashas",
+        for key in ("functional_nature", "planets", "houses", "rasis", "vargas", "dashas",
                     "ashtakavarga", "natal_promise"):
             self.assertIn(key, self.engine_outputs,
                 f"engine_outputs missing: {key}")
