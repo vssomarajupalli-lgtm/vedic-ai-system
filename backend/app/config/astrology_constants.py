@@ -556,4 +556,4 @@ TRANSIT_DASHA_SYNC_BONUSES = {
     "transit_same_sign_as_md":     6,   # transit planet in same house as MD lord natal
     "md_transit_bav_high":         8,   # MD lord's BAV in its transit house >= 5 bindus
 }
-
+
