@@ -85,6 +85,8 @@ class JsonNormalizer:
             "vargas": self._normalize_vargas(raw_data.get("raw_vargas") or raw_data.get("vargas", {}), normalized_planets),
             "ashtakavarga": self._normalize_ashtakavarga(raw_data.get("raw_ashtakavarga") or raw_data.get("ashtakavarga", {})),
             "dashas": self._normalize_dashas(raw_data.get("raw_dashas") or raw_data.get("dashas", {})),
+            "shadbala": self._normalize_shadbala(raw_data.get("raw_shadbala") or raw_data.get("shadbala", {})),
+            "bhava_bala": self._normalize_bhava_bala(raw_data.get("raw_bhava_bala") or raw_data.get("bhava_bala", {})),
             "transits": {         # Placeholder for Phase 7 Transit Engine
                 "active_modifiers": []
             }
@@ -271,6 +273,55 @@ class JsonNormalizer:
             "bav_charts": bav_normalized
         }
 
+    def _normalize_shadbala(self, raw_shadbala: dict) -> dict:
+        normalized = {}
+        if not isinstance(raw_shadbala, dict):
+            return normalized
+            
+        for raw_name, s_data in raw_shadbala.items():
+            std_name = self._clean_name(raw_name, self.planet_map)
+            if not std_name:
+                continue
+            
+            sthana = self._extract_float(s_data.get("sthana_bala", 0.0))
+            dig = self._extract_float(s_data.get("dig_bala", 0.0))
+            kala = self._extract_float(s_data.get("kala_bala", 0.0))
+            cheshta = self._extract_float(s_data.get("cheshta_bala", 0.0))
+            naisargika = self._extract_float(s_data.get("naisargika_bala", 0.0))
+            drik = self._extract_float(s_data.get("drik_bala", 0.0))
+            
+            total_strength = self._extract_float(s_data.get("total_strength", s_data.get("total_bala", 0.0)))
+                
+            normalized[std_name] = {
+                "sthana_bala": sthana,
+                "dig_bala": dig,
+                "kala_bala": kala,
+                "cheshta_bala": cheshta,
+                "naisargika_bala": naisargika,
+                "drik_bala": drik,
+                "total_strength": total_strength,
+                "required_percentage": self._extract_float(s_data.get("required_percentage", 0.0))
+            }
+        return normalized
+
+    def _normalize_bhava_bala(self, raw_bhava_bala: dict) -> dict:
+        normalized = {}
+        if not isinstance(raw_bhava_bala, dict):
+            return normalized
+            
+        for raw_house, b_data in raw_bhava_bala.items():
+            house_num = self._extract_int(raw_house)
+            if house_num < 1 or house_num > 12:
+                continue
+                
+            normalized[str(house_num)] = {
+                "lord_strength": self._extract_float(b_data.get("lord_strength", 0.0)),
+                "dig_bala": self._extract_float(b_data.get("dig_bala", 0.0)),
+                "drishti_bala": self._extract_float(b_data.get("drishti_bala", 0.0)),
+                "total_bala": self._extract_float(b_data.get("total_bala", 0.0))
+            }
+        return normalized
+
     # --- Isolated Helper Methods ---
 
     def _clean_string(self, val: any) -> str:
@@ -281,6 +332,18 @@ class JsonNormalizer:
         return mapping_dict.get(cleaned, cleaned)
 
     def _extract_float(self, val: any) -> float:
+        if isinstance(val, str) and ":" in val:
+            parts = val.split(":")
+            if len(parts) == 3:
+                try:
+                    return round(float(parts[0]) + float(parts[1])/60 + float(parts[2])/3600, 4)
+                except ValueError:
+                    return 0.0
+            elif len(parts) == 2:
+                try:
+                    return round(float(parts[0]) + float(parts[1])/60, 4)
+                except ValueError:
+                    return 0.0
         try: return float(val)
         except (ValueError, TypeError): return 0.0
 
