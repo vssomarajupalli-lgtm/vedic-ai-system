@@ -12,7 +12,7 @@ from app.engines.yoga_engine import YogaEngine
 from app.engines.question_engine import QuestionEngine
 from app.engines.functional_nature_engine import FunctionalNatureEngine
 from app.utils.ephemeris_service import EphemerisService
-from app.config.astrology_constants import SIGNS_IN_ORDER
+from app.config.astrology_constants import SIGNS_IN_ORDER, PROBABILITY_GRADES
 
 class PipelineRunner:
     """
@@ -302,9 +302,26 @@ class PipelineRunner:
         
         # Recalculate Master Probability if routed
         if domain:
-            synthetic_outputs = dict(engine_outputs)
-            synthetic_outputs["natal_promise"] = {"__domain__": natal_promise}
-            final_probability = self.master_engine.evaluate(synthetic_outputs)
+            domain_score = natal_promise.get("score", 50.0)
+            dasha_score = dasha_activation.get("synthesis", {}).get("dasha_strength", 50.0)
+            
+            final_score = round((domain_score * 0.60) + (dasha_score * 0.40))
+            
+            calculated_grade = "UNKNOWN"
+            for threshold, label in PROBABILITY_GRADES:
+                if final_score >= threshold:
+                    calculated_grade = label
+                    break
+
+            final_probability = {
+                "final_score": final_score,
+                "raw_score": float(final_score),
+                "grade": calculated_grade,
+                "breakdown": {
+                    "domain_contribution": domain_score * 0.60,
+                    "dasha_contribution": dasha_score * 0.40
+                }
+            }
         else:
             final_probability = pipeline_output.get("master_probability", {})
             

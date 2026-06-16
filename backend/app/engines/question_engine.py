@@ -137,26 +137,19 @@ class QuestionEngine:
         natal_score = natal_promise.get("score", 50.0)
 
         # Step 1: Extract dasha timing evidence
-        md_lord, md_mult = "", 1.0
-        ad_lord, ad_mult = "", 1.0
-
-        for lord, data in dasha_activation.items():
-            temporal = data.get("temporal_activation", {})
-            flags    = data.get("confidence_flags", [])
-            if "active_mahadasha" in flags:
-                md_lord = lord
-                md_mult = temporal.get("timing_multiplier", 1.0)
-            elif "active_antardasha" in flags:
-                ad_lord = lord
-                ad_mult = temporal.get("timing_multiplier", 1.0)
+        synthesis = dasha_activation.get("synthesis", {})
+        active_md = synthesis.get("active_md", "unknown")
+        active_ad = synthesis.get("active_ad", "unknown")
+        active_pd = synthesis.get("active_pd", "unknown")
+        dasha_strength = synthesis.get("dasha_strength", 50.0)
 
         timing = {
-            "mahadasha": md_lord,
-            "mahadasha_multiplier": md_mult,
-            "antardasha": ad_lord,
-            "antardasha_multiplier": ad_mult,
+            "mahadasha": active_md,
+            "antardasha": active_ad,
+            "pratyantardasha": active_pd,
+            "dasha_strength": dasha_strength,
             "bav_timing_confidence": bav_timing_confidence,
-            "activation_level": self._activation_label(md_mult),
+            "activation_level": self._activation_label(dasha_strength / 50.0),
         }
 
         # Step 2: Extract transit evidence
@@ -171,15 +164,15 @@ class QuestionEngine:
             answer_text = (
                 f"Domain could not be determined from: '{question}'. "
                 f"General probability: {prob_score}/100 ({prob_grade}). "
-                f"Active dasha: {md_lord.capitalize()} MD / {ad_lord.capitalize()} AD."
+                f"Active dasha: {active_md.capitalize()} MD / {active_ad.capitalize()} AD / {active_pd.capitalize()} PD."
             )
         else:
             domain_label = domain.capitalize()
             lines = [
                 f"{domain_label} promise from natal chart: {natal_score}/100 ({promise}).",
                 f"Combined probability: {prob_score}/100 ({prob_grade}).",
-                f"Active dasha: {md_lord.capitalize()} Mahadasha / {ad_lord.capitalize()} Antardasha.",
-                f"Dasha activation: {timing['activation_level']} (timing multiplier: {md_mult:.2f}).",
+                f"Active dasha: {active_md.capitalize()} Mahadasha / {active_ad.capitalize()} Antardasha / {active_pd.capitalize()} Pratyantardasha.",
+                f"Dasha strength: {dasha_strength}/100 (level: {timing['activation_level']}).",
                 f"Ashtakavarga timing confidence: {bav_timing_confidence.upper()}.",
                 f"Transit activation score: {transit_score}/100."
             ]

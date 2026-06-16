@@ -324,10 +324,9 @@ class TestQuestionEngineAnswer(unittest.TestCase):
     def test_timing_activation_high_for_large_multiplier(self):
         """Multiplier ≥ 1.20 → activation_level = HIGH."""
         dasha = {
-            "saturn": {
-                "final_score": 50,
-                "temporal_activation": {"timing_multiplier": 1.25},
-                "confidence_flags": ["active_mahadasha"]
+            "synthesis": {
+                "active_md": "saturn",
+                "dasha_strength": 62.5
             }
         }
         output = self._pipeline_output(natal_scores={"wealth": 50}, dasha_data=dasha)
@@ -337,10 +336,9 @@ class TestQuestionEngineAnswer(unittest.TestCase):
     def test_timing_activation_neutral_for_1_0_multiplier(self):
         """Multiplier = 1.0 → activation_level = NEUTRAL."""
         dasha = {
-            "saturn": {
-                "final_score": 50,
-                "temporal_activation": {"timing_multiplier": 1.0},
-                "confidence_flags": ["active_mahadasha"]
+            "synthesis": {
+                "active_md": "saturn",
+                "dasha_strength": 50.0
             }
         }
         output = self._pipeline_output(natal_scores={"career": 50}, dasha_data=dasha)
@@ -349,10 +347,8 @@ class TestQuestionEngineAnswer(unittest.TestCase):
 
     def test_timing_mahadasha_lord_extracted(self):
         dasha = {
-            "jupiter": {
-                "final_score": 60,
-                "temporal_activation": {"timing_multiplier": 1.15},
-                "confidence_flags": ["active_mahadasha"]
+            "synthesis": {
+                "active_md": "jupiter"
             }
         }
         output = self._pipeline_output(natal_scores={"wealth": 50}, dasha_data=dasha)
@@ -416,10 +412,12 @@ class TestQuestionEngineIntegration(unittest.TestCase):
                 "vargas":  {},
                 "transit": {"activation_score": 50},
                 "dashas":  {
-                    "saturn":  {"final_score": 50, "temporal_activation": {"timing_multiplier": 1.21},
-                                "confidence_flags": ["active_mahadasha"]},
-                    "jupiter": {"final_score": 55, "temporal_activation": {"timing_multiplier": 1.21},
-                                "confidence_flags": ["active_antardasha"]},
+                    "synthesis": {
+                        "active_md": "saturn",
+                        "active_ad": "jupiter",
+                        "active_pd": "mars",
+                        "dasha_strength": 60.5
+                    }
                 },
                 "ashtakavarga": {
                     "dasha_bav_support": {
