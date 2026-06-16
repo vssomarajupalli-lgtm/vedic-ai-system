@@ -49,15 +49,15 @@ The layout engine compiles data from a comprehensive ~85-page baseline source da
 6. DYNAMIC SAMARTHA MICRO GOCHARA & ELINANATI CALCULATIONS
 Runtime Execution Transit Stamp: The report output must lock calculations to the exact date and time the system is run. All core planetary transit values must reflect this runtime timestamp.
 
-DAll Samartha True Micro Gochara logic, lifecycle Saturn period computation, present planetary transit logic, and Dasha-linked transit printing rules are defined in GOCHARA_ENGINE_MASTER.md
+DAll Samartha True Micro Gochara logic, lifecycle Saturn period computation, present planetary transit logic, and Dasha-linked transit printing rules are defined in GOCHARA_MANDALI_GOVERNANCE_v1.md
 This calculation architecture file shall treat 
 Authoritative Gochara Specification Policy
 
-The runtime gochara subsystem shall follow the separate authoritative specification defined in GOCHARA_ENGINE_MASTER.md.
+The runtime gochara subsystem shall follow the separate authoritative specification defined in GOCHARA_MANDALI_GOVERNANCE_v1.md.
 
-If any legacy embedded transit logic conflicts with that file, GOCHARA_ENGINE_MASTER.md shall prevail.
+If any legacy embedded transit logic conflicts with that file, GOCHARA_MANDALI_GOVERNANCE_v1.md shall prevail.
 
-GOCHARA_ENGINE_MASTER.md as the authoritative transit engine specification.
+GOCHARA_MANDALI_GOVERNANCE_v1.md as the authoritative transit engine specification.
 
 7. PLATFORM UPGRADE INTERACTION (FUTURE PWA READY)
 Decoupled Data Architecture: All calculation algorithms inside the Python back-end must compute scores into structured, clean JSON-Ready API objects.

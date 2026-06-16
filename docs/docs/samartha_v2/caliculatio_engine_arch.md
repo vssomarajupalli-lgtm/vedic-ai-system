@@ -57,8 +57,8 @@ $$\text{PD Final Output Value (\%)} = \left\lceil \frac{S_{\text{planet}}[\text{
 
 ---
 ### 4. SAMARTHA MICRO-PADA GOCHARA ENGINE (à°—à±‹à°šà°¾à°° à°•à±à°¯à°¾à°²à°¿à°•à±à°¯à±à°²à±‡à°·à°¨à± à°µà°¿à°§à°¾à°¨à°®à±)
-All Samartha True Micro Gochara logic, lifecycle Saturn period computation, present planetary transit logic, and Dasha-linked transit printing rules are defined in GOCHARA_ENGINE_MASTER.md
-This calculation architecture file shall treat GOCHARA_ENGINE_MASTER.md as the authoritative transit engine specification.
+All Samartha True Micro Gochara logic, lifecycle Saturn period computation, present planetary transit logic, and Dasha-linked transit printing rules are defined in GOCHARA_MANDALI_GOVERNANCE_v1.md
+This calculation architecture file shall treat GOCHARA_MANDALI_GOVERNANCE_v1.md as the authoritative Mandali-based Gochara specification.
 *
 * ### 5. 5-à°…à°‚à°šà±†à°² à°ªà±à°°à°¶à±à°¨à°² à°®à±à°¯à°¾à°šà°¿à°‚à°—à± à°µà°¿à°§à°¾à°¨à°‚ (Proprietary 5-Tier Questionnaire)
 à°ªà±à°°à°¾à°®à°¾à°£à°¿à°• à°ªà±à°°à°¶à±à°¨à°²à°•à± à°ªà±à°°à°¿à°¡à°¿à°•à±à°Ÿà°¿à°µà± à°ªà±à°°à°¾à°¬à°¬à°¿à°²à°¿à°Ÿà±€ à°¸à±à°•à±‹à°°à±â€Œà°¨à± à°²à±†à°•à±à°•à°¿à°‚à°šà°¡à°¾à°¨à°¿à°•à°¿ à°ˆ à°•à±à°°à°¿à°‚à°¦à°¿ à°¨à°¿à°°à±à°¦à±‡à°¶à°¿à°¤ à°­à°¿à°¨à±à°¨ à°µà°¿à°­à°œà°¨ à°¸à°®à±€à°•à°°à°£à°¾à°¨à±à°¨à°¿ ( UI à°²à±‹ `40:30:15:10:5` Metric Engine) à°µà°¾à°¡à°¾à°²à°¿:

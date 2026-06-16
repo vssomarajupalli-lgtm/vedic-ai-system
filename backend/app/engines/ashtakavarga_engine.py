@@ -7,7 +7,8 @@ from app.config.astrology_constants import (
     SAV_WEAK_THRESHOLD,
     DASHA_BAV_CONFIDENCE,
     BAV_EXCLUDED_PLANETS,
-    BAV_PLANETS
+    BAV_PLANETS,
+    SIGNS_IN_ORDER
 )
 from app.utils.astrology_math import clamp_score
 
@@ -57,7 +58,7 @@ class AshtakavargaEngine:
 
         Args:
             normalized_payload (dict): Full JsonNormalizer output.
-                Required keys: "ashtakavarga", "planets", "dashas"
+                Required keys: "ashtakavarga", "planets", "dashas", "metadata"
             dependency_scores (dict): PlanetStrengthEngine outputs.
                 Keyed by planet system name → {"final_score": int}
 
@@ -68,20 +69,22 @@ class AshtakavargaEngine:
         av_data            = normalized_payload.get("ashtakavarga", {})
         normalized_planets = normalized_payload.get("planets", {})
         normalized_dashas  = normalized_payload.get("dashas", {})
+        
+        asc_sign           = normalized_payload.get("metadata", {}).get("ascendant_sign", "aries").lower()
 
         raw_sav = av_data.get("sav_chart",  {})
         raw_bav = av_data.get("bav_charts", {})
 
         # --- Core computations ---
-        bav_charts_out     = self._build_bav_charts(raw_bav)
-        sav_chart_out      = self._build_sav_chart(raw_sav)
+        bav_charts_out     = self._build_bav_charts(raw_bav, asc_sign)
+        sav_chart_out      = self._build_sav_chart(raw_sav, asc_sign)
         planet_bav_support = self._compute_planet_bav_support(
             normalized_planets, raw_bav, dependency_scores
         )
         dasha_bav_support  = self._compute_dasha_bav_support(
             normalized_dashas, normalized_planets, raw_bav
         )
-        sav_analytics      = self._compute_sav_analytics(raw_sav, raw_bav)
+        sav_analytics      = self._compute_sav_analytics(raw_sav, raw_bav, asc_sign)
         engine_modifiers   = self._build_engine_modifiers(
             planet_bav_support, dasha_bav_support
         )
@@ -96,25 +99,42 @@ class AshtakavargaEngine:
         }
 
     # -------------------------------------------------------------------------
+    # Coordinate Mapping Helper
+    # -------------------------------------------------------------------------
+    def _sign_to_house(self, sign: str, asc_sign: str) -> int:
+        """Translates a zodiac sign to a relative house based on the ascendant."""
+        try:
+            s_idx = SIGNS_IN_ORDER.index(sign)
+            a_idx = SIGNS_IN_ORDER.index(asc_sign)
+            return ((s_idx - a_idx + 12) % 12) + 1
+        except ValueError:
+            return 1
+
+    # -------------------------------------------------------------------------
     # BAV Charts
     # -------------------------------------------------------------------------
 
-    def _build_bav_charts(self, raw_bav: dict) -> dict:
+    def _build_bav_charts(self, raw_bav: dict, asc_sign: str) -> dict:
         """
         Builds the annotated BAV chart for each of the 7 classical planets.
-        Each house entry gets: bindus (int) and grade (str).
+        Converts extracted sign keys to relative house numbers for downstream compatibility.
         """
         result = {}
         for planet in self.bav_planets:
             if planet not in raw_bav:
                 continue
-            house_data = raw_bav[planet]
+            sign_data = raw_bav[planet]
             planet_chart = {}
-            for house_str in [str(h) for h in range(1, 13)]:
-                bindus = int(house_data.get(house_str, 0))
-                planet_chart[house_str] = {
-                    "bindus": bindus,
-                    "grade":  self._bav_grade(bindus)
+            # Ensure all 12 houses are represented
+            for house_num in range(1, 13):
+                planet_chart[str(house_num)] = {"bindus": 0, "grade": "CRITICAL"}
+                
+            for sign, bindus in sign_data.items():
+                house = self._sign_to_house(sign, asc_sign)
+                b = int(bindus)
+                planet_chart[str(house)] = {
+                    "bindus": b,
+                    "grade":  self._bav_grade(b)
                 }
             result[planet] = planet_chart
         return result
@@ -123,17 +143,23 @@ class AshtakavargaEngine:
     # SAV Chart
     # -------------------------------------------------------------------------
 
-    def _build_sav_chart(self, raw_sav: dict) -> dict:
+    def _build_sav_chart(self, raw_sav: dict, asc_sign: str) -> dict:
         """
         Builds the annotated SAV chart for all 12 houses.
-        Each house entry gets: bindus, score (piecewise normalized), grade, is_favorable.
+        Converts extracted sign keys to relative house numbers.
         """
         result = {}
         for house_num in range(1, 13):
-            house_str = str(house_num)
-            bindus    = int(raw_sav.get(house_str, 0))
-            score     = self._sav_score(bindus)
-            result[house_str] = {
+            result[str(house_num)] = {
+                "bindus": 0, "score": 0.0, "grade": "CRITICAL",
+                "is_favorable": False, "is_strong": False, "is_weak": True
+            }
+            
+        for sign, bindus_raw in raw_sav.items():
+            house = self._sign_to_house(sign, asc_sign)
+            bindus = int(bindus_raw)
+            score = self._sav_score(bindus)
+            result[str(house)] = {
                 "bindus":       bindus,
                 "score":        round(score, 2),
                 "grade":        self._sav_grade(bindus),
@@ -154,30 +180,23 @@ class AshtakavargaEngine:
         dependency_scores: dict
     ) -> dict:
         """
-        For each of the 7 BAV planets, computes:
-            - natal house number
-            - BAV bindus in that house (from planet's own BAV chart)
-            - normalized score
-            - grade
-            - modifier (+5 / 0 / -5) → fed to PlanetStrengthEngine
-
-        Missing BAV chart → default 4 bindus (neutral / AVERAGE).
-        Missing natal house → house 0 (safe fallback, no modifier applied).
+        For each of the 7 BAV planets, computes support directly from the planet's sign.
         """
         result = {}
         for planet in self.bav_planets:
             planet_data = normalized_planets.get(planet, {})
+            sign        = planet_data.get("sign", "")
             house       = int(planet_data.get("house", 0))
-            house_str   = str(house)
 
-            # Read bindus from planet's own BAV chart for its natal house
             planet_bav  = raw_bav.get(planet, {})
-            if planet_bav and house > 0:
-                bindus = int(planet_bav.get(house_str, 4))  # 4 = neutral default
+            if planet_bav and sign in planet_bav:
+                bindus = int(planet_bav[sign])
+            elif house > 0:
+                bindus = 4  # sign not found in chart
             elif house == 0:
-                bindus = 4  # unknown house → neutral
+                bindus = 4  # unknown placement
             else:
-                bindus = 4  # missing BAV chart → neutral
+                bindus = 4  
 
             score    = self._bav_score(bindus)
             grade    = self._bav_grade(bindus)
@@ -202,17 +221,6 @@ class AshtakavargaEngine:
         normalized_planets: dict,
         raw_bav: dict
     ) -> dict:
-        """
-        Computes BAV support for the active Mahadasha and Antardasha lords.
-
-        For each dasha lord:
-            - Finds the lord's natal house from normalized_planets
-            - Reads the lord's own BAV bindus in that house
-            - Calculates a timing confidence multiplier
-
-        Combined dasha BAV score: 0.60 × MD_score + 0.40 × AD_score
-        Timing confidence multiplier from DASHA_BAV_CONFIDENCE.
-        """
         md_lord = normalized_dashas.get("mahadasha", {}).get("lord", "")
         ad_lord = normalized_dashas.get("antardasha", {}).get("lord", "")
 
@@ -237,9 +245,7 @@ class AshtakavargaEngine:
         normalized_planets: dict,
         raw_bav: dict
     ) -> dict:
-        """Computes BAV data for a single dasha lord."""
         if not lord or lord in self.excluded_planets:
-            # Rahu/Ketu as dasha lords have no BAV → neutral defaults
             return {
                 "lord": lord, "house": 0,
                 "bindus": 4, "score": 50.0,
@@ -248,10 +254,10 @@ class AshtakavargaEngine:
 
         planet_data = normalized_planets.get(lord, {})
         house       = int(planet_data.get("house", 0))
-        house_str   = str(house)
+        sign        = planet_data.get("sign", "")
 
         planet_bav = raw_bav.get(lord, {})
-        bindus     = int(planet_bav.get(house_str, 4)) if (planet_bav and house > 0) else 4
+        bindus     = int(planet_bav.get(sign, 4)) if (planet_bav and sign) else 4
         score      = self._bav_score(bindus)
         grade      = self._bav_grade(bindus)
         confidence = self._confidence_label(score)
@@ -269,23 +275,18 @@ class AshtakavargaEngine:
     # SAV Analytics
     # -------------------------------------------------------------------------
 
-    def _compute_sav_analytics(self, raw_sav: dict, raw_bav: dict) -> dict:
+    def _compute_sav_analytics(self, raw_sav: dict, raw_bav: dict, asc_sign: str) -> dict:
         """
         Computes aggregate SAV statistics.
-
-        Includes:
-            - total_bindus (sum of all 12 houses)
-            - average_per_house
-            - peak_house (highest SAV)
-            - weakest_house (lowest SAV)
-            - favorable_houses (bindus >= 28)
-            - unfavorable_houses (bindus < 22)
-            - bav_consistency_check: per-house flag where BAV sum == SAV bindu
+        Calculations must be mapped back to house outputs for downstream engines.
         """
         totals = {}
         for h in range(1, 13):
-            hs = str(h)
-            totals[hs] = int(raw_sav.get(hs, 0))
+            totals[str(h)] = 0
+            
+        for sign, bindus in raw_sav.items():
+            h = str(self._sign_to_house(sign, asc_sign))
+            totals[h] = int(bindus)
 
         total_bindus   = sum(totals.values())
         avg_per_house  = round(total_bindus / 12, 2)
@@ -296,14 +297,14 @@ class AshtakavargaEngine:
 
         # BAV consistency check: sum(BAV per house for 7 planets) vs SAV
         consistency = {}
-        for h in range(1, 13):
-            hs = str(h)
+        for sign in SIGNS_IN_ORDER:
+            h = str(self._sign_to_house(sign, asc_sign))
             bav_sum = sum(
-                int(raw_bav.get(p, {}).get(hs, 0))
+                int(raw_bav.get(p, {}).get(sign, 0))
                 for p in self.bav_planets
             )
-            sav_val = totals[hs]
-            consistency[hs] = {
+            sav_val = totals[h]
+            consistency[h] = {
                 "bav_sum":    bav_sum,
                 "sav_val":    sav_val,
                 "consistent": bav_sum == sav_val
@@ -331,12 +332,6 @@ class AshtakavargaEngine:
         planet_bav_support: dict,
         dasha_bav_support:  dict
     ) -> dict:
-        """
-        Assembles the cross-engine modifier dict for consumption by PipelineRunner.
-
-        planet_score_adjustments → injected into PlanetStrengthEngine
-        dasha_bav_confidence_multiplier → injected into DashaEngine
-        """
         planet_adjustments = {
             planet: data["modifier"]
             for planet, data in planet_bav_support.items()
@@ -354,40 +349,29 @@ class AshtakavargaEngine:
     # -------------------------------------------------------------------------
 
     def _bav_score(self, bindus: int) -> float:
-        """Linear mapping: 0-8 bindus → 0-100 score. Range is inherently [0,100]."""
         return round((bindus / 8) * 100, 2)
 
     def _sav_score(self, bindus: int) -> float:
-        """
-        Piecewise linear interpolation of SAV bindus → 0-100 score.
-        Uses SAV_BINDU_SCALE anchors from astrology_constants.py.
-        Canonical implementation shared with RasiStrengthEngine.
-        """
         anchors = self.sav_scale
-
         if bindus <= anchors[0][0]:
             return float(anchors[0][1])
         if bindus >= anchors[-1][0]:
             return float(anchors[-1][1])
-
         for i in range(len(anchors) - 1):
             lo_b, lo_s = anchors[i]
             hi_b, hi_s = anchors[i + 1]
             if lo_b <= bindus <= hi_b:
                 t = (bindus - lo_b) / (hi_b - lo_b)
                 return lo_s + t * (hi_s - lo_s)
-
         return 50.0
 
     def _bav_grade(self, bindus: int) -> str:
-        """Returns classical Vedic BAV grade for a given bindu count."""
         for threshold, grade in self.bav_grade_map:
             if bindus >= threshold:
                 return grade
         return "CRITICAL"
 
     def _sav_grade(self, bindus: int) -> str:
-        """Returns SAV-specific grade based on classical thresholds."""
         if bindus >= SAV_STRONG_THRESHOLD:    return "STRONG"
         if bindus >= SAV_FAVORABLE_THRESHOLD: return "FAVORABLE"
         if bindus >= SAV_WEAK_THRESHOLD:      return "AVERAGE"
@@ -395,13 +379,11 @@ class AshtakavargaEngine:
         return "CRITICAL"
 
     def _bav_modifier(self, bindus: int) -> int:
-        """Returns the planet score adjustment based on BAV bindu count."""
         if bindus >= 5:  return self.planet_modifier["high"]
         if bindus == 4:  return self.planet_modifier["neutral"]
         return self.planet_modifier["low"]
 
     def _confidence_label(self, score: float) -> str:
-        """Maps a 0-100 BAV score to a timing confidence label."""
         if score >= 62.5:  return "high"
         if score >= 50.0:  return "moderate"
         return "low"

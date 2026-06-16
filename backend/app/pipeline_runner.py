@@ -57,11 +57,18 @@ class PipelineRunner:
         
         # 2. Planet Engine Execution (Foundation Layer)
         planet_results = {}
+        shadbala_payload = normalized_payload.get("shadbala", {})
+        
         for planet_id, planet_data in normalized_payload.get("planets", {}).items():
-            planet_results[planet_id] = self.planet_engine.calculate_strength(planet_data)
+            planet_results[planet_id] = self.planet_engine.calculate_strength(
+                planet_data, 
+                shadbala_data=shadbala_payload
+            )
             
         # 3. Safe Dependency Passing & House Engine Execution
         house_results = {}
+        bhava_bala_payload = normalized_payload.get("bhava_bala", {})
+        
         for house_id, house_data in normalized_payload.get("houses", {}).items():
             
             # Result-passing strategy: Extract the lord's name (e.g., "mars", "sun")
@@ -79,8 +86,9 @@ class PipelineRunner:
 
             # Calculate house strength using copied payload
             house_results[str(house_id)] = self.house_engine.calculate_strength(
-            house_eval_payload
-)
+                house_eval_payload,
+                bhava_bala_data=bhava_bala_payload
+            )
 
         # 3.5. Yoga Engine Execution
         # Requires pre-computed planet results to calculate true yoga potency
@@ -247,6 +255,8 @@ class PipelineRunner:
         # --- Dasha BAV confidence multiplier ---
         bav_mult = modifiers.get("dasha_bav_confidence_multiplier", 1.0)
         for lord, lord_data in dasha_results.items():
+            if lord == "synthesis":
+                continue
             temporal = lord_data.get("temporal_activation", {})
             if "timing_multiplier" not in temporal:
                 continue

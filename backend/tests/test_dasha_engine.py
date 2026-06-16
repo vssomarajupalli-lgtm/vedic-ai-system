@@ -14,8 +14,14 @@ class TestDashaEngine(unittest.TestCase):
         # 3_11 axis implies effort/growth, scalar=1.15
         normalized_data = {
             "dashas": {
-                "mahadasha": {"lord": "saturn"},
-                "antardasha": {"lord": "jupiter"}
+                "timeline": [
+                    {
+                        "mahadasha": "saturn",
+                        "antardasha": "jupiter",
+                        "pratyantardasha": "venus",
+                        "start_date": "2020-01-01"
+                    }
+                ]
             },
             "planets": {
                 "saturn": {"house": 3},
@@ -28,7 +34,7 @@ class TestDashaEngine(unittest.TestCase):
             "jupiter": {"final_score": 65.0}
         }
         
-        results = self.engine.evaluate(normalized_data, dependency_scores)
+        results = self.engine.evaluate(normalized_data, dependency_scores, target_date="2020-06-01")
         
         self.assertIn("saturn", results)
         self.assertIn("jupiter", results)
@@ -50,8 +56,14 @@ class TestDashaEngine(unittest.TestCase):
         # 6_8 axis implies challenge/dusthana, scalar=0.80
         normalized_data = {
             "dashas": {
-                "mahadasha": {"lord": "sun"},
-                "antardasha": {"lord": "moon"}
+                "timeline": [
+                    {
+                        "mahadasha": "sun",
+                        "antardasha": "moon",
+                        "pratyantardasha": "mars",
+                        "start_date": "2020-01-01"
+                    }
+                ]
             },
             "planets": {
                 "sun": {"house": 1},
@@ -59,7 +71,7 @@ class TestDashaEngine(unittest.TestCase):
             }
         }
         
-        results = self.engine.evaluate(normalized_data, {})
+        results = self.engine.evaluate(normalized_data, {}, target_date="2020-06-01")
         
         sun_data = results["sun"]
         self.assertEqual(sun_data["temporal_activation"]["timing_multiplier"], 0.80)

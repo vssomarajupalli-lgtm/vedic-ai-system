@@ -149,7 +149,7 @@ class JsonNormalizer:
 
     def _normalize_dashas(self, raw_dashas: dict) -> dict:
         """Structures the active time periods extracted from the PDF timeline."""
-        return {
+        normalized = {
             "mahadasha": {
                 "lord": self._clean_name(raw_dashas.get("mahadasha", ""), self.planet_map)
             },
@@ -160,6 +160,24 @@ class JsonNormalizer:
                 "lord": self._clean_name(raw_dashas.get("pratyantardasha", ""), self.planet_map)
             }
         }
+        
+        if "timeline" in raw_dashas:
+            # We preserve the canonical timeline structure directly, optionally cleaning lords
+            timeline = []
+            for row in raw_dashas.get("timeline", []):
+                timeline.append({
+                    "mahadasha": self._clean_name(row.get("mahadasha", ""), self.planet_map),
+                    "antardasha": self._clean_name(row.get("antardasha", ""), self.planet_map),
+                    "pratyantardasha": self._clean_name(row.get("pratyantardasha", ""), self.planet_map),
+                    "start_date": row.get("start_date", ""),
+                    "age_years": self._extract_float(row.get("age_years", 0.0))
+                })
+            normalized["timeline"] = timeline
+            
+        if "birth_balance" in raw_dashas:
+            normalized["birth_balance"] = raw_dashas["birth_balance"]
+            
+        return normalized
 
     def _normalize_houses(self, raw_houses: dict) -> dict:
         """
@@ -242,28 +260,28 @@ class JsonNormalizer:
 
         # --- Normalize SAV chart ---
         sav_normalized = {}
-        for raw_house, bindus in raw_av.get("sav_chart", {}).items():
-            house_num = self._extract_int(raw_house)
-            if 1 <= house_num <= 12:
-                sav_normalized[str(house_num)] = self._extract_int(bindus)
+        for raw_sign, bindus in raw_av.get("sav_chart", {}).items():
+            std_sign = self._clean_name(raw_sign, self.sign_map)
+            if std_sign:
+                sav_normalized[std_sign] = self._extract_int(bindus)
 
         # --- Normalize BAV charts ---
         # Classical Parashari AV includes 7 planets (excludes Rahu/Ketu)
         excluded_planets = {"rahu", "ketu"}
         bav_normalized = {}
 
-        for raw_planet, house_bindus in raw_av.get("bav_charts", {}).items():
+        for raw_planet, sign_bindus in raw_av.get("bav_charts", {}).items():
             std_planet = self._clean_name(raw_planet, self.planet_map)
             if not std_planet or std_planet in excluded_planets:
                 continue
-            if not isinstance(house_bindus, dict):
+            if not isinstance(sign_bindus, dict):
                 continue
 
             planet_bav = {}
-            for raw_house, bindus in house_bindus.items():
-                house_num = self._extract_int(raw_house)
-                if 1 <= house_num <= 12:
-                    planet_bav[str(house_num)] = self._extract_int(bindus)
+            for raw_sign, bindus in sign_bindus.items():
+                std_sign = self._clean_name(raw_sign, self.sign_map)
+                if std_sign:
+                    planet_bav[std_sign] = self._extract_int(bindus)
 
             if planet_bav:
                 bav_normalized[std_planet] = planet_bav

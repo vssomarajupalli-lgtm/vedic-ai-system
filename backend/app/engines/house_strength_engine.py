@@ -14,12 +14,13 @@ class HouseStrengthEngine:
         self.benefics = NATURAL_BENEFICS
         self.malefics = NATURAL_MALEFICS
 
-    def calculate_strength(self, house_data: dict) -> dict:
+    def calculate_strength(self, house_data: dict, bhava_bala_data: dict = None) -> dict:
         """
         Calculates the overall strength of a single house.
         
         Args:
             house_data (dict): Normalized JSON data for a single house, including the lord's pre-calculated strength.
+            bhava_bala_data (dict): Optional authentic bhava bala metrics extracted from the PDF.
             
         Returns:
             dict: Explainable payload with final score and score breakdown.
@@ -30,33 +31,44 @@ class HouseStrengthEngine:
         # 1. Evaluate House Type (Kendra, Trikona, Dusthana, etc.)
         type_score = self._evaluate_house_type(house_data.get("house_type", "neutral"))
         breakdown["house_type"] = type_score
-        total_score += type_score
 
         # 2. Evaluate Lord Contribution (Assumes planet engine has already run for the lord)
         lord_score = self._evaluate_lord_contribution(house_data.get("lord_strength_score", 50))
         breakdown["lord_contribution"] = lord_score
-        total_score += lord_score
 
         # 3. Evaluate Occupants
         occupant_score = self._evaluate_influences(house_data.get("occupants", []), "occupants")
         breakdown["occupants_impact"] = occupant_score
-        total_score += occupant_score
 
         # 4. Evaluate Aspects Received
         aspect_score = self._evaluate_influences(house_data.get("aspected_by", []), "aspects")
         breakdown["aspects_impact"] = aspect_score
-        total_score += aspect_score
 
         # 5. SAV (Sarvashtakavarga) Environment
         # Contribution is signed [-10, +10]: above-average SAV helps; below-average SAV hurts.
         # Houses with 28+ bindus (average) get a neutral or positive contribution.
         sav_score = self._evaluate_sav_support(house_data.get("sav_points", 0))
         breakdown["sav_support"] = sav_score
-        total_score += sav_score
 
+
+        # Check if authentic bhava_bala data is available
+        house_num_str = str(house_data.get("house", "unknown"))
+        bhava_info = None
+        if bhava_bala_data and isinstance(bhava_bala_data, dict):
+            bhava_info = bhava_bala_data.get(house_num_str)
+
+        if bhava_info and "total_bala" in bhava_info:
+            total_bala = float(bhava_info["total_bala"])
+            base_score = self._map_bhava_bala_to_score(total_bala)
+            breakdown["bhava_bala_base_score"] = base_score
+            # The base score completely overrides the heuristics
+            total_score = base_score + sav_score
+        else:
+            # Fallback to legacy additive heuristics
+            total_score = type_score + lord_score + occupant_score + aspect_score + sav_score
 
         # Apply Lagna Floor (prevent H1 from dropping to 0 due to compounding penalties)
-        if str(house_data.get("house")) == "1" and total_score < 15:
+        if house_num_str == "1" and total_score < 15:
             total_score = 15
             if "clamped_to_zero" in breakdown: 
                 del breakdown["clamped_to_zero"] # In case used later
@@ -104,6 +116,37 @@ class HouseStrengthEngine:
             elif planet_lower in self.malefics:
                 score += self.scoring_matrix[context]["malefic"]
         return score
+
+    def _map_bhava_bala_to_score(self, total_bala: float) -> float:
+        """
+        Maps Bhava Bala total_bala (in Rupas) to the [0, 100] internal probability scale.
+        Anchors:
+            >= 10.0 -> 100
+            8.5 -> 75
+            7.0 -> 50
+            6.0 -> 25
+            <= 5.0 -> 0
+        """
+        anchors = [
+            (5.0, 0),
+            (6.0, 25),
+            (7.0, 50),
+            (8.5, 75),
+            (10.0, 100)
+        ]
+        
+        if total_bala <= anchors[0][0]:
+            return anchors[0][1]
+        elif total_bala >= anchors[-1][0]:
+            return anchors[-1][1]
+            
+        for i in range(len(anchors) - 1):
+            lo_b, lo_s = anchors[i]
+            hi_b, hi_s = anchors[i + 1]
+            if lo_b <= total_bala <= hi_b:
+                t = (total_bala - lo_b) / (hi_b - lo_b)
+                return lo_s + t * (hi_s - lo_s)
+        return 50.0
 
     def _evaluate_sav_support(self, sav_points: int) -> float:
         """

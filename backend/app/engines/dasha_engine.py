@@ -15,29 +15,58 @@ class DashaEngine:
     def __init__(self):
         self.scoring_matrix = DASHA_SCORING_MATRIX
 
-    def evaluate(self, normalized_data: Dict[str, Any], dependency_scores: Dict[str, Any] = None) -> Dict[str, Any]:
+    def evaluate(self, normalized_data: Dict[str, Any], dependency_scores: Dict[str, Any] = None, target_date: str = None) -> Dict[str, Any]:
         """
         Evaluates the timing multipliers for the currently active Dasha lords.
         """
+        import datetime
+        if target_date is None:
+            target_date = datetime.date.today().strftime('%Y-%m-%d')
+            
         if dependency_scores is None:
             dependency_scores = {}
 
         results = {}
         dashas = normalized_data.get("dashas", {})
+        timeline = dashas.get("timeline", [])
         
-        md_lord = dashas.get("mahadasha", {}).get("lord")
-        ad_lord = dashas.get("antardasha", {}).get("lord")
-
-        # If the parser hasn't found active dashas, return an empty evaluation
-        if not md_lord or not ad_lord:
+        # If the parser hasn't extracted a timeline, return an empty evaluation
+        if not timeline:
+            return results
+            
+        # Sort timeline chronologically
+        try:
+            timeline.sort(key=lambda x: datetime.datetime.strptime(x['start_date'], '%Y-%m-%d'))
+        except Exception:
+            pass # Failsafe against bad strings, but data is canonical
+            
+        target_dt = datetime.datetime.strptime(target_date, '%Y-%m-%d')
+        active_record = None
+        
+        for i in range(len(timeline)):
+            d1 = datetime.datetime.strptime(timeline[i]['start_date'], '%Y-%m-%d')
+            if i < len(timeline) - 1:
+                d2 = datetime.datetime.strptime(timeline[i+1]['start_date'], '%Y-%m-%d')
+                if d1 <= target_dt < d2:
+                    active_record = timeline[i]
+                    break
+            else:
+                if d1 <= target_dt:
+                    active_record = timeline[i]
+                    break
+                    
+        if not active_record:
             return results
 
-        md_lord = md_lord.lower()
-        ad_lord = ad_lord.lower()
+        md_lord = active_record.get("mahadasha", "unknown").lower()
+        ad_lord = active_record.get("antardasha", "unknown").lower()
+        pd_lord = active_record.get("pratyantardasha", "unknown").lower()
 
         planets = normalized_data.get("planets", {})
         md_planet_data = planets.get(md_lord, {})
         ad_planet_data = planets.get(ad_lord, {})
+        # Note: We can also compute axis for PD if we wanted, but currently focusing on MD/AD axis
+        pd_planet_data = planets.get(pd_lord, {})
 
         # Calculate the astrological axis (relationship) between MD and AD lords
         relationship_key = calculate_planetary_axis(
@@ -45,7 +74,7 @@ class DashaEngine:
             ad_planet_data.get("house", 1)
         )
 
-        relationship_multiplier = self.scoring_matrix["relationship_scalars"].get(relationship_key, 1.0)
+        relationship_multiplier = self.scoring_matrix.get("relationship_scalars", {}).get(relationship_key, 1.0)
 
         # Generate results for MD Lord
         md_base_score = dependency_scores.get(md_lord, {}).get("final_score", 0.0)
@@ -58,6 +87,28 @@ class DashaEngine:
         results[ad_lord] = self._build_dasha_payload(
             ad_lord, ad_base_score, "antardasha", relationship_multiplier, relationship_key
         )
+        
+        # Generate results for PD Lord
+        pd_base_score = dependency_scores.get(pd_lord, {}).get("final_score", 0.0)
+        results[pd_lord] = self._build_dasha_payload(
+            pd_lord, pd_base_score, "pratyantardasha", 1.0, "1_1" # PD doesn't use the multiplier in legacy
+        )
+        
+        # Calculate aggregated dasha strength
+        dasha_strength = (md_base_score * 0.50) + (ad_base_score * 0.30) + (pd_base_score * 0.20)
+        dasha_strength = max(0.0, min(100.0, dasha_strength))
+        
+        # Build synthesis
+        results["synthesis"] = {
+            "active_md": md_lord,
+            "active_ad": ad_lord,
+            "active_pd": pd_lord,
+            "md_strength": md_base_score,
+            "ad_strength": ad_base_score,
+            "pd_strength": pd_base_score,
+            "dasha_strength": round(dasha_strength, 2),
+            "target_date": target_date
+        }
 
         return results
 

@@ -12,12 +12,13 @@ class PlanetStrengthEngine:
         # Load scoring constants from central config to improve maintainability
         self.scoring_matrix = PLANET_SCORING_MATRIX
 
-    def calculate_strength(self, planet_data: dict) -> dict:
+    def calculate_strength(self, planet_data: dict, shadbala_data: dict = None) -> dict:
         """
         Calculates the overall strength of a planet.
         
         Args:
             planet_data (dict): Normalized JSON data for a single planet.
+            shadbala_data (dict): Optional authentic shadbala metrics extracted from the PDF.
             
         Returns:
             dict: Explainable payload with final score and score breakdown.
@@ -28,12 +29,10 @@ class PlanetStrengthEngine:
         # 1. Evaluate Dignity
         dignity_score = self._evaluate_dignity(planet_data.get("dignity", "neutral"))
         breakdown["dignity"] = dignity_score
-        total_score += dignity_score
 
         # 2. Evaluate House Placement
         house_score = self._evaluate_house(planet_data.get("house_type", "neutral"))
         breakdown["house_placement"] = house_score
-        total_score += house_score
 
         # 3. Evaluate State (Combustion / Retrogression)
         state_score = self._evaluate_state(
@@ -41,7 +40,6 @@ class PlanetStrengthEngine:
             planet_data.get("is_retrograde", False)
         )
         breakdown["state_modifiers"] = state_score
-        total_score += state_score
 
         # 4. Evaluate Aspects & Conjunctions
         aspect_score = self._evaluate_aspects(
@@ -49,7 +47,23 @@ class PlanetStrengthEngine:
             planet_data.get("malefic_aspects_count", 0)
         )
         breakdown["aspects"] = aspect_score
-        total_score += aspect_score
+
+        # Check if authentic shadbala data is available
+        planet_name = planet_data.get("name", "unknown").lower()
+        # Look for English name or fallback to handling exact dict keys if needed
+        # The parser normalizes keys to english names (sun, moon, etc.)
+        shadbala_info = None
+        if shadbala_data and isinstance(shadbala_data, dict):
+            shadbala_info = shadbala_data.get(planet_name)
+
+        if shadbala_info and "required_percentage" in shadbala_info:
+            req_pct = float(shadbala_info["required_percentage"])
+            base_score = self._map_shadbala_to_score(req_pct)
+            breakdown["shadbala_base_score"] = base_score
+            total_score = base_score
+        else:
+            # Fallback to legacy additive heuristics
+            total_score = dignity_score + house_score + state_score + aspect_score
 
         # 5. Future Extensibility: Ashtakavarga & Vargas (Phase 3+ enhancements)
         bav_score = self._evaluate_ashtakavarga(planet_data.get("bav_points", 0)) or 0
@@ -110,6 +124,40 @@ class PlanetStrengthEngine:
         score = (benefic_count * self.scoring_matrix["aspects"]["benefic_aspect"])
         score += (malefic_count * self.scoring_matrix["aspects"]["malefic_aspect"])
         return score
+
+    def _map_shadbala_to_score(self, req_pct: float) -> float:
+        """
+        Maps Shadbala required_percentage to the [0, 100] internal probability scale.
+        Anchors:
+            >= 160 -> 100
+            140 -> 80
+            120 -> 65
+            100 -> 50
+            80 -> 35
+            <= 40 -> 0
+        """
+        anchors = [
+            (0, 0),
+            (40, 0),
+            (80, 35),
+            (100, 50),
+            (120, 65),
+            (140, 80),
+            (160, 100)
+        ]
+        
+        if req_pct <= anchors[1][0]:
+            return anchors[1][1]
+        elif req_pct >= anchors[-1][0]:
+            return anchors[-1][1]
+            
+        for i in range(len(anchors) - 1):
+            lo_p, lo_s = anchors[i]
+            hi_p, hi_s = anchors[i + 1]
+            if lo_p <= req_pct <= hi_p:
+                t = (req_pct - lo_p) / (hi_p - lo_p)
+                return lo_s + t * (hi_s - lo_s)
+        return 50.0
 
     # --- Future Extensibility Stubs ---
 

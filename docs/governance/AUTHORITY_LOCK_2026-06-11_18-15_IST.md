@@ -27,7 +27,7 @@ Define the official authority order:
 5. VEDIC_AI_SOURCE_OF_TRUTH.md
 6. ARCHITECTURE_RULES.md
 7. PROJECT_HANDOVER_MASTER
-8. GOCHARA_ENGINE_MASTER.md
+8. GOCHARA_MANDALI_GOVERNANCE_v1.md
 9. Reference Documents
 10. Historical Audit Files
 
@@ -94,9 +94,9 @@ Follow DR-003. Do not recreate Kuja Dosha mathematics unless explicitly instruct
 
 # SECTION 4 — GOCHARA AUTHORITY LOCK
 
-`GOCHARA_ENGINE_MASTER.md` is the authoritative transit specification.
+`GOCHARA_MANDALI_GOVERNANCE_v1.md` is the authoritative transit specification.
 For transit-related architecture:
-`GOCHARA_ENGINE_MASTER.md` prevails over older transit assumptions.
+`GOCHARA_MANDALI_GOVERNANCE_v1.md` prevails over older transit assumptions.
 
 Locked Decision:
 Samartha Gochara is a Moon Nakshatra Pada Based System.

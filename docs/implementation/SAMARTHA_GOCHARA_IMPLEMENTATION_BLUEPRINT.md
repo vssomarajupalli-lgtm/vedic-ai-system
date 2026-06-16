@@ -1,6 +1,6 @@
 # SAMARTHA GOCHARA IMPLEMENTATION BLUEPRINT
 
-This blueprint defines the architecture for the proprietary Samartha Gochara system as mandated by `GOCHARA_ENGINE_MASTER.md`. It outlines the exact integration points required to transform the current classical transit calculator into a True Micro Gochara Engine, without violating DR-007 (Engine Isolation).
+This blueprint defines the architecture for the proprietary Samartha Gochara system as mandated by `GOCHARA_MANDALI_GOVERNANCE_v1.md`. It outlines the exact integration points required to transform the current classical transit calculator into a True Micro Gochara Engine, without violating DR-007 (Engine Isolation).
 
 **Authority Clarification:** Samartha Gochara is a proprietary micro-gochara system and not a standard transit engine.
 
@@ -50,7 +50,7 @@ The entirety of `transit_engine.py` is reusable as the foundational "Macro Trans
 ### E. Dasha Synchronization Layer
 *   **Integration**: Leverages the current `_compute_dasha_sync`.
 *   **Function**: Cross-references the `pada_transit_matrix` against the currently active Dasha lords.
-*   **Output**: Produces printable Dasha-linked transit strings required by `GOCHARA_ENGINE_MASTER.md` Section 4 (e.g., *"During Jupiter Mahadasha, Saturn transiting the 5th Pada triggers..."*).
+*   **Output**: Produces printable Dasha-linked transit strings required by `GOCHARA_MANDALI_GOVERNANCE_v1.md` Section 4 (e.g., *"During Jupiter Mahadasha, Saturn transiting the 5th Pada triggers..."*).
 
 ### F. Domain Trigger Matrix
 *   **Input**: The combined outputs of the Classical Layer, Pada Belt Mapping, and Dasha Sync.

@@ -1,12 +1,12 @@
-# README_FIRST.md
-
 # IMPORTANT
 
 Before making any code changes, read ONLY the following files in order.
 
-## PRIMARY AUTHORITY (MANDATORY)
+---
 
-### 1. VEDIC_AI_SOURCE_OF_TRUTH.md
+# PRIMARY AUTHORITY (MANDATORY)
+
+## 1. VEDIC_AI_SOURCE_OF_TRUTH.md
 
 Defines:
 
@@ -15,7 +15,7 @@ Defines:
 * Canonical JSON ownership
 * System boundaries
 
-### 2. VEDIC-AI SYSTEM – PROJECT HANDOVER STATUS (June 2026).md
+## 2. VEDIC-AI SYSTEM – PROJECT HANDOVER STATUS (June 2026).md
 
 Defines:
 
@@ -25,7 +25,7 @@ Defines:
 * Active priorities
 * Known issues
 
-### 3. ARCHITECTURE_RULES.md
+## 3. ARCHITECTURE_RULES.md
 
 Defines:
 
@@ -33,6 +33,8 @@ Defines:
 * Development rules
 * Coding boundaries
 * Engine responsibilities
+
+---
 
 If any other document conflicts with these files, the PRIMARY AUTHORITY documents always win.
 
@@ -46,7 +48,7 @@ These documents are design blueprints and future planning references.
 
 They are NOT project status documents.
 
-### reference/PROJECT_REQUIREMENTS.md
+## reference/PROJECT_REQUIREMENTS.md
 
 Purpose:
 
@@ -61,7 +63,7 @@ DESIGN REFERENCE ONLY
 
 ---
 
-### reference/VEDIC_AI_MASTER_ARCHITECTURE.md
+## reference/VEDIC_AI_MASTER_ARCHITECTURE.md
 
 Purpose:
 
@@ -75,7 +77,7 @@ DESIGN REFERENCE ONLY
 
 ---
 
-### reference/VEDIC_AI_MASTER_DEVELOPMENT_ROADMAP.md
+## reference/VEDIC_AI_MASTER_DEVELOPMENT_ROADMAP.md
 
 Purpose:
 
@@ -89,7 +91,7 @@ DESIGN REFERENCE ONLY
 
 ---
 
-### reference/VEDIC_AI_PROBABILITY_ENGINE_ARCHITECTURE.md
+## reference/VEDIC_AI_PROBABILITY_ENGINE_ARCHITECTURE.md
 
 Purpose:
 
@@ -103,7 +105,7 @@ DESIGN REFERENCE ONLY
 
 ---
 
-### reference/VEDIC_AI_VERSION_1_RELEASE.md
+## reference/VEDIC_AI_VERSION_1_RELEASE.md
 
 Purpose:
 
@@ -117,13 +119,34 @@ DESIGN REFERENCE ONLY
 
 ---
 
+# GOCHARA GOVERNANCE
+
+## GOCHARA_MANDALI_GOVERNANCE_v1.md
+
+Purpose:
+
+* Moon-centered Mandali system
+* Mandali construction rules
+* Sade Sati logic
+* Elinati Shani logic
+* Transit interpretation architecture
+* Future Gochara implementation rules
+
+Status:
+
+FUTURE IMPLEMENTATION AUTHORITY
+
+All future Gochara development must follow this document.
+
+---
+
 # HISTORICAL DOCUMENTS
 
 The following documents are historical records only.
 
 Do NOT use them as implementation authority.
 
-### archive/
+## archive/
 
 All files inside:
 
@@ -163,11 +186,32 @@ canonical_page_map.json
 
 ↓
 
-Vedic-AI System
+JsonNormalizer
 
 ↓
 
-Deterministic Astrology Intelligence
+Deterministic Evaluation Engines
+
+* Planet Strength Engine
+* House Strength Engine
+* Yoga Engine
+* Varga Engine
+* Ashtakavarga Engine
+* Dasha Engine
+* Natal Promise Engine
+* Question Engine
+
+↓
+
+JSON API
+
+↓
+
+PWA Frontend
+
+↓
+
+User Output
 
 ---
 
@@ -199,7 +243,9 @@ Build a deterministic Vedic Astrology Intelligence System that:
 7. Calculates Yoga Effects
 8. Calculates Dasha Activation
 9. Calculates Natal Promise
-10. Produces deterministic astrology outputs
+10. Evaluates Domain Questions
+11. Produces deterministic astrology outputs
+12. Generates API-ready and PWA-ready results
 
 ---
 
@@ -207,31 +253,104 @@ Build a deterministic Vedic Astrology Intelligence System that:
 
 ## V1 Completion
 
-### V1.1 Foundation Upgrade
+### Phase A — Foundation Stabilization
 
-* Functional Benefics / Malefics
-* Yogakaraka Logic
-* House Lord Placement
-* Moolatrikona
-* Combustion
+Completed / Near Completion
 
-### V1.2 Domain Upgrade
+* Shadbala Extraction
+* Bhava Bala Extraction
+* Planet Strength Integration
+* House Strength Integration
+* Dosha Extraction
+* Dasha Extraction
 
-* Upapada Lagna
-* Darakaraka
-* Amatyakaraka
-* Indu Lagna
-* Kuja Dosha
+### Phase B — Dasha Integration
+
+Completed / Active
+
+* Timeline Resolution
+* MD / AD / PD Detection
+* Dasha Strength Synthesis
+* Question Pipeline Integration
+
+### Phase C — Domain Intelligence
+
+Active
+
+* Natal Promise Refinement
+* Question Engine Refinement
+* Domain Scoring Governance
+* Dosha Consumption Strategy
+
+### Phase D — Frontend Readiness
+
+Pending
+
+* API Cleanup
+* PWA Integration
+* Dashboard Finalization
+* User Question Flow
 
 ---
 
 # FUTURE PHASES
 
-After V1 completion:
+After V1 Completion
 
-* Dasha Expansion
-* Gochara (Transit) System
-* Event Timing System
+## Phase 2
+
+Gochara Mandali System
+
+Including:
+
+* Moon-centered Mandalis
+* Sade Sati
+* Elinati Shani
+* Mandali Transit Effects
+* Transit Timing Layers
+
+## Phase 3
+
+Event Timing System
+
+Including:
+
+* Dasha + Gochara Correlation
+* Event Windows
+* Trigger Analysis
+
+## Phase 4
+
+Deployment
+
+* PWA Release
+* Mobile Packaging
+* Production Infrastructure
+
+---
+
+# IMPLEMENTATION PHILOSOPHY
+
+Priority Order:
+
+1. Extract Truth
+2. Normalize Truth
+3. Consume Truth
+4. Derive Logic
+5. Present Results
+
+Never:
+
+* Invent astrology data
+* Recalculate extracted values unnecessarily
+* Override extracted truth with heuristics
+
+Always:
+
+* Prefer extracted source data
+* Prefer deterministic calculations
+* Prefer transparent formulas
+* Maintain auditability
 
 ---
 
@@ -241,7 +360,8 @@ Priority Order:
 
 1. Source Code
 2. PRIMARY AUTHORITY Documents
-3. DESIGN REFERENCES
-4. HISTORICAL DOCUMENTS
+3. GOCHARA_MANDALI_GOVERNANCE_v1.md
+4. DESIGN REFERENCES
+5. HISTORICAL DOCUMENTS
 
 If a conflict exists, the higher priority source always wins.
