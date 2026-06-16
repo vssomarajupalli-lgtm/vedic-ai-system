@@ -82,6 +82,7 @@ class HoroscopeSourceLoader:
         raw_dashas         = self._extract_dashas(canonical_content)
         raw_houses         = self._extract_houses(canonical_content)
         raw_ashtakavarga   = self._extract_ashtakavarga(canonical_content)
+        raw_doshas         = self._extract_doshas(canonical_content)
 
         # 4. Assemble the final raw_input_data payload
         return {
@@ -91,6 +92,7 @@ class HoroscopeSourceLoader:
             "raw_dashas":       raw_dashas,
             "raw_houses":       raw_houses,
             "raw_ashtakavarga": raw_ashtakavarga,
+            "raw_doshas":       raw_doshas,
             "_load_report":     self._build_load_report(section_map)
         }
 
@@ -416,6 +418,27 @@ class HoroscopeSourceLoader:
             "AshtakavargaEngine will receive empty input."
         )
         return {"sav_chart": {}, "bav_charts": {}}
+
+    def _extract_doshas(self, content: dict) -> dict:
+        """
+        Extracts raw Dosha data from canonical_content.json.
+        """
+        for key in ("doshas", "dosha"):
+            if key in content:
+                self._sections_found.append(key)
+                doshas_raw = content[key]
+                if isinstance(doshas_raw, dict):
+                    return doshas_raw
+                else:
+                    self._warnings.append(
+                        f"'{key}' section has unexpected type: {type(doshas_raw).__name__}. "
+                        f"Expected dict. Returning empty."
+                    )
+                    return {}
+
+        self._sections_missing.append("doshas")
+        # Doshas missing is not a blocking warning as many charts have no doshas
+        return {}
 
     # -------------------------------------------------------------------------
     # Diagnostic Report

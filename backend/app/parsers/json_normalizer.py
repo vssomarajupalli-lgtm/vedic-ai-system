@@ -87,6 +87,7 @@ class JsonNormalizer:
             "dashas": self._normalize_dashas(raw_data.get("raw_dashas") or raw_data.get("dashas", {})),
             "shadbala": self._normalize_shadbala(raw_data.get("raw_shadbala") or raw_data.get("shadbala", {})),
             "bhava_bala": self._normalize_bhava_bala(raw_data.get("raw_bhava_bala") or raw_data.get("bhava_bala", {})),
+            "doshas": self._normalize_doshas(raw_data.get("raw_doshas") or raw_data.get("doshas", {})),
             "transits": {         # Placeholder for Phase 7 Transit Engine
                 "active_modifiers": []
             }
@@ -339,6 +340,12 @@ class JsonNormalizer:
                 "total_bala": self._extract_float(b_data.get("total_bala", 0.0))
             }
         return normalized
+
+    def _normalize_doshas(self, raw_doshas: dict) -> dict:
+        """Passes through dosha data unmodified for backend processing."""
+        if not isinstance(raw_doshas, dict):
+            return {}
+        return raw_doshas
 
     # --- Isolated Helper Methods ---
 

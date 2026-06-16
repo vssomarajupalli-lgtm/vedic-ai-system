@@ -141,7 +141,8 @@ class PipelineRunner:
             "vargas":       varga_results,
             "dashas":       dasha_results,
             "rasis":        rasi_results,
-            "ashtakavarga": av_results
+            "ashtakavarga": av_results,
+            "doshas":       normalized_payload.get("doshas", {})
         }
 
         # 8. Natal Promise Engine (Domain Promise Layer)
