@@ -41,7 +41,12 @@ class TestEphemerisService(unittest.TestCase):
 
     def test_ketu_derivation(self):
         """Test that Ketu is exactly 6 signs opposite Rahu."""
-        rahu = {"name": "rahu", "sign": "aries", "degree": 15.5}
+        rahu = {
+            "name": "rahu",
+            "sign": "aries",
+            "degree": 15.5,
+            "longitude": 15.5
+        }
         ketu = self.service._calculate_ketu_position(rahu)
         self.assertEqual(ketu["name"], "ketu")
         self.assertEqual(ketu["sign"], "libra")
