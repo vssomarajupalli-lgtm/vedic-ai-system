@@ -7,8 +7,8 @@ class TestYogaEngine(unittest.TestCase):
 
     def test_pancha_mahapurusha_yoga(self):
         # Mars in 10th house, exalted
-        payload = {"planets": {"mars": {"house": 10}}, "houses": {}}
-        p_res = {"mars": {"dignity": "exalted", "final_score": 80.0}}
+        payload = {"planets": {"mars": {"house": 10, "dignity": "exalted"}}, "houses": {}}
+        p_res = {"mars": {"final_score": 80.0}}
         res = self.engine.evaluate(payload, p_res, {})
         
         yogas = res["active_yogas"]
@@ -18,8 +18,8 @@ class TestYogaEngine(unittest.TestCase):
 
     def test_gaja_kesari_yoga(self):
         # Jupiter in 4th from Moon
-        payload = {"planets": {"jupiter": {"house": 4}, "moon": {"house": 1}}, "houses": {}}
-        p_res = {"jupiter": {"dignity": "neutral", "final_score": 75.0}, "moon": {"dignity": "neutral", "final_score": 65.0}}
+        payload = {"planets": {"jupiter": {"house": 4, "dignity": "neutral"}, "moon": {"house": 1, "dignity": "neutral"}}, "houses": {}}
+        p_res = {"jupiter": {"final_score": 75.0}, "moon": {"final_score": 65.0}}
         res = self.engine.evaluate(payload, p_res, {})
         
         gk = [y for y in res["active_yogas"] if y["category"] == "Gaja Kesari Yoga"]
@@ -69,10 +69,10 @@ class TestYogaEngine(unittest.TestCase):
     def test_neecha_bhanga_raja_yoga(self):
         # Mars debilitated in 4, Dispositor Moon in 1 (Kendra)
         payload = {
-            "planets": {"mars": {"house": 4}, "moon": {"house": 1}},
+            "planets": {"mars": {"house": 4, "dignity": "debilitated"}, "moon": {"house": 1}},
             "houses": {"4": {"lord": "moon"}}
         }
-        p_res = {"mars": {"dignity": "debilitated"}, "moon": {"final_score": 90.0}}
+        p_res = {"mars": {"final_score": 50.0}, "moon": {"final_score": 90.0}}
         res = self.engine.evaluate(payload, p_res, {})
         
         nb = [y for y in res["active_yogas"] if y["category"] == "Neecha Bhanga Raja Yoga"]
