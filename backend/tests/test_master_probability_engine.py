@@ -160,31 +160,31 @@ class TestMasterProbabilityEngine(unittest.TestCase):
 
     def test_varga_neutral_when_no_modifiers(self):
         """Planet with empty modifiers → 50 baseline."""
-        vargas = {"sun": self._varga({})}
+        vargas = {"D9": {"planets": {"sun": self._varga({})}}}
         score = self.engine._varga_validation(vargas)
         self.assertAlmostEqual(score, 50.0, places=2)
 
     def test_varga_positive_modifiers_above_50(self):
         """Positive modifier net → score > 50."""
-        vargas = {"jupiter": self._varga({"D9_vargottama_bonus": 15.0})}
+        vargas = {"D9": {"planets": {"jupiter": self._varga({"D9_vargottama_bonus": 15.0})}}}
         score = self.engine._varga_validation(vargas)
         self.assertGreater(score, 50.0)
 
     def test_varga_negative_modifiers_below_50(self):
         """Negative modifier net → score < 50."""
-        vargas = {"sun": self._varga({"D9_dignity_modifier": -5.0})}
+        vargas = {"D9": {"planets": {"sun": self._varga({"D9_dignity_modifier": -5.0})}}}
         score = self.engine._varga_validation(vargas)
         self.assertLess(score, 50.0)
 
     def test_varga_clamped_at_100(self):
         """Very large positive modifier → clamped to 100."""
-        vargas = {"jupiter": self._varga({"huge_bonus": 200.0})}
+        vargas = {"D9": {"planets": {"jupiter": self._varga({"huge_bonus": 200.0})}}}
         score = self.engine._varga_validation(vargas)
         self.assertEqual(score, 100.0)
 
     def test_varga_clamped_at_zero(self):
         """Very large negative modifier → clamped to 0."""
-        vargas = {"sun": self._varga({"huge_penalty": -200.0})}
+        vargas = {"D9": {"planets": {"sun": self._varga({"huge_penalty": -200.0})}}}
         score = self.engine._varga_validation(vargas)
         self.assertEqual(score, 0.0)
 
@@ -301,7 +301,7 @@ class TestMasterProbabilityEngine(unittest.TestCase):
             "planets": {"sun":   self._planet(0)},
             "houses":  {"1":     self._house(0)},
             "rasis":   {"aries": self._rasi(0)},
-            "vargas":  {"sun":   self._varga({"penalty": -200.0})},
+            "vargas":  {"D9": {"planets": {"sun":   self._varga({"penalty": -200.0})}}},
         })
         self.assertGreaterEqual(result["final_score"], 0)
 
@@ -346,12 +346,14 @@ class TestMasterProbabilityEngine(unittest.TestCase):
                 "aquarius": self._rasi(68), "pisces": self._rasi(34)
             },
             "vargas": {
-                "jupiter": self._varga({"D9_vargottama_bonus": 15.0}),
-                "saturn":  self._varga({
-                    "D9_dignity_modifier": 15.0,
-                    "D9_vargottama_bonus": 15.0,
-                    "D10_dignity_modifier": 10.0
-                }),
+                "D9": {"planets": {
+                    "jupiter": self._varga({"D9_vargottama_bonus": 15.0}),
+                    "saturn":  self._varga({
+                        "D9_dignity_modifier": 15.0,
+                        "D9_vargottama_bonus": 15.0,
+                        "D10_dignity_modifier": 10.0
+                    })
+                }},
             },
             "dashas": {
                 "saturn":  self._dasha(50, 1.21, "mahadasha"),

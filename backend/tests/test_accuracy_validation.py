@@ -522,8 +522,8 @@ class TestMasterProbabilityAxioms(unittest.TestCase):
         D9 vargottama bonus adds +15 to the varga modifier.
         Varga factor with vargottama must score above 50 (neutral).
         """
-        with_vargottama    = {"jupiter": {"modifiers": {"D9_vargottama_bonus": 15.0}}}
-        without_vargottama = {"jupiter": {"modifiers": {}}}
+        with_vargottama    = {"D9": {"planets": {"jupiter": {"modifiers": {"D9_vargottama_bonus": 15.0}}}}}
+        without_vargottama = {"D9": {"planets": {"jupiter": {"modifiers": {}}}}}
 
         score_with    = self.engine._varga_validation(with_vargottama)
         score_without = self.engine._varga_validation(without_vargottama)
