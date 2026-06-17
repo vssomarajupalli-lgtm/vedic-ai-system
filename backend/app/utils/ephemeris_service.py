@@ -94,6 +94,7 @@ class EphemerisService:
             "name": planet_name,
             "sign": self.zodiac_signs[sign_index],
             "degree": degree_in_sign,
+            "longitude": raw_longitude,
             "is_retrograde": is_retrograde
         }
 
@@ -103,10 +104,12 @@ class EphemerisService:
         """
         rahu_sign_idx = self.zodiac_signs.index(rahu_data["sign"])
         ketu_sign_idx = (rahu_sign_idx + 6) % 12
+        ketu_longitude = (rahu_data["longitude"] + 180.0) % 360.0
         
         return {
             "name": "ketu",
             "sign": self.zodiac_signs[ketu_sign_idx],
             "degree": rahu_data["degree"],
+            "longitude": ketu_longitude,
             "is_retrograde": True
         }

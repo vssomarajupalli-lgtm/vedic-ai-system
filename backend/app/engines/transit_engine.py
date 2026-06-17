@@ -39,7 +39,7 @@ from app.config.astrology_constants import (
     DOMAIN_CONFIG,
 )
 from app.utils.astrology_math import clamp_score
-
+from app.engines.mandali_generator import MandaliGenerator
 
 class TransitEngine:
     """
@@ -116,11 +116,20 @@ class TransitEngine:
 
         natal_planets = natal_payload.get("planets", {}) if natal_payload else {}
 
-        # --- Normalize transit planet house numbers ---
-        t_houses = {
-            p: int(v.get("house", 0))
-            for p, v in transit_planets.items()
-        }
+        # --- Normalize transit planet house numbers (Mandali injection point) ---
+        moon_longitude = natal_planets.get("moon", {}).get("longitude", None)
+        moon_pada = None
+        if moon_longitude is not None:
+            moon_pada = MandaliGenerator.get_absolute_pada(moon_longitude)
+            
+        t_houses = {}
+        for p, v in transit_planets.items():
+            if "longitude" in v and moon_pada is not None:
+                # Phase 7 Governance: Moon-Centered Mandali Resolution
+                t_houses[p] = MandaliGenerator.resolve_transit_mandali(v["longitude"], moon_pada)
+            else:
+                # Legacy fallback for tests supplying only classical {house: N} mocks
+                t_houses[p] = int(v.get("house", 0))
 
         # --- Run all 5 sub-systems ---
         house_act, house_factors    = self._compute_house_activation(t_houses)
@@ -663,17 +672,11 @@ class TransitEngine:
         if sat_house and self.house_quality.get("saturn", {}).get(sat_house, 0) < 0:
             flags.append("saturn_transit_negative")
 
-        # Sadesati — Saturn transiting H12, H1, or H2 from natal Moon sign
-        # Natal Moon's house is used as a Janma Rashi proxy (house = Rashi position)
-        moon_natal_house = int(natal_planets.get("moon", {}).get("house", 0))
-        if sat_house and moon_natal_house > 0:
-            sadesati_houses = {
-                moon_natal_house,
-                ((moon_natal_house - 2) % 12) + 1,   # H12 from moon = moon_house -1
-                (moon_natal_house % 12) + 1,           # H2 from moon = moon_house +1
-            }
-            if sat_house in sadesati_houses:
-                flags.append("saturn_sadesati")
+        # Sadesati — Saturn transiting previous, current, or next Mandali
+        # Because t_houses represents the relative Mandali (where 1 = Natal Moon),
+        # Sade Sati is strictly active in Mandali 12, 1, and 2.
+        if sat_house and sat_house in {12, 1, 2}:
+            flags.append("saturn_sadesati")
 
         # Dasha lord transiting
         active_lords = set()

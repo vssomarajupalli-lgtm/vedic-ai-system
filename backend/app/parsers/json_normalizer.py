@@ -111,6 +111,10 @@ class JsonNormalizer:
                 "name": std_name,
                 "sign": self._clean_name(p_data.get("sign", ""), self.sign_map),
                 "degree": self._extract_float(p_data.get("degree", 0.0)),
+                "longitude": self._calculate_longitude(
+                    self._clean_name(p_data.get("sign", ""), self.sign_map),
+                    self._extract_float(p_data.get("degree", 0.0))
+                ),
                 "nakshatra": self._clean_string(p_data.get("nakshatra", "")),
                 "house": self._extract_int(p_data.get("house", 0)),
                 "house_type": self._clean_string(p_data.get("house_type", "neutral")),
@@ -143,6 +147,11 @@ class JsonNormalizer:
                 
                 normalized[v_id]["planets"][std_name] = {
                     "sign": varga_sign,
+                    "degree": self._extract_float(p_data.get("degree", 0.0)),
+                    "longitude": self._calculate_longitude(
+                        varga_sign,
+                        self._extract_float(p_data.get("degree", 0.0))
+                    ),
                     "dignity": self._clean_string(p_data.get("dignity", "neutral")),
                     "is_vargottama": bool(varga_sign and d1_sign and varga_sign == d1_sign)
                 }
@@ -376,6 +385,22 @@ class JsonNormalizer:
         try: return int(float(val)) # float cast first handles strings like "14.0"
         except (ValueError, TypeError): return 0
 
-    def _extract_boolean(self, val: any) -> bool:
-        if isinstance(val, bool): return val
-        return str(val).strip().lower() in ["true", "yes", "y", "1", "r", "retrograde", "c", "combust"]
+    def _extract_boolean(self, value: any) -> bool:
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            v = value.strip().lower()
+            return v in ("true", "yes", "1", "y", "r", "retrograde", "c", "combust")
+        return bool(value)
+
+    def _calculate_longitude(self, sign_name: str, degree: float) -> float:
+        """Helper to compute absolute 0-360 longitude from sign and degree."""
+        SIGNS_IN_ORDER = [
+            "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+            "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
+        ]
+        try:
+            sign_idx = SIGNS_IN_ORDER.index(sign_name)
+            return round((sign_idx * 30.0) + degree, 4)
+        except ValueError:
+            return degree
