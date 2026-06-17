@@ -102,9 +102,14 @@ RAJU_CANONICAL_RAW = {
         }
     },
     "raw_dashas": {
-        "mahadasha":       "Shani",
-        "antardasha":      "Guru",
-        "pratyantardasha": "Kuja"
+        "timeline": [
+            {
+                "start_date": "2000-01-01",
+                "mahadasha": "Shani",
+                "antardasha": "Guru",
+                "pratyantardasha": "Kuja"
+            }
+        ]
     },
     "raw_ashtakavarga": {
         "sav_chart": {
