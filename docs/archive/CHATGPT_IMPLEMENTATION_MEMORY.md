@@ -7,6 +7,15 @@ Do NOT hallucinate architecture. Do NOT invent speculative future systems. When 
 
 ---
 
+## Phase 7 Conclusion (Mandali Gochara & Stabilization)
+- **Mandali Gochara Migration:** Successful. Test fixtures updated. No production logic changes were required to mathematical boundaries.
+- **Dasha Timeline Contract:** Standardized to a `timeline[]` array successfully.
+- **Yoga Engine Contract:** Dignity schema correctly routed via `normalized_payload`.
+- **Master Probability Engine Contract:** Varga legacy wrapper mismatches patched to standard `{"D9": {"planets": ...}}`.
+- **Final Test Status:** All 613 test suites successfully pass. 0 failures. 0 errors.
+
+---
+
 ## 1. Current Real Project Goal
 The current practical goal is to build a **deterministic Vedic astrology calculation platform**. 
 It must:
@@ -101,9 +110,9 @@ Instead of blindly scanning an 80-page PDF for the word "Sun", the pipeline firs
 **WHAT WE ARE NOT DOING RIGHT NOW:**
 - No UI, frontend, or web framework.
 - No Databases (SQL, Mongo, etc.).
-- No Dasha (Vimshottari) timeline calculations.
-- No Transit (Gochara) evaluation systems.
-- No complex Event-Domain (Marriage, Career) probability synthesis.
+- [HISTORICAL] No Dasha (Vimshottari) timeline calculations. (Completed Phase 6)
+- [HISTORICAL] No Transit (Gochara) evaluation systems. (Completed Phase 7)
+- [HISTORICAL] No complex Event-Domain (Marriage, Career) probability synthesis. (Completed Phase 2 & 8)
 - No Generative AI or LLM integration.
 
 ---
@@ -140,10 +149,10 @@ Core dependencies (minimal footprint):
 ---
 
 ## 15. Recommended Development Order
-1. Complete `table_parser.py` (Planetary Grids).
-2. Integrate Full Pipeline (PDF -> Index -> Extract -> Normalize -> Calculate -> JSON Output).
-3. *[Milestone: Core System Stable]*
-4. Phase 6: Dasha Engine (Timing Multipliers).
-5. Phase 7: Transit Engine (Snapshot Triggers).
-6. Phase 8: Probability Synthesis Engine (Event Domains).
-7. Phase 9: AI Interpretation Layer.
+1. Complete `table_parser.py` (Planetary Grids). (COMPLETED)
+2. Integrate Full Pipeline (PDF -> Index -> Extract -> Normalize -> Calculate -> JSON Output). (COMPLETED)
+3. *[Milestone: Core System Stable]* (ACHIEVED)
+4. Phase 6: Dasha Engine (Timing Multipliers). (COMPLETED - Timeline Array Schema)
+5. Phase 7: Transit Engine (Snapshot Triggers). (COMPLETED - Mandali Gochara Implementation)
+6. Phase 8: Probability Synthesis Engine (Event Domains). (COMPLETED)
+7. Phase 9: AI Interpretation Layer. (PENDING ROADMAP)

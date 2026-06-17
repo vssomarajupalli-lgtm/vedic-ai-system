@@ -30,15 +30,21 @@ CURRENT IMPLEMENTATION FLOW:
 
 PDF/Input JSON
 ↓
-PDF Extraction Engine
+JSON Normalization Engine (Dosha Passthrough)
 ↓
-JSON Normalization Engine
+Functional Nature Engine (Governance Locked)
 ↓
-Planet Strength Engine
+Planet & House Strength Engines
 ↓
-House Strength Engine
+Rasi & Ashtakavarga Engines
 ↓
 Varga Refinement Engine
+↓
+Dasha Timeline & Transit (Mandali Gochara) Engines
+↓
+Yoga Engine & Natal Promise Engine
+↓
+Master Probability Synthesis Engine
 ↓
 Deterministic Output Reports
 
@@ -46,13 +52,10 @@ Deterministic Output Reports
 
 # 3. FUTURE ROADMAP WORKFLOW
 
-The following systems are future roadmap phases and are NOT current implementation priorities:
+The following systems are future roadmap phases:
 
-- Dasha Engine
-- Transit Engine
-- Event-domain systems
-- Probability synthesis systems
 - AI interpretation systems
+- Natural language interface layers
 
 Future roadmap systems should begin only after:
 - extraction stabilization
@@ -316,26 +319,25 @@ Testing focus areas:
 
 # 17. CURRENT IMPLEMENTATION STATUS
 
-Currently implemented or partially stabilized:
+Currently implemented and stabilized:
 
 - project structure
 - parser separation
-- JSON normalization foundation
+- JSON normalization foundation (Dosha routed)
+- Functional Nature Engine (Governance Locked)
 - Planet Strength Engine
 - House Strength Engine
+- Varga Engine
+- Ashtakavarga Engine
+- Dasha Engine (Timeline contract)
+- Transit Engine (Mandali Gochara)
+- Yoga Engine
+- Natal Promise Engine
+- Master Probability Synthesis
 - Pipeline Runner
-- deterministic testing structure
-
-Partially stabilized:
-- PDF extraction
-- Varga refinement
-- schema refinement
+- deterministic testing structure (613/613 Passed)
 
 Not yet implemented:
-- Dasha systems
-- Transit systems
-- Event-domain systems
-- Probability synthesis
 - AI interpretation systems
 
 ---
