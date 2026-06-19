@@ -41,3 +41,10 @@ If a bad generation or hallucinated code breaks the math engines or causes the t
 3. If necessary, revert the repository state completely back to the stable tag:
    `git checkout v0.7.1-phase7-final`
 4. **Never modify tests or engine logic to force broken code to pass.**
+
+## 7. Phase 9 Note
+**Question Engine Direction:**
+"The original 24 Canonical Questionnaire Grid remains the foundation.
+Future expansion uses Question Registry architecture:
+24 parent nodes → 200+ user questions.
+No engine duplication allowed."
