@@ -28,7 +28,7 @@ class TestReportBuilder(unittest.TestCase):
                     "wealth": {"score": 90, "grade": "HIGH"},
                     "career": {"score": 50, "grade": "MODERATE"}
                 },
-                "dashas": {"current_dasha": {"mahadasha": "Venus", "antardasha": "Jupiter"}},
+                "dashas": {"synthesis": {"active_md": "Venus", "active_ad": "Jupiter", "active_pd": "Rahu"}},
                 "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
             }
         }
@@ -45,4 +45,4 @@ class TestReportBuilder(unittest.TestCase):
         
         # Wealth should be the top domain in executive summary
         self.assertEqual(report.executive_summary.data_points["top_domains"][0], "Wealth")
-        self.assertEqual(report.executive_summary.data_points["current_dasha"], "Venus-Jupiter")
+        self.assertEqual(report.executive_summary.data_points["current_dasha"], "Venus-Jupiter-Rahu")

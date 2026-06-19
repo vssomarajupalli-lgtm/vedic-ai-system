@@ -55,7 +55,7 @@ class ExecutiveSummarySection(BaseReportSection):
     def extract(self, pipeline_data: Dict[str, Any]) -> ReportSectionData:
         # A lightweight synthesis of top domains and current dasha
         promise = pipeline_data.get("engine_outputs", {}).get("natal_promise", {})
-        dasha = pipeline_data.get("engine_outputs", {}).get("dashas", {}).get("current_dasha", {})
+        dasha_synthesis = pipeline_data.get("engine_outputs", {}).get("dashas", {}).get("synthesis", {})
         
         top_domains = sorted(
             promise.items(), 
@@ -64,14 +64,21 @@ class ExecutiveSummarySection(BaseReportSection):
         )[:3]
         
         top_names = [d[0].capitalize() for d in top_domains]
-        dasha_str = f"{dasha.get('mahadasha', 'Unknown')}-{dasha.get('antardasha', 'Unknown')}"
+        md_str = str(dasha_synthesis.get('active_md', 'Unknown')).capitalize()
+        ad_str = str(dasha_synthesis.get('active_ad', 'Unknown')).capitalize()
+        pd_str = str(dasha_synthesis.get('active_pd', 'Unknown')).capitalize()
+        
+        dasha_str = f"{md_str}-{ad_str}-{pd_str}"
         
         return ReportSectionData(
             title="Executive Summary",
             summary_text=f"The most prominent life domains are {', '.join(top_names)}. The current active timeline is the {dasha_str} Dasha.",
             data_points={
                 "top_domains": top_names,
-                "current_dasha": dasha_str
+                "current_dasha": dasha_str,
+                "mahadasha": md_str,
+                "antardasha": ad_str,
+                "pratyantardasha": pd_str
             }
         )
 
