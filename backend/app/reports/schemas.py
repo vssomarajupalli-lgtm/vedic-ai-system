@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
 class ReportSectionData(BaseModel):
@@ -11,6 +11,16 @@ class ReportSectionData(BaseModel):
     data_points: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
 
+class ClientProfile(BaseModel):
+    name: str = "Unknown"
+    dob: str = "Unknown"
+    tob: str = "Unknown"
+    pob: str = "Unknown"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timezone: Optional[float] = None
+    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 class FinalReportSchema(BaseModel):
     """
     The complete generated report serving as the source of truth for 
@@ -20,7 +30,7 @@ class FinalReportSchema(BaseModel):
     generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     
     # Core identifying information
-    client_info: Dict[str, str] = Field(default_factory=dict)
+    client_profile: ClientProfile = Field(default_factory=ClientProfile)
     
     # Executive overview
     executive_summary: ReportSectionData

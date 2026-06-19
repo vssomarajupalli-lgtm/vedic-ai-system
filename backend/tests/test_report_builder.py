@@ -39,7 +39,7 @@ class TestReportBuilder(unittest.TestCase):
 
         report = self.builder.build_json_report(mock_pipeline, mock_machine)
         
-        self.assertEqual(report.client_info["name"], "Test User")
+        self.assertEqual(report.client_profile.name, "Test User")
         self.assertEqual(report.master_probability.data_points["final_score"], 85.5)
         self.assertIn("Ruchaka Yoga", report.yoga_analysis.data_points["summary_map"])
         

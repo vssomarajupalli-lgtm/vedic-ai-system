@@ -36,7 +36,6 @@ class ReportBuilder:
         """
         
         # Extract basic client info if available
-        client_info = {}
         native = {}
         if machine_index:
             if isinstance(machine_index, list):
@@ -47,16 +46,21 @@ class ReportBuilder:
             elif isinstance(machine_index, dict):
                 native = machine_index.get("native_info", {})
                 
-            client_info = {
-                "name": native.get("name", "Unknown"),
-                "dob": native.get("dob", "Unknown"),
-                "tob": native.get("tob", "Unknown"),
-                "pob": native.get("pob", "Unknown"),
-            }
+        metadata = pipeline_data.get("metadata", {})
+        client_profile_data = {
+            "name": metadata.get("name") or native.get("name", "Unknown"),
+            "dob": metadata.get("dob") or native.get("dob", "Unknown"),
+            "tob": metadata.get("tob") or native.get("tob", "Unknown"),
+            "pob": metadata.get("pob") or native.get("pob", "Unknown"),
+            "latitude": metadata.get("latitude") or native.get("lat") or native.get("latitude"),
+            "longitude": metadata.get("longitude") or native.get("lon") or native.get("longitude"),
+            "timezone": metadata.get("timezone") or native.get("tz") or native.get("timezone"),
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
             
         return FinalReportSchema(
-            generated_at=datetime.now(timezone.utc).isoformat(),
-            client_info=client_info,
+            generated_at=client_profile_data["generated_at"],
+            client_profile=client_profile_data,
             executive_summary=self.executive_extractor.extract(pipeline_data),
             master_probability=self.master_extractor.extract(pipeline_data),
             natal_promise_analysis=self.promise_extractor.extract(pipeline_data),

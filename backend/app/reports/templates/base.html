@@ -103,12 +103,21 @@
             <h2>Client Profile</h2>
             <div class="grid-2">
                 <div>
-                    <div class="data-row"><span>Name:</span> <strong>{{ report.client_info.get('name', 'Unknown') }}</strong></div>
-                    <div class="data-row"><span>DOB:</span> <strong>{{ report.client_info.get('dob', 'Unknown') }}</strong></div>
+                    <div class="data-row"><span>Name:</span> <strong>{{ report.client_profile.name }}</strong></div>
+                    <div class="data-row"><span>Date of Birth:</span> <strong>{{ report.client_profile.dob }}</strong></div>
+                    <div class="data-row"><span>Birth Time:</span> <strong>{{ report.client_profile.tob }}</strong></div>
                 </div>
                 <div>
-                    <div class="data-row"><span>TOB:</span> <strong>{{ report.client_info.get('tob', 'Unknown') }}</strong></div>
-                    <div class="data-row"><span>POB:</span> <strong>{{ report.client_info.get('pob', 'Unknown') }}</strong></div>
+                    <div class="data-row"><span>Birth Place:</span> <strong>{{ report.client_profile.pob }}</strong></div>
+                    <div class="data-row"><span>Coordinates:</span> <strong>
+                        {% if report.client_profile.latitude and report.client_profile.longitude %}
+                            {{ report.client_profile.latitude }}, {{ report.client_profile.longitude }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </strong></div>
+                    <div class="data-row"><span>Timezone:</span> <strong>{{ report.client_profile.timezone or 'Unknown' }}</strong></div>
+                    <div class="data-row"><span>Generated On:</span> <strong>{{ report.client_profile.generated_at }}</strong></div>
                 </div>
             </div>
         </div>
