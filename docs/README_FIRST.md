@@ -119,6 +119,20 @@ DESIGN REFERENCE ONLY
 
 ---
 
+## docs/question_engine/
+
+Purpose:
+
+* Phase 9 Step 3A Question Engine Governance Package
+* Architecture, routing, and timing logic blueprints
+* Formula repository design and master question libraries
+
+Status:
+
+IMPLEMENTATION BLUEPRINT
+
+---
+
 # GOCHARA GOVERNANCE
 
 ## GOCHARA_MANDALI_GOVERNANCE_v1.md
