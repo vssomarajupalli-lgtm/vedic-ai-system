@@ -8,7 +8,7 @@ export interface ReportSectionData {
 export interface FinalReportSchema {
     report_version: string;
     generated_at: string;
-    client_info: Record<string, string>;
+    client_profile: Record<string, string>;
     executive_summary: ReportSectionData;
     master_probability: ReportSectionData;
     natal_promise_analysis: ReportSectionData;

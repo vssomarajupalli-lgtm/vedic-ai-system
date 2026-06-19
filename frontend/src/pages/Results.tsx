@@ -11,7 +11,7 @@ export default function Results() {
   }
 
   const {
-    client_info,
+    client_profile,
     master_probability,
     executive_summary,
     yoga_analysis,
@@ -26,9 +26,9 @@ export default function Results() {
         <div>
           <h2 className="text-2xl font-bold text-slate-900 flex items-center">
             <User className="w-6 h-6 mr-2 text-indigo-600" />
-            {client_info?.name || 'Anonymous Client'}
+            {client_profile?.name || 'Anonymous Client'}
           </h2>
-          <p className="text-slate-500 mt-1">DOB: {client_info?.dob || 'Unknown'} | TOB: {client_info?.tob || 'Unknown'}</p>
+          <p className="text-slate-500 mt-1">DOB: {client_profile?.dob || 'Unknown'} | TOB: {client_profile?.tob || 'Unknown'} | POB: {client_profile?.pob || 'Unknown'}</p>
         </div>
         <div className="text-right">
           <div className="inline-flex items-center justify-center px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-lg">

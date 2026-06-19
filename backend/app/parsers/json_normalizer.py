@@ -98,9 +98,9 @@ class JsonNormalizer:
             "name": self._clean_string(raw_metadata.get("name", "Unknown")),
             "ascendant_sign": self._clean_name(raw_metadata.get("lagna", ""), self.sign_map) or "aries",
             "ascendant_degree": self._extract_float(raw_metadata.get("lagna_degree", 0.0)),
-            "dob": self._clean_string(raw_metadata.get("birth_date") or raw_metadata.get("dob", "Unknown")),
-            "tob": self._clean_string(raw_metadata.get("birth_time") or raw_metadata.get("tob", "Unknown")),
-            "pob": self._clean_string(raw_metadata.get("birth_place") or raw_metadata.get("pob", "Unknown")),
+            "dob": self._clean_string(raw_metadata.get("birth_date") or raw_metadata.get("dob") or raw_metadata.get("date_of_birth") or "Unknown"),
+            "tob": self._clean_string(raw_metadata.get("birth_time") or raw_metadata.get("tob") or raw_metadata.get("time_of_birth") or "Unknown"),
+            "pob": self._clean_string(raw_metadata.get("birth_place") or raw_metadata.get("pob") or raw_metadata.get("place_of_birth") or "Unknown"),
             "latitude": self._extract_float(raw_metadata.get("latitude") or raw_metadata.get("lat", 0.0)) or None,
             "longitude": self._extract_float(raw_metadata.get("longitude") or raw_metadata.get("lon", 0.0)) or None,
             "timezone": self._extract_float(raw_metadata.get("timezone") or raw_metadata.get("tz", 0.0)) or None
