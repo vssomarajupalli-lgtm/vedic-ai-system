@@ -20,10 +20,13 @@ def ask_question(request: QuestionRequest) -> Any:
     try:
         log.info(f"Processing question: {request.question_text[:50]}...")
         
+        # Extract actual internal payload if wrapped inside a ChartProcessResponse
+        internal_payload = request.engine_outputs.get("breakdown", request.engine_outputs)
+        
         # Use PipelineRunner as the orchestrator to answer the question
         result = pipeline_runner.answer_question(
             question=request.question_text,
-            pipeline_output=request.engine_outputs
+            pipeline_output=internal_payload
         )
         
         answer = result.get("answer_text", "")

@@ -64,6 +64,7 @@ class ExecutiveSummarySection(BaseReportSection):
         )[:3]
         
         top_names = [d[0].capitalize() for d in top_domains]
+        # Phase 9 Step 2: Extract directly from engine_outputs -> dashas -> synthesis
         md_str = str(dasha_synthesis.get('active_md', 'Unknown')).capitalize()
         ad_str = str(dasha_synthesis.get('active_ad', 'Unknown')).capitalize()
         pd_str = str(dasha_synthesis.get('active_pd', 'Unknown')).capitalize()

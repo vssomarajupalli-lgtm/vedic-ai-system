@@ -28,6 +28,7 @@ class TestReportBuilder(unittest.TestCase):
                     "wealth": {"score": 90, "grade": "HIGH"},
                     "career": {"score": 50, "grade": "MODERATE"}
                 },
+                # Phase 9 Step 2: Use actual synthesis schema for dashas
                 "dashas": {"synthesis": {"active_md": "Venus", "active_ad": "Jupiter", "active_pd": "Rahu"}},
                 "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
             }

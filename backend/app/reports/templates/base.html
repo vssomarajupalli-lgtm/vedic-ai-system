@@ -137,6 +137,7 @@
             <h2>{{ report.executive_summary.title }}</h2>
             <p>{{ report.executive_summary.summary_text }}</p>
             <div class="data-row"><span>Top Domains:</span> <strong>{{ report.executive_summary.data_points.get('top_domains') | join(', ') }}</strong></div>
+            <!-- Phase 9 Step 2: Ensure MD/AD/PD are explicitly visible -->
             <div class="data-row"><span>Current Mahadasha:</span> <strong>{{ report.executive_summary.data_points.get('mahadasha') }}</strong></div>
             <div class="data-row"><span>Current Antardasha:</span> <strong>{{ report.executive_summary.data_points.get('antardasha') }}</strong></div>
             <div class="data-row"><span>Current Pratyantardasha:</span> <strong>{{ report.executive_summary.data_points.get('pratyantardasha') }}</strong></div>
