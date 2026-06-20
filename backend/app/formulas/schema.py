@@ -23,3 +23,11 @@ class FormulaEvaluationResult(BaseModel):
     isolated_signals: Dict[str, Any] = Field(..., description="Minimized payload of only the requested signals")
     answer_template_key: str = Field(..., description="Template to use in the Answer Composer")
     system_warnings: List[str] = Field(default_factory=list, description="Warnings like engine degradation")
+
+class ComposerPromptPackage(BaseModel):
+    prompt_template_id: str = Field(..., description="The ID of the template loaded (e.g., timing_assessment_v1_favorable)")
+    system_prompt: str = Field(..., description="The strict instructions for the LLM to format the response")
+    user_prompt: Optional[str] = Field(None, description="Deferred to API layer")
+    evidence_block: str = Field(..., description="Deterministically formatted string of astrological evidence")
+    system_warnings: List[str] = Field(default_factory=list, description="Warnings to be strictly appended")
+    final_state: str = Field(..., description="The final deterministic state")
