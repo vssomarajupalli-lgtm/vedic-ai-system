@@ -43,12 +43,12 @@ class FormulaRepositoryLoader:
             # Create a flattened copy
             flattened = formula.model_copy()
             
-            # Merge lists (ensuring no duplicates, though simple concatenation + set is fine)
-            flattened.required_engines = list(set(parent_formula.required_engines + formula.required_engines))
-            flattened.required_signals = list(set(parent_formula.required_signals + formula.required_signals))
-            flattened.required_dasha_layers = list(set(parent_formula.required_dasha_layers + formula.required_dasha_layers))
-            flattened.required_vargas = list(set(parent_formula.required_vargas + formula.required_vargas))
-            flattened.required_confidence_layers = list(set(parent_formula.required_confidence_layers + formula.required_confidence_layers))
+            # Merge lists while preserving parent-first order
+            flattened.required_engines = list(dict.fromkeys(parent_formula.required_engines + formula.required_engines))
+            flattened.required_signals = list(dict.fromkeys(parent_formula.required_signals + formula.required_signals))
+            flattened.required_dasha_layers = list(dict.fromkeys(parent_formula.required_dasha_layers + formula.required_dasha_layers))
+            flattened.required_vargas = list(dict.fromkeys(parent_formula.required_vargas + formula.required_vargas))
+            flattened.required_confidence_layers = list(dict.fromkeys(parent_formula.required_confidence_layers + formula.required_confidence_layers))
             
             # Inherit boolean/string fields if the child hasn't explicitly overridden them
             if "future_gochara_required" not in formula.model_fields_set:
