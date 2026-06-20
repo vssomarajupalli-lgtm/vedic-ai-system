@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Send, User, Bot, Loader2 } from 'lucide-react';
 import { useChartStore } from '../store/useChartStore';
 import { apiService } from '../api/backend';
@@ -13,31 +13,41 @@ interface ChatMessage {
 
 export default function QuestionEngine() {
   const { rawOutputs } = useChartStore();
+  const location = useLocation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!initialized && location.state) {
+      const { initialQuestionId, initialQuestionText } = location.state;
+      if (initialQuestionId || initialQuestionText) {
+        setInitialized(true);
+        handleSendPredefined(initialQuestionText || "Astrological Query", initialQuestionId);
+      }
+    }
+  }, [location.state, initialized]);
 
   // Guard clause
   if (!rawOutputs) {
     return <Navigate to="/upload" replace />;
   }
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
+  const handleSendPredefined = async (text: string, id: string | null) => {
+    if (loading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim()
+      content: text
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setLoading(true);
 
     try {
-      const response = await apiService.askQuestion(userMessage.content, rawOutputs);
+      const response = await apiService.askQuestion(text, id, rawOutputs);
       
       const botMessage: ChatMessage = {
         id: response.question_id,
@@ -57,6 +67,15 @@ export default function QuestionEngine() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+
+    const text = input.trim();
+    setInput('');
+    await handleSendPredefined(text, null);
   };
 
   return (

@@ -37,11 +37,14 @@ export const apiService = {
   /**
    * Asks a natural language question grounded in the raw math arrays
    */
-  async askQuestion(questionText: string, engineOutputs: any): Promise<QuestionResponse> {
-    const response = await backendApi.post<QuestionResponse>('/ask-question', {
-      question_text: questionText,
+  async askQuestion(questionText: string | null, questionId: string | null, engineOutputs: any): Promise<QuestionResponse> {
+    const payload: any = {
       engine_outputs: engineOutputs
-    });
+    };
+    if (questionText) payload.question_text = questionText;
+    if (questionId) payload.question_id = questionId;
+
+    const response = await backendApi.post<QuestionResponse>('/ask-question', payload);
     return response.data;
   },
 
@@ -63,5 +66,38 @@ export const apiService = {
     document.body.appendChild(link);
     link.click();
     link.remove();
+  },
+
+  // --- Browser Endpoints ---
+
+  async fetchRegistry(): Promise<any[]> {
+    const response = await backendApi.get<any[]>('/browser/registry');
+    return response.data;
+  },
+
+  async searchQuestions(query: string): Promise<any> {
+    const response = await backendApi.post<any>('/browser/search', { query });
+    return response.data;
+  },
+
+  async fetchFavorites(): Promise<any[]> {
+    const response = await backendApi.get<any[]>('/browser/favorites');
+    return response.data;
+  },
+
+  async addFavorite(questionId: string): Promise<any> {
+    const response = await backendApi.post<any>('/browser/favorites', { question_id: questionId });
+    return response.data;
+  },
+
+  async removeFavorite(questionId: string): Promise<any> {
+    const response = await backendApi.delete<any>(`/browser/favorites/${questionId}`);
+    return response.data;
+  },
+
+  async fetchRecents(): Promise<any[]> {
+    const response = await backendApi.get<any[]>('/browser/recents');
+    return response.data;
   }
 };
+

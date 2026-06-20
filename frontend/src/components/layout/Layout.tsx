@@ -10,7 +10,7 @@ export default function Layout() {
     { name: 'Dashboard', path: '/', icon: Home, show: true },
     { name: 'Upload Data', path: '/upload', icon: Upload, show: true },
     { name: 'Results', path: '/results', icon: FileText, show: hasData },
-    { name: 'Ask Question', path: '/ask', icon: MessageSquare, show: hasData },
+    { name: 'Ask Question', path: '/browse', icon: MessageSquare, show: hasData },
     { name: 'Export Report', path: '/export', icon: Download, show: hasData },
   ];
 

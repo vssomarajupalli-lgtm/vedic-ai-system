@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
 import Results from './pages/Results';
 import QuestionEngine from './pages/QuestionEngine';
+import QuestionBrowser from './pages/QuestionBrowser';
 import ExportReport from './pages/ExportReport';
 
 function App() {
@@ -15,7 +16,9 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="upload" element={<Upload />} />
           <Route path="results" element={<Results />} />
-          <Route path="ask" element={<QuestionEngine />} />
+          <Route path="browse" element={<QuestionBrowser />} />
+          <Route path="engine" element={<QuestionEngine />} />
+          <Route path="ask" element={<Navigate to="/browse" replace />} />
           <Route path="export" element={<ExportReport />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

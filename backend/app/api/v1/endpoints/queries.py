@@ -6,12 +6,14 @@ from app.schemas.question import QuestionRequest, QuestionResponse
 from app.pipeline_runner import PipelineRunner
 from app.core.logging import log
 from app.core.question_router import QuestionRouter
+from app.core.preferences_manager import PreferencesManager
 
 router = APIRouter()
 
 # Instantiate the stateless modules
 pipeline_runner = PipelineRunner()
 question_router = QuestionRouter()
+preferences_manager = PreferencesManager()
 
 @router.post("/ask-question", response_model=QuestionResponse)
 def ask_question(request: QuestionRequest) -> Any:
@@ -58,6 +60,13 @@ def ask_question(request: QuestionRequest) -> Any:
         answer = result.get("answer_text", "")
         # Deterministic engine currently doesn't track used yogas in response
         used_yogas = []
+        
+        # 4. Auto-append to recents if valid question_id
+        if resolved_question_id:
+            try:
+                preferences_manager.add_recent(resolved_question_id)
+            except Exception as e:
+                log.error(f"Failed to add question to recents: {str(e)}")
         
         log.info("Question answered successfully.")
         
