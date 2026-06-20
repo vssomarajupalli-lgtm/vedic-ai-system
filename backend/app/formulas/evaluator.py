@@ -74,8 +74,6 @@ class FormulaEvaluator:
             is_fulfilled = True
             
             # Simulated boolean mapping: if degradation impacts the layer, mark False
-            if "transit" in layer.lower() and any("TransitEngine" in w for w in system_warnings):
-                is_fulfilled = False
             if "dasha" in layer.lower() and any("DashaEngine" in w for w in system_warnings):
                 is_fulfilled = False
                 
