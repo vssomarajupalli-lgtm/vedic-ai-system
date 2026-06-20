@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Dict, Optional, Any
 
 class FormulaSchema(BaseModel):
     formula_key: str = Field(..., description="Unique string identifier (e.g., MAR_TIMING_001)")
@@ -17,3 +17,9 @@ class FormulaSchema(BaseModel):
 
 class FormulaRegistry(BaseModel):
     formulas: List[FormulaSchema]
+
+class FormulaEvaluationResult(BaseModel):
+    final_state: str = Field(..., description="FAVORABLE, MIXED, or UNFAVORABLE")
+    isolated_signals: Dict[str, Any] = Field(..., description="Minimized payload of only the requested signals")
+    answer_template_key: str = Field(..., description="Template to use in the Answer Composer")
+    system_warnings: List[str] = Field(default_factory=list, description="Warnings like engine degradation")
