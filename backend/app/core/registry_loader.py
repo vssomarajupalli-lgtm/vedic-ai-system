@@ -68,10 +68,6 @@ class QuestionRegistryLoader:
                 raise RegistryValidationError(f"Duplicate question_id detected: {q_id}")
             seen_question_ids.add(q_id)
             
-            if f_key in seen_formula_keys:
-                raise RegistryValidationError(f"Duplicate formula_key detected: {f_key}")
-            seen_formula_keys.add(f_key)
-            
             # Type validations
             if not isinstance(item["domain_id"], int):
                 raise RegistryValidationError(f"Item {q_id} has invalid domain_id (must be int)")

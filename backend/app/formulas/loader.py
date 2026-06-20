@@ -27,12 +27,38 @@ class FormulaRepositoryLoader:
 
     def get_formula(self, formula_key: str) -> FormulaSchema:
         """
-        Retrieve a formula by key.
+        Retrieve a formula by key. If the formula has a parent_formula_key,
+        it resolves the inheritance by concatenating the array fields from the parent.
         Raises FormulaNotFoundError if the key does not exist.
         """
         formula = self._formulas.get(formula_key)
         if not formula:
             raise FormulaNotFoundError(f"Formula with key '{formula_key}' not found in repository.")
+            
+        if formula.parent_formula_key:
+            parent_formula = self._formulas.get(formula.parent_formula_key)
+            if not parent_formula:
+                raise FormulaNotFoundError(f"Parent Formula '{formula.parent_formula_key}' not found.")
+                
+            # Create a flattened copy
+            flattened = formula.model_copy()
+            
+            # Merge lists (ensuring no duplicates, though simple concatenation + set is fine)
+            flattened.required_engines = list(set(parent_formula.required_engines + formula.required_engines))
+            flattened.required_signals = list(set(parent_formula.required_signals + formula.required_signals))
+            flattened.required_dasha_layers = list(set(parent_formula.required_dasha_layers + formula.required_dasha_layers))
+            flattened.required_vargas = list(set(parent_formula.required_vargas + formula.required_vargas))
+            flattened.required_confidence_layers = list(set(parent_formula.required_confidence_layers + formula.required_confidence_layers))
+            
+            # Inherit boolean/string fields if the child hasn't explicitly overridden them
+            if "future_gochara_required" not in formula.model_fields_set:
+                flattened.future_gochara_required = parent_formula.future_gochara_required
+                
+            if "answer_template_key" not in formula.model_fields_set:
+                flattened.answer_template_key = parent_formula.answer_template_key
+            
+            return flattened
+
         return formula
 
     def list_formulas(self) -> List[FormulaSchema]:

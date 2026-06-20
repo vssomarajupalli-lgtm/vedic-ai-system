@@ -4,7 +4,7 @@
     "domain_id": 7,
     "domain_name": "Marriage",
     "question_name": "Marriage Prospects",
-    "formula_key": "MAR_PROS_001",
+    "formula_key": "MAR_TIMING_NORMAL",
     "timing_required": false,
     "future_gochara_required": false
   },
@@ -13,7 +13,7 @@
     "domain_id": 7,
     "domain_name": "Marriage",
     "question_name": "Marriage Timing",
-    "formula_key": "MAR_TIMING_001",
+    "formula_key": "MAR_TIMING_NORMAL",
     "timing_required": true,
     "future_gochara_required": true
   },
@@ -22,25 +22,16 @@
     "domain_id": 7,
     "domain_name": "Marriage",
     "question_name": "Delay in Marriage",
-    "formula_key": "MAR_DELAY_001",
+    "formula_key": "MAR_TIMING_DELAY",
     "timing_required": false,
     "future_gochara_required": false
-  },
-  {
-    "question_id": "7.8",
-    "domain_id": 7,
-    "domain_name": "Marriage",
-    "question_name": "Divorce Risk",
-    "formula_key": "MAR_DIVORCE_001",
-    "timing_required": true,
-    "future_gochara_required": true
   },
   {
     "question_id": "10.1",
     "domain_id": 10,
     "domain_name": "Career",
     "question_name": "Career Growth",
-    "formula_key": "CAR_GROWTH_001",
+    "formula_key": "CAR_PROMOTION_TIMING",
     "timing_required": false,
     "future_gochara_required": false
   },
@@ -49,25 +40,16 @@
     "domain_id": 10,
     "domain_name": "Career",
     "question_name": "Job Change",
-    "formula_key": "CAR_CHANGE_001",
+    "formula_key": "CAR_CHANGE_TIMING",
     "timing_required": true,
     "future_gochara_required": true
-  },
-  {
-    "question_id": "10.6",
-    "domain_id": 10,
-    "domain_name": "Career",
-    "question_name": "Foreign Career",
-    "formula_key": "CAR_FOREIGN_001",
-    "timing_required": false,
-    "future_gochara_required": false
   },
   {
     "question_id": "2.1",
     "domain_id": 2,
     "domain_name": "Wealth",
     "question_name": "Savings Potential",
-    "formula_key": "WEA_SAVING_001",
+    "formula_key": "WEA_SUDDEN_GAIN",
     "timing_required": false,
     "future_gochara_required": false
   },
@@ -76,7 +58,7 @@
     "domain_id": 2,
     "domain_name": "Wealth",
     "question_name": "Sudden Financial Gains",
-    "formula_key": "WEA_SUDDEN_001",
+    "formula_key": "WEA_SUDDEN_GAIN",
     "timing_required": true,
     "future_gochara_required": true
   }
