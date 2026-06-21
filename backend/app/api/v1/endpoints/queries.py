@@ -84,3 +84,74 @@ def ask_question(request: QuestionRequest) -> Any:
             status_code=500,
             detail=f"Question Engine failed: {str(e)}"
         )
+
+from app.schemas.question import StructuredQuestionResponse
+from app.formatters.display_formatter import DisplayFormatter
+
+@router.post("/ask-structured-question", response_model=StructuredQuestionResponse)
+def ask_structured_question(request: QuestionRequest) -> Any:
+    """
+    Stateless endpoint to answer an astrological question using the new Phase 14H.1 
+    structured display format, bypassing LLM generation.
+    """
+    try:
+        log.info("Processing structured question request...")
+        
+        if not request.question_id:
+            raise HTTPException(status_code=400, detail="Must provide question_id for structured response")
+            
+        internal_payload = request.engine_outputs.get("breakdown", request.engine_outputs)
+        
+        route_result = question_router.route_question(request.question_id)
+        if route_result["status"] == "error":
+            status_code = 500 if route_result["error_type"] == "registry_configuration_error" else 422
+            raise HTTPException(status_code=status_code, detail=route_result["message"])
+            
+        metadata = route_result["metadata"]
+        domain = route_result["domain"]
+        question_title = metadata.get("question_name", "Astrological Query")
+        
+        # We need the isolated signals and final state. We can get it directly from the FormulaEvaluator
+        # or from the pipeline runner. The pipeline_runner evaluates it.
+        # Let's run it using the pipeline runner's evaluate_question logic.
+        # Actually, pipeline_runner.answer_question returns the LLM response. 
+        # For structured response, we need the formula evaluator results.
+        # Let's import the loader and evaluator.
+        from app.formulas.loader import FormulaRepositoryLoader
+        from app.formulas.evaluator import FormulaEvaluator
+        
+        loader = FormulaRepositoryLoader()
+        formula = loader.load_formula(request.question_id)
+        evaluation_result = FormulaEvaluator.evaluate(formula, internal_payload)
+        
+        # Build the structured result
+        natal_promise = internal_payload.get("natal_promise", {})
+        dashas = internal_payload.get("dashas", {})
+        
+        formatted_result = DisplayFormatter.format_question_result(
+            question_title=question_title,
+            domain=domain,
+            natal_promise=natal_promise,
+            dasha_activation=dashas,
+            final_state=evaluation_result.final_state,
+            isolated_signals=evaluation_result.isolated_signals
+        )
+        
+        try:
+            preferences_manager.add_recent(request.question_id)
+        except Exception as e:
+            log.error(f"Failed to add question to recents: {str(e)}")
+            
+        return StructuredQuestionResponse(
+            question_id=request.question_id,
+            results=[formatted_result]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Error during structured question generation: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Question Engine failed: {str(e)}"
+        )
