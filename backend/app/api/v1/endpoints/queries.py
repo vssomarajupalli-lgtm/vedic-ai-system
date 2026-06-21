@@ -108,7 +108,7 @@ def ask_structured_question(request: QuestionRequest) -> Any:
             raise HTTPException(status_code=status_code, detail=route_result["message"])
             
         metadata = route_result["metadata"]
-        domain = route_result["domain"]
+        domain = route_result["registry_record"]["domain_name"].lower()
         question_title = metadata.get("question_name", "Astrological Query")
         
         # We need the isolated signals and final state. We can get it directly from the FormulaEvaluator
@@ -121,7 +121,7 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         from app.formulas.evaluator import FormulaEvaluator
         
         loader = FormulaRepositoryLoader()
-        formula = loader.load_formula(request.question_id)
+        formula = loader.get_formula(route_result["formula_key"])
         evaluation_result = FormulaEvaluator.evaluate(formula, internal_payload)
         
         # Build the structured result
