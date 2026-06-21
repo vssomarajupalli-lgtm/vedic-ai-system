@@ -80,6 +80,17 @@ class FormulaEvaluator:
             if is_fulfilled:
                 fulfilled_layers += 1
                 
+        # Domain prefix mapping to extract accurate promise score
+        PREFIX_TO_DOMAIN = {
+            "MAR": "marriage", "CAR": "career", "WEA": "wealth",
+            "AST": "property", "EDU": "education", "FAM": "children",
+            "HLT": "health", "LIT": "litigation", "TRV": "travel",
+            "SPR": "spirituality", "REL": "compatibility"
+        }
+        domain_prefix = formula.formula_key.split("_")[0]
+        domain_name = PREFIX_TO_DOMAIN.get(domain_prefix)
+        promise_score = payload.get("natal_promise", {}).get(domain_name, {}).get("score", 50) if domain_name else 50
+        
         # Confidence layer evaluation & Matrix Resolution (Pure Boolean Gating)
         final_state = "MIXED"
         is_degraded = len(system_warnings) > 0
@@ -93,6 +104,12 @@ class FormulaEvaluator:
                 final_state = "UNFAVORABLE"
             else:
                 final_state = "MIXED"
+                
+        # Primary Promise Gate Application (Hard Governance)
+        if promise_score < 35:
+            final_state = "UNFAVORABLE"
+        elif promise_score < 50 and final_state == "FAVORABLE":
+            final_state = "MIXED"
         
         return FormulaEvaluationResult(
             final_state=final_state,

@@ -3,6 +3,8 @@ from typing import Any
 import traceback
 
 from app.schemas.question import QuestionRequest, QuestionResponse
+from app.formulas.evaluator import FormulaEvaluator
+from app.formulas.signal_translator import SignalTranslator
 from app.pipeline_runner import PipelineRunner
 from app.core.logging import log
 from app.core.question_router import QuestionRouter
@@ -29,7 +31,7 @@ def ask_question(request: QuestionRequest) -> Any:
             raise HTTPException(status_code=400, detail="Must provide either question_text or question_id")
         
         # Extract actual internal payload if wrapped inside a ChartProcessResponse
-        internal_payload = request.engine_outputs.get("breakdown", request.engine_outputs)
+        internal_payload = request.engine_outputs.get("engine_outputs", request.engine_outputs.get("breakdown", request.engine_outputs))
         
         resolved_question_id = None
         question_text_to_process = request.question_text
@@ -100,7 +102,7 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         if not request.question_id:
             raise HTTPException(status_code=400, detail="Must provide question_id for structured response")
             
-        internal_payload = request.engine_outputs.get("breakdown", request.engine_outputs)
+        internal_payload = request.engine_outputs.get("engine_outputs", request.engine_outputs.get("breakdown", request.engine_outputs))
         
         route_result = question_router.route_question(request.question_id)
         if route_result["status"] == "error":
@@ -111,18 +113,17 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         domain = route_result["registry_record"]["domain_name"].lower()
         question_title = metadata.get("question_name", "Astrological Query")
         
-        # We need the isolated signals and final state. We can get it directly from the FormulaEvaluator
-        # or from the pipeline runner. The pipeline_runner evaluates it.
-        # Let's run it using the pipeline runner's evaluate_question logic.
-        # Actually, pipeline_runner.answer_question returns the LLM response. 
-        # For structured response, we need the formula evaluator results.
         # Let's import the loader and evaluator.
         from app.formulas.loader import FormulaRepositoryLoader
-        from app.formulas.evaluator import FormulaEvaluator
         
         loader = FormulaRepositoryLoader()
-        formula = loader.get_formula(route_result["formula_key"])
-        evaluation_result = FormulaEvaluator.evaluate(formula, internal_payload)
+        f = FormulaRepositoryLoader().get_formula(route_result["formula_key"])
+        
+        # Translate payload for semantic matching
+        translated_payload = SignalTranslator.translate(f.required_signals, internal_payload)
+        
+        # Get dynamic textual outcome
+        evaluation_result = FormulaEvaluator.evaluate(f, translated_payload)
         
         # Build the structured result
         natal_promise = internal_payload.get("natal_promise", {})

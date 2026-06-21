@@ -79,7 +79,8 @@ class HouseStrengthEngine:
         return {
             "metadata": {
                 "entity_id": str(house_data.get("house", "unknown")),
-                "entity_type": "house"
+                "entity_type": "house",
+                "lord": house_data.get("lord", "unknown")
             },
             "final_score": final_score,
             "grade":       self._assign_grade(final_score),
