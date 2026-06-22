@@ -333,7 +333,9 @@ class HoroscopeSourceLoader:
         return {
             "mahadasha":       _extract_lord(dasha_source.get("mahadasha", "")),
             "antardasha":      _extract_lord(dasha_source.get("antardasha", "")),
-            "pratyantardasha": _extract_lord(dasha_source.get("pratyantardasha", ""))
+            "pratyantardasha": _extract_lord(dasha_source.get("pratyantardasha", "")),
+            "timeline":        dasha_source.get("timeline", []),
+            "birth_balance":   dasha_source.get("birth_balance", {})
         }
 
     def _extract_houses(self, content: dict) -> dict:

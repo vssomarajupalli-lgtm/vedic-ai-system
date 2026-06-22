@@ -21,8 +21,8 @@ from app.pipeline_runner import PipelineRunner
 # ---------------------------------------------------------------------------
 # Default file paths (relative to backend/)
 # ---------------------------------------------------------------------------
-DEFAULT_INDEX_PATH   = os.path.join(os.path.dirname(__file__), "../extracted_json/machine_index.json")
-DEFAULT_CONTENT_PATH = os.path.join(os.path.dirname(__file__), "../extracted_json/canonical_content.json")
+DEFAULT_INDEX_PATH   = os.path.join(os.path.dirname(__file__), "../extracted_json/raju_machine_index.json")
+DEFAULT_CONTENT_PATH = os.path.join(os.path.dirname(__file__), "../extracted_json/raju_canonical_content.json")
 
 def main():
     # Accept optional CLI overrides: python run.py <index_path> <content_path>
