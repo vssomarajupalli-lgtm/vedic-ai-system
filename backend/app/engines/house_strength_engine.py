@@ -52,16 +52,7 @@ class HouseStrengthEngine:
 
         total_score = sav_score + occupants_score + benefic_aspects_score + malefic_aspects_score + type_score + yogas_score
 
-        # Override with authentic bhava_bala if available
-        house_num_str = str(house_data.get("house", "unknown"))
-        bhava_info = None
-        if bhava_bala_data and isinstance(bhava_bala_data, dict):
-            bhava_info = bhava_bala_data.get(house_num_str)
-        if bhava_info and "total_bala" in bhava_info:
-            total_bala = float(bhava_info["total_bala"])
-            base_score = self._map_bhava_bala_to_score(total_bala)
-            breakdown["bhava_bala_base_score"] = base_score
-            total_score = base_score # Override
+
 
         # Clamp final score between 0 and 100
         final_score = clamp_score(total_score)
@@ -107,36 +98,7 @@ class HouseStrengthEngine:
             # Actually, the formula expects 100 to mean "excellent, no malefic aspects"
             return max(0.0, min(100.0, 100.0 - (count * 50.0)))
 
-    def _map_bhava_bala_to_score(self, total_bala: float) -> float:
-        """
-        Maps Bhava Bala total_bala (in Rupas) to the [0, 100] internal probability scale.
-        Anchors:
-            >= 10.0 -> 100
-            8.5 -> 75
-            7.0 -> 50
-            6.0 -> 25
-            <= 5.0 -> 0
-        """
-        anchors = [
-            (5.0, 0),
-            (6.0, 25),
-            (7.0, 50),
-            (8.5, 75),
-            (10.0, 100)
-        ]
-        
-        if total_bala <= anchors[0][0]:
-            return anchors[0][1]
-        elif total_bala >= anchors[-1][0]:
-            return anchors[-1][1]
-            
-        for i in range(len(anchors) - 1):
-            lo_b, lo_s = anchors[i]
-            hi_b, hi_s = anchors[i + 1]
-            if lo_b <= total_bala <= hi_b:
-                t = (total_bala - lo_b) / (hi_b - lo_b)
-                return lo_s + t * (hi_s - lo_s)
-        return 50.0
+
 
     def _evaluate_sav_support(self, sav_points: int) -> float:
         """
