@@ -16,7 +16,8 @@ class JsonNormalizer:
             "ve": "venus", "shukra": "venus",
             "sa": "saturn", "shani": "saturn",
             "ra": "rahu",
-            "ke": "ketu"
+            "ke": "ketu",
+            "lagna": "ascendant", "ascendant": "ascendant"
         }
         
         self.sign_map = {
@@ -143,6 +144,20 @@ class JsonNormalizer:
             v_id = varga_id.upper() # e.g., "D9", "D10"
             normalized[v_id] = {"planets": {}}
             
+            # Identify Lagna sign for House derivation
+            lagna_sign = ""
+            for raw_name, p_data in varga_data.get("planets", {}).items():
+                std_name = self._clean_name(raw_name, self.planet_map)
+                if std_name == "ascendant":
+                    lagna_sign = self._clean_name(p_data.get("sign", ""), self.sign_map)
+                    break
+            
+            SIGNS_IN_ORDER = [
+                "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+                "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
+            ]
+            lagna_idx = SIGNS_IN_ORDER.index(lagna_sign) if lagna_sign in SIGNS_IN_ORDER else -1
+            
             for raw_name, p_data in varga_data.get("planets", {}).items():
                 std_name = self._clean_name(raw_name, self.planet_map)
                 if not std_name:
@@ -151,8 +166,15 @@ class JsonNormalizer:
                 varga_sign = self._clean_name(p_data.get("sign", ""), self.sign_map)
                 d1_sign = d1_planets.get(std_name, {}).get("sign", "")
                 
+                # Derive House Number from Varga Lagna
+                house_num = 0
+                if lagna_idx != -1 and varga_sign in SIGNS_IN_ORDER:
+                    planet_sign_idx = SIGNS_IN_ORDER.index(varga_sign)
+                    house_num = (planet_sign_idx - lagna_idx) % 12 + 1
+                
                 normalized[v_id]["planets"][std_name] = {
                     "sign": varga_sign,
+                    "house": house_num,
                     "degree": self._extract_float(p_data.get("degree", 0.0)),
                     "longitude": self._calculate_longitude(
                         varga_sign,

@@ -176,18 +176,22 @@ All calculations must remain:
 Purpose:
 calculate deterministic House/Bhava strength percentages.
 
-Possible inputs include:
+Current inputs strictly implemented:
 
-- Bhava Bala
-- house lord strength
-- karaka support
-- aspects
-- occupants
+- SAV (Sarvashtakavarga)
+- Occupants
+- Benefic Aspects
+- Malefic Aspects
+- House Type (Kendra/Trikona/Dusthana)
+- House Yogas
 
 Output:
 0–100 deterministic house strength score.
 
 Important:
+Bhava Bala override logic has been permanently REMOVED. 
+The House Strength formula explicitly adheres to foundational deterministic rules without bypasses.
+
 All calculations must remain:
 - deterministic
 - explainable
@@ -203,6 +207,9 @@ provide structural refinement support for D1 interpretation.
 Current implementation focus:
 - D9
 - D10
+
+Varga Neutral Fallback Contract:
+- The engine enforces a strict neutral fallback score of `50.0` when requested Varga data is missing or incomplete, guaranteeing pipeline stability.
 
 Vargas should:
 - refine interpretation
@@ -262,9 +269,36 @@ Preserve D1 immutability.
 Rule 7:
 AI must NEVER generate astrology math.
 
+Rule 8:
+No Double Penalty Rule. A planetary condition or affliction must be evaluated exactly once at its root (e.g., House or Planet Engine) and shall not be re-applied or compounded downstream.
+
 ---
 
-# 14. D1 FOUNDATION PRINCIPLE
+# 14. FOUR PILLAR PROMISE ARCHITECTURE
+
+The Natal Promise Engine evaluates life domains using a strict, unalterable four-pillar formula to prevent double counting and preserve explainability:
+
+- Bhava Strength (Field of manifestation): 35%
+- Bhavadhipati Strength (Lord of the house): 30%
+- Karaka Strength (Natural significator): 20%
+- Varga Validation (Divisional chart): 15%
+
+Support Houses are designated as a Deferred Status / Dead Configuration and are intentionally excluded from the Promise Engine mathematical flow.
+
+---
+
+# 15. YOGA GOVERNANCE
+
+The Yoga Engine is governed by strict rules enforcing determinism and preserving core probability scoring:
+
+- Detection, Classification, and Explanation ONLY.
+- No scoring.
+- No probability modification. 
+- Yoga must never modify the Promise Score, Activation Score, Planet Score, or House Score.
+
+---
+
+# 16. D1 FOUNDATION PRINCIPLE
 
 The D1 chart represents foundational astrology structure.
 
@@ -279,7 +313,7 @@ Future refinement systems may support interpretation but must NOT overwrite D1 f
 
 ---
 
-# 15. OUTPUT FLOW
+# 17. OUTPUT FLOW
 
 PDF/Input JSON
 ↓
@@ -298,7 +332,7 @@ Current outputs include:
 
 ---
 
-# 16. TESTING ARCHITECTURE
+# 18. TESTING ARCHITECTURE
 
 Testing should remain:
 
@@ -317,7 +351,7 @@ Testing focus areas:
 
 ---
 
-# 17. CURRENT IMPLEMENTATION STATUS
+# 19. CURRENT IMPLEMENTATION STATUS
 
 Currently implemented and stabilized:
 
@@ -327,22 +361,22 @@ Currently implemented and stabilized:
 - Functional Nature Engine (Governance Locked)
 - Planet Strength Engine
 - House Strength Engine
-- Varga Engine
+- Varga Engine (Fallback 50.0)
 - Ashtakavarga Engine
 - Dasha Engine (Timeline contract)
 - Transit Engine (Mandali Gochara)
-- Yoga Engine
-- Natal Promise Engine
+- Yoga Engine (Detection Only)
+- Natal Promise Engine (Four Pillar locked)
 - Master Probability Synthesis
 - Pipeline Runner
-- deterministic testing structure (613/613 Passed)
+- deterministic testing structure (Passed)
 
 Not yet implemented:
 - AI interpretation systems
 
 ---
 
-# 18. TECHNOLOGY STACK
+# 20. TECHNOLOGY STACK
 
 Current technology stack:
 
@@ -362,7 +396,7 @@ The software should remain lightweight and modular.
 
 ---
 
-# 19. FUTURE EXPANSION POLICY
+# 21. FUTURE EXPANSION POLICY
 
 Future systems should be added gradually and only after stabilization of:
 

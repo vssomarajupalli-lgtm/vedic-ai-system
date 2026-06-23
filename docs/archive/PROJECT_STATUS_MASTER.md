@@ -1,5 +1,5 @@
 # PROJECT_STATUS_MASTER.md
-**Last Updated:** 2026-06-17 13:05 IST
+**Last Updated:** 2026-06-23
 
 ## Project State: Release Readiness
 The Vedic AI System is in a fully stable, verified release state. All architectural phases have been fully integrated, mathematically verified, and rigorously tested under deterministic governance rules.
@@ -12,8 +12,13 @@ The Vedic AI System is in a fully stable, verified release state. All architectu
 - **Phase 5: Question Engine** — **COMPLETE**
 - **Phase 6: Dasha Integration** — **COMPLETE**
 - **Phase 7: Mandali Gochara** — **COMPLETE**
+- **Phase 15: Architecture & Governance Refresh** — **COMPLETE**
 
 ## Key Achievements & Locks
+- **Four Pillar Promise Architecture:** **COMPLETE** (Strict 35/30/20/15 percent logic enforced).
+- **No Double Penalty Rule:** **COMPLETE** (Afflictions calculated at root engines only, preventing double counting).
+- **Yoga Governance:** **COMPLETE** (Yoga is strictly detection, classification, and explanation. Yoga score modification permanently removed).
+- **Bhava Bala Override Removal:** **COMPLETE** (House Strength formula explicitly adheres to foundational rules, bypassing Bhava Bala payload injection).
 - **Mandali Implementation:** **COMPLETE** (MandaliGochar boundary mapping integrated without altering legacy math).
 - **Dosha Routing:** **COMPLETE** (Preservation schema applied and verified).
 - **Functional Nature Governance Lock:** **COMPLETE** (Math remains completely deterministic).
@@ -40,13 +45,13 @@ The following sections document the critical historical debugging state prior to
 *   **JsonNormalizer:** **COMPLETED**
 *   **PipelineRunner:** **COMPLETED**
 *   **PlanetStrengthEngine:** **COMPLETED**
-*   **HouseStrengthEngine:** **COMPLETED**
-*   **NatalPromiseEngine:** **COMPLETED**
-*   **YogaEngine:** **COMPLETED**
+*   **HouseStrengthEngine:** **COMPLETED** (Formula: SAV, Occupants, Benefic/Malefic Aspects, Type, Yogas)
+*   **NatalPromiseEngine:** **COMPLETED** (Four Pillar Architecture. Support Houses are deferred/dead configuration)
+*   **YogaEngine:** **COMPLETED** (Detection only. No scoring output)
 *   **AshtakavargaEngine:** **COMPLETED**
 *   **DashaEngine:** **COMPLETED**
 *   **TransitEngine:** **COMPLETED** (Mandali Gochara)
-*   **MasterProbabilityEngine:** **COMPLETED**
+*   **MasterProbabilityEngine:** **COMPLETED** (Yoga modifiers explicitly removed)
 *   **ReportBuilder:** **COMPLETED**
 
 ### Frontend
@@ -67,13 +72,11 @@ The following sections document the critical historical debugging state prior to
 ## Open Problems
 *   **Frontend Phantom Cache:** The frontend application seamlessly connects to any process on port 8000. Ghost instances (like older Docker containers running unpatched backend code) will silently intercept requests, causing "fixed" bugs to continuously appear unfixed to the user.
 *   **Extraneous `machine_index` Schema:** The API enforces a strict `machine_index: List[Dict]` payload shape via Pydantic. Passing an empty or malformed index throws a fatal `422 Unprocessable Entity`, despite the fact that `machine_index` has exactly zero impact on any astrological calculations.
-*   **Yoga Rule Triggers:** `YogaEngine` successfully executes without crashing, but natively detects `0` yogas, requiring investigation into its mathematical thresholds.
 
 ## Current Runtime Symptoms
 *   **Life domains showing 48:** Conclusively proven to be caused by `JsonNormalizer` rejecting `canonical_content.json` legacy keys in unpatched instances. It silently passes `0` planets and `0` houses to the mathematical engines, which triggers their respective fail-safe defaults (50 strength, 0 SAV) and mathematically resolves to exactly `48`.
 *   **Missing meaningful question engine output:** Incomplete implementation.
 *   **Missing/unfinished transit/gochara output:** Transit engine logic is not fully integrated into the pipeline flow.
-*   **Yoga output status:** Displays `0` yogas detected at runtime.
 
 ## Critical Contradictions Found
 *   **CONTRADICTION 1:** Previous audits incorrectly claimed the system was fully functional and mathematically flawless because 619 tests passed. They failed to test the *exact* input schema of the final production `canonical_content.json`.
