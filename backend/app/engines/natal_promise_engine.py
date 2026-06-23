@@ -18,7 +18,6 @@ class NatalPromiseEngine:
         bhavadhipati   × 0.30   (PlanetStrengthEngine lord of primary house)
         karaka         × 0.20   (PlanetStrengthEngine natural significator)
         varga          × 0.15   (VargaEngine domain-specific chart)
-        + yoga_bonus            (Dhana / Ketu amplifier / benefic protection)
 
     Architecture Rules:
         - No Double Penalty Rule: Afflictions are evaluated strictly inside Planet/House engines.
@@ -95,35 +94,18 @@ class NatalPromiseEngine:
             weights["varga"]        * f_varga
         )
 
-        # --- Yoga bonuses ---
-        bonus_total = 0.0
-        y_cats = yoga_results.get("category_summaries", {})
-        
-        if domain == "wealth":
-            bonus_total += y_cats.get("Dhana Yoga", {}).get("max_strength", 0) * 0.15
-        elif domain == "career":
-            bonus_total += y_cats.get("Raja Yoga", {}).get("max_strength", 0) * 0.15
-            bonus_total += y_cats.get("Neecha Bhanga Raja Yoga", {}).get("max_strength", 0) * 0.10
-        elif domain == "health":
-            bonus_total -= y_cats.get("Arishta Yoga", {}).get("max_strength", 0) * 0.15
-        elif domain in ["education", "spirituality"]:
-            bonus_total += y_cats.get("Gaja Kesari Yoga", {}).get("max_strength", 0) * 0.10
-            
-        raw += bonus_total
-
         score   = clamp_score(round(raw))
         promise = self._promise_grade(score)
 
         return {
             "score":   score,
-            "raw_score": round(raw - bonus_total, 4),
+            "raw_score": round(raw, 4),
             "promise": promise,
             "breakdown": {
                 "bhava":          round(f_bhava, 2),
                 "bhavadhipati":   round(f_bhavadhipati, 2),
                 "karaka":         round(f_karaka,  2),
                 "varga":          round(f_varga,   2),
-                "yoga_bonus":     bonus_total,
             },
             "primary_house": primary_house_key,
             "varga_chart":   varga_id,

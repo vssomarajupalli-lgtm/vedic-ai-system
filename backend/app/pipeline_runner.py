@@ -333,7 +333,8 @@ class PipelineRunner:
             dasha_activation=dasha_activation,
             transit_activation=transit_activation,
             final_probability=final_probability,
-            bav_timing_confidence=bav_confidence
+            bav_timing_confidence=bav_confidence,
+            yogas=pipeline_output.get("yogas", {})
         )
 
 # --- Sample Execution Example ---

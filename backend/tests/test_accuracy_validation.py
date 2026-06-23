@@ -168,21 +168,7 @@ class TestNatalPromiseAxioms(unittest.TestCase):
             normalized_houses = _norm_houses(norm_house_cfg),
         )
 
-    def test_jupiter_in_h11_raises_wealth_promise(self):
-        norm_cfg_with = {"11": {"lord": "", "occupants": ["jupiter"], "aspected_by": []}}
-        mock_yogas = {"category_summaries": {"Dhana Yoga": {"max_strength": 80.0}}}
-        result_with   = self._evaluate(
-            planet_scores=_planets_dict(jupiter=60, venus=50),
-            norm_house_cfg=norm_cfg_with,
-            yoga_results=mock_yogas
-        )
-        result_without = self._evaluate(
-            planet_scores=_planets_dict(jupiter=60, venus=50),
-        )
-        self.assertGreater(
-            result_with["wealth"]["score"],
-            result_without["wealth"]["score"]
-        )
+
 
     def test_venus_high_score_raises_marriage_promise(self):
         result = self._evaluate(

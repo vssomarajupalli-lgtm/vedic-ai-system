@@ -14,7 +14,6 @@ class TestNatalPromiseEngine(unittest.TestCase):
             w4 × house_lord     +
             w5 × varga          +
             w6 × sav_support    +
-            yoga_bonus          +
             affliction_penalty
 
     All inputs are synthesized minimal dicts — no real chart needed.
@@ -89,13 +88,13 @@ class TestNatalPromiseEngine(unittest.TestCase):
                 self.assertIn(key, data, f"{domain} missing key: {key}")
 
     def test_breakdown_has_all_6_factors(self):
-        """Breakdown must contain all 6 factors + yoga_bonus + affliction_penalty."""
+        """Breakdown must contain all 6 factors + affliction_penalty."""
         result = self._evaluate()
         for domain, data in result.items():
             bd = data["breakdown"]
             for key in ("primary_house", "support_houses", "karaka_planet",
                         "house_lord", "varga_support", "sav_support",
-                        "yoga_bonus", "affliction_penalty"):
+                        "affliction_penalty"):
                 self.assertIn(key, bd, f"{domain} breakdown missing: {key}")
 
     def test_score_within_0_100(self):
@@ -438,45 +437,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         total = self.engine._compute_penalties("marriage", flags)
         self.assertGreaterEqual(total, -25)
 
-    # -------------------------------------------------------------------------
-    # 12. Yoga bonuses
-    # -------------------------------------------------------------------------
 
-    def test_jupiter_in_h11_gives_wealth_bonus(self):
-        norm_cfg_with    = {"11": {"lord": "", "occupants": ["jupiter"], "aspected_by": []}}
-        mock_yogas = {"category_summaries": {"Dhana Yoga": {"max_strength": 80.0}}}
-        
-        result_with    = self._evaluate(norm_house_cfg=norm_cfg_with, yoga_results=mock_yogas)
-        result_without = self._evaluate()
-        
-        self.assertGreater(
-            result_with["wealth"]["score"],
-            result_without["wealth"]["score"],
-            "Dhana Yoga should improve wealth score"
-        )
-
-    def test_ketu_strong_in_h12_gives_spirituality_bonus(self):
-        norm_cfg = {"12": {"lord": "", "occupants": ["ketu"], "aspected_by": []}}
-        mock_yogas = {"category_summaries": {"Gaja Kesari Yoga": {"max_strength": 80.0}}}
-        result = self._evaluate(
-            planet_scores=self._planets(ketu=70, jupiter=50),
-            norm_house_cfg=norm_cfg,
-            yoga_results=mock_yogas
-        )
-        self.assertGreater(result["spirituality"]["breakdown"].get("yoga_bonus", 0), 0)
-
-    def test_ketu_weak_no_spirituality_bonus(self):
-        """Ketu score ≤ 50 in H12 → no ketu_strong_in_moksha bonus."""
-        planets  = self._planets(ketu=30, jupiter=50)
-        norm_cfg = {"12": {"lord": "", "occupants": ["ketu"], "aspected_by": []}}
-        result   = self._evaluate(planet_scores=planets, norm_house_cfg=norm_cfg)
-        bonus = result["spirituality"]["breakdown"]["yoga_bonus"]
-        self.assertEqual(bonus, 0, "Weak Ketu should not trigger spirituality bonus")
-
-    def test_jupiter_aspects_h7_gives_marriage_bonus(self):
-        norm_cfg = {"7": {"lord": "", "occupants": [], "aspected_by": ["jupiter"]}}
-        result = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("marriage", result)
 
     # -------------------------------------------------------------------------
     # 13. Weighted sum arithmetic

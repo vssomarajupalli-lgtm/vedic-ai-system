@@ -65,23 +65,6 @@ class MasterProbabilityEngine:
         factors = self._compute_all_factors(engine_outputs)
         raw     = self._weighted_sum(factors)
         
-        # Apply global yoga modifier
-        yogas = engine_outputs.get("yogas", {}).get("category_summaries", {})
-        yoga_modifier = 0.0
-        
-        # Major positive yogas add to global score
-        if yogas.get("Raja Yoga", {}).get("max_strength", 0) > 70:
-            yoga_modifier += 5.0
-        if yogas.get("Dhana Yoga", {}).get("max_strength", 0) > 70:
-            yoga_modifier += 3.0
-        if yogas.get("Pancha Mahapurusha Yoga", {}).get("max_strength", 0) > 70:
-            yoga_modifier += 4.0
-            
-        # Arishta acts as a global penalty
-        if yogas.get("Arishta Yoga", {}).get("max_strength", 0) > 60:
-            yoga_modifier -= 5.0
-            
-        raw += yoga_modifier
         score   = clamp_score(round(raw))
         grade   = self._grade(score)
 

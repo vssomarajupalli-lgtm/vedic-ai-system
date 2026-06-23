@@ -115,7 +115,8 @@ class QuestionEngine:
         dasha_activation: dict,
         transit_activation: dict,
         final_probability: dict,
-        bav_timing_confidence: str = "UNKNOWN"
+        bav_timing_confidence: str = "UNKNOWN",
+        yogas: dict = None
     ) -> dict:
         """
         Takes separated domain components from the orchestrator and composes the final 
@@ -129,6 +130,7 @@ class QuestionEngine:
             transit_activation (dict): The transit engine outputs.
             final_probability (dict): The master probability block re-calculated for this domain.
             bav_timing_confidence (str): Ashtakavarga confidence string.
+            yogas (dict): Detected yogas.
             
         Returns:
             dict: Structured answer with probability, grade, and separated components.
@@ -197,6 +199,7 @@ class QuestionEngine:
             "transit": {
                 "activation_score": transit_score
             },
+            "yogas": yogas or {},
             "factor_breakdown": final_probability.get("breakdown", {}),
             "answer_text": answer_text,
         }
