@@ -24,8 +24,8 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         
         self.assertEqual(result["metadata"]["entity_id"], "sun")
         self.assertEqual(result["metadata"]["entity_type"], "planet")
-        self.assertEqual(result["raw_score"], 90.0)
-        self.assertEqual(result["final_score"], 90)
+        self.assertEqual(result["raw_score"], 115.0)
+        self.assertEqual(result["final_score"], 100)
         self.assertEqual(result["breakdown"]["dignity"], 50)
         self.assertEqual(result["breakdown"]["house_placement"], 30)
         self.assertEqual(result["breakdown"]["aspects"], 10)
@@ -49,7 +49,7 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         result = self.engine.calculate_strength(planet_data)
         
         self.assertEqual(result["metadata"]["entity_id"], "saturn")
-        self.assertEqual(result["raw_score"], -45.0)
+        self.assertEqual(result["raw_score"], -20.0)
         self.assertIn("clamped_to_zero", result["confidence_flags"])
         self.assertEqual(result["final_score"], 0) # Clamped
         self.assertEqual(result["breakdown"]["dignity"], 0)
@@ -69,7 +69,7 @@ class TestPlanetStrengthEngine(unittest.TestCase):
         
         result = self.engine.calculate_strength(planet_data)
         
-        self.assertEqual(result["final_score"], 20)
+        self.assertEqual(result["final_score"], 45)
 
     def test_dignity_scores(self):
         """Test specific dignity modifiers."""

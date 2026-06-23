@@ -16,62 +16,52 @@ class HouseStrengthEngine:
 
     def calculate_strength(self, house_data: dict, bhava_bala_data: dict = None) -> dict:
         """
-        Calculates the overall strength of a single house.
-        
-        Args:
-            house_data (dict): Normalized JSON data for a single house, including the lord's pre-calculated strength.
-            bhava_bala_data (dict): Optional authentic bhava bala metrics extracted from the PDF.
-            
-        Returns:
-            dict: Explainable payload with final score and score breakdown.
+        Calculates the overall strength of a single house using the Bhava Pillar formula.
         """
         breakdown = {}
-        total_score = 0
 
-        # 1. Evaluate House Type (Kendra, Trikona, Dusthana, etc.)
-        type_score = self._evaluate_house_type(house_data.get("house_type", "neutral"))
+        # 1. Evaluate SAV (30%)
+        sav_raw = self._evaluate_sav_support(house_data.get("sav_points", 0))
+        sav_score = sav_raw * 0.30
+        breakdown["sav"] = sav_score
+
+        # 2. Evaluate Occupants (20%)
+        occupants_raw = self._evaluate_influences(house_data.get("occupants", []), "occupants")
+        occupants_score = occupants_raw * 0.20
+        breakdown["occupants"] = occupants_score
+
+        # 3. Evaluate Benefic Aspects (15%) & Malefic Aspects (15%)
+        # Note: We split aspects into separate benefic and malefic buckets.
+        benefic_aspects_raw = self._evaluate_specific_aspects(house_data.get("aspected_by", []), self.benefics)
+        benefic_aspects_score = benefic_aspects_raw * 0.15
+        breakdown["benefic_aspects"] = benefic_aspects_score
+
+        malefic_aspects_raw = self._evaluate_specific_aspects(house_data.get("aspected_by", []), self.malefics)
+        malefic_aspects_score = malefic_aspects_raw * 0.15
+        breakdown["malefic_aspects"] = malefic_aspects_score
+
+        # 4. Evaluate House Nature (10%)
+        type_raw = self._evaluate_house_type(house_data.get("house_type", "neutral"))
+        type_score = type_raw * 0.10
         breakdown["house_type"] = type_score
 
-        # 2. Evaluate Lord Contribution (Assumes planet engine has already run for the lord)
-        lord_score = self._evaluate_lord_contribution(house_data.get("lord_strength_score", 50))
-        breakdown["lord_contribution"] = lord_score
+        # 5. Evaluate House Specific Yogas (10%)
+        yogas_raw = 50.0  # Default fallback until Phase 3 integration
+        yogas_score = yogas_raw * 0.10
+        breakdown["house_yogas"] = yogas_score
 
-        # 3. Evaluate Occupants
-        occupant_score = self._evaluate_influences(house_data.get("occupants", []), "occupants")
-        breakdown["occupants_impact"] = occupant_score
+        total_score = sav_score + occupants_score + benefic_aspects_score + malefic_aspects_score + type_score + yogas_score
 
-        # 4. Evaluate Aspects Received
-        aspect_score = self._evaluate_influences(house_data.get("aspected_by", []), "aspects")
-        breakdown["aspects_impact"] = aspect_score
-
-        # 5. SAV (Sarvashtakavarga) Environment
-        # Contribution is signed [-10, +10]: above-average SAV helps; below-average SAV hurts.
-        # Houses with 28+ bindus (average) get a neutral or positive contribution.
-        sav_score = self._evaluate_sav_support(house_data.get("sav_points", 0))
-        breakdown["sav_support"] = sav_score
-
-
-        # Check if authentic bhava_bala data is available
+        # Override with authentic bhava_bala if available
         house_num_str = str(house_data.get("house", "unknown"))
         bhava_info = None
         if bhava_bala_data and isinstance(bhava_bala_data, dict):
             bhava_info = bhava_bala_data.get(house_num_str)
-
         if bhava_info and "total_bala" in bhava_info:
             total_bala = float(bhava_info["total_bala"])
             base_score = self._map_bhava_bala_to_score(total_bala)
             breakdown["bhava_bala_base_score"] = base_score
-            # The base score completely overrides the heuristics
-            total_score = base_score + sav_score
-        else:
-            # Fallback to legacy additive heuristics
-            total_score = type_score + lord_score + occupant_score + aspect_score + sav_score
-
-        # Apply Lagna Floor (prevent H1 from dropping to 0 due to compounding penalties)
-        if house_num_str == "1" and total_score < 15:
-            total_score = 15
-            if "clamped_to_zero" in breakdown: 
-                del breakdown["clamped_to_zero"] # In case used later
+            total_score = base_score # Override
 
         # Clamp final score between 0 and 100
         final_score = clamp_score(total_score)
@@ -86,37 +76,36 @@ class HouseStrengthEngine:
             "grade":       self._assign_grade(final_score),
             "raw_score":   float(total_score),
             "breakdown":   breakdown,
-            "modifiers": {
-                "varga_refinement": 0.0,
-                "ashtakavarga_support": 0.0
-            },
-            "temporal_activation": {
-                "timing_multiplier": 1.0,
-                "transit_modifier": 0.0
-            },
             "confidence_flags": self._generate_confidence_flags(total_score, final_score)
         }
 
 
     # --- Isolated Helper Methods ---
 
-    def _evaluate_house_type(self, house_type: str) -> int:
-        return self.scoring_matrix["house_type"].get(house_type.lower(), self.scoring_matrix["house_type"]["neutral"])
+    def _evaluate_house_type(self, house_type: str) -> float:
+        return float(self.scoring_matrix["house_type"].get(house_type.lower(), self.scoring_matrix["house_type"]["neutral"]))
 
-    def _evaluate_lord_contribution(self, lord_strength: int) -> float:
-        # E.g., if lord strength is 80, it adds 20 points (80 * 0.25)
-        return lord_strength * self.scoring_matrix["lord_weight"]
-
-    def _evaluate_influences(self, planet_list: list, context: str) -> int:
-        """Calculates benefic/malefic impact for either occupants or aspects."""
-        score = 0
+    def _evaluate_influences(self, planet_list: list, context: str) -> float:
+        """Calculates combined occupant impact."""
+        raw = 50.0
         for planet in planet_list:
             planet_lower = planet.lower()
             if planet_lower in self.benefics:
-                score += self.scoring_matrix[context]["benefic"]
+                raw += self.scoring_matrix[context].get("benefic", 25)
             elif planet_lower in self.malefics:
-                score += self.scoring_matrix[context]["malefic"]
-        return score
+                raw += self.scoring_matrix[context].get("malefic", -25)
+        return max(0.0, min(100.0, raw))
+        
+    def _evaluate_specific_aspects(self, planet_list: list, group: set) -> float:
+        """Calculates aspect strength specifically for benefics or malefics."""
+        count = sum(1 for p in planet_list if p.lower() in group)
+        if group == self.benefics:
+            # More benefics -> higher score (up to 100)
+            return max(0.0, min(100.0, 50.0 + (count * 25.0)))
+        else:
+            # More malefics -> lower score (down to 0, start from 100 since it is weighted positively)
+            # Actually, the formula expects 100 to mean "excellent, no malefic aspects"
+            return max(0.0, min(100.0, 100.0 - (count * 50.0)))
 
     def _map_bhava_bala_to_score(self, total_bala: float) -> float:
         """
@@ -151,23 +140,7 @@ class HouseStrengthEngine:
 
     def _evaluate_sav_support(self, sav_points: int) -> float:
         """
-        Computes SAV (Sarvashtakavarga) contribution to house strength.
-
-        Uses the official piecewise linear anchor table from the master architecture.
-        Deviation from neutral (50 = 28 bindus) is scaled by sav_weight (0.20).
-
-        Formula:
-            sav_score    = piecewise_linear(sav_points, anchors)   → [0, 100]
-            contribution = (sav_score - 50) × sav_weight           → [-10, +10]
-
-        Reference points (Raju chart):
-            H11: 40 bindus → score 100 → contribution +10
-            H9:  25 bindus → score  50 → contribution   0
-            H4:  30 bindus → score  70 → contribution  +4
-            H12:  0 bindus → score   0 → contribution -10
-
-        Returns:
-            float: SAV contribution in the range [-10, +10].
+        Computes SAV (Sarvashtakavarga) contribution to house strength on a 0-100 scale.
         """
         anchors = [
             (0,  0.0),
@@ -182,22 +155,17 @@ class HouseStrengthEngine:
 
         # Piecewise linear interpolation
         if bindus <= anchors[0][0]:
-            sav_score = anchors[0][1]
+            return anchors[0][1]
         elif bindus >= anchors[-1][0]:
-            sav_score = anchors[-1][1]
-        else:
-            sav_score = 50.0  # safe fallback
-            for i in range(len(anchors) - 1):
-                lo_b, lo_s = anchors[i]
-                hi_b, hi_s = anchors[i + 1]
-                if lo_b <= bindus <= hi_b:
-                    t = (bindus - lo_b) / (hi_b - lo_b)
-                    sav_score = lo_s + t * (hi_s - lo_s)
-                    break
-
-        weight       = self.scoring_matrix.get("sav_weight", 0.20)
-        contribution = (sav_score - 50.0) * weight
-        return round(contribution, 2)
+            return anchors[-1][1]
+        
+        for i in range(len(anchors) - 1):
+            lo_b, lo_s = anchors[i]
+            hi_b, hi_s = anchors[i + 1]
+            if lo_b <= bindus <= hi_b:
+                t = (bindus - lo_b) / (hi_b - lo_b)
+                return lo_s + t * (hi_s - lo_s)
+        return 50.0
 
 
     def _assign_grade(self, score: int) -> str:

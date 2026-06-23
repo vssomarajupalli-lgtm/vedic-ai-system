@@ -490,8 +490,8 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result_100 = self._evaluate(house_scores=self._houses(**{"7": 100, "2": 50, "11": 50}))
         result_50  = self._evaluate(house_scores=self._houses(**{"7": 50,  "2": 50, "11": 50}))
         diff = result_100["marriage"]["score"] - result_50["marriage"]["score"]
-        self.assertAlmostEqual(diff, 15.0, delta=2.0,
-                               msg="30% weight × 50pt difference should be ~15")
+        self.assertAlmostEqual(diff, 10.0, delta=2.0,
+                               msg="20% weight × 50pt difference should be ~10")
 
     def test_karaka_weight_contribution(self):
         """
@@ -500,8 +500,8 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result_100 = self._evaluate(planet_scores=self._planets(venus=100, jupiter=50, saturn=50))
         result_50  = self._evaluate(planet_scores=self._planets(venus=50,  jupiter=50, saturn=50))
         diff = result_100["marriage"]["score"] - result_50["marriage"]["score"]
-        self.assertAlmostEqual(diff, 12.5, delta=2.0,
-                               msg="25% weight × 50pt difference should be ~12.5")
+        self.assertAlmostEqual(diff, 15.0, delta=2.0,
+                               msg="30% weight × 50pt difference should be ~15.0")
 
     # -------------------------------------------------------------------------
     # 14. Raju canonical spot-checks

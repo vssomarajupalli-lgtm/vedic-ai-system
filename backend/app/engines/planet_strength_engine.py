@@ -15,115 +15,99 @@ class PlanetStrengthEngine:
     def calculate_strength(self, planet_data: dict, shadbala_data: dict = None) -> dict:
         """
         Calculates the overall strength of a planet.
-        
-        Args:
-            planet_data (dict): Normalized JSON data for a single planet.
-            shadbala_data (dict): Optional authentic shadbala metrics extracted from the PDF.
-            
-        Returns:
-            dict: Explainable payload with final score and score breakdown.
         """
         breakdown = {}
-        total_score = 0
 
-        # 1. Evaluate Dignity
-        dignity_score = self._evaluate_dignity(planet_data.get("dignity", "neutral"))
+        # 1. Evaluate Dignity (25%)
+        dignity_raw = self._evaluate_dignity(planet_data.get("dignity", "neutral"))
+        dignity_score = dignity_raw * 0.25
         breakdown["dignity"] = dignity_score
 
-        # 2. Evaluate House Placement
-        house_score = self._evaluate_house(planet_data.get("house_type", "neutral"))
+        # 2. Evaluate House Placement (20%)
+        house_raw = self._evaluate_house(planet_data.get("house_type", "neutral"))
+        house_score = house_raw * 0.20
         breakdown["house_placement"] = house_score
 
-        # 3. Evaluate State (Combustion / Retrogression)
-        state_score = self._evaluate_state(
-            planet_data.get("is_combust", False),
-            planet_data.get("is_retrograde", False)
-        )
-        breakdown["state_modifiers"] = state_score
-
-        # 4. Evaluate Aspects & Conjunctions
-        aspect_score = self._evaluate_aspects(
+        # 3. Evaluate Aspects (15%)
+        aspect_raw = self._evaluate_aspects(
             planet_data.get("benefic_aspects_count", 0),
             planet_data.get("malefic_aspects_count", 0)
         )
+        aspect_score = aspect_raw * 0.15
         breakdown["aspects"] = aspect_score
 
-        # Check if authentic shadbala data is available
+        # 4. Evaluate Conjunctions (10%)
+        conj_raw = self._evaluate_conjunctions(
+            planet_data.get("benefic_conjunctions_count", 0),
+            planet_data.get("malefic_conjunctions_count", 0)
+        )
+        conj_score = conj_raw * 0.10
+        breakdown["conjunctions"] = conj_score
+
+        # 5. Evaluate Combustion (10%)
+        is_combust = planet_data.get("is_combust", False)
+        combust_raw = self.scoring_matrix["state_modifiers"]["combust_score"] if is_combust else 100
+        combust_score = combust_raw * 0.10
+        breakdown["combustion"] = combust_score
+
+        # 6. Evaluate Retrogression (5%)
+        is_retro = planet_data.get("is_retrograde", False)
+        retro_raw = self.scoring_matrix["state_modifiers"]["retrograde_score"] if is_retro else 50
+        retro_score = retro_raw * 0.05
+        breakdown["retrogression"] = retro_score
+
+        # 7. Evaluate Shadbala (10%)
         planet_name = planet_data.get("name", "unknown").lower()
-        # Look for English name or fallback to handling exact dict keys if needed
-        # The parser normalizes keys to english names (sun, moon, etc.)
         shadbala_info = None
         if shadbala_data and isinstance(shadbala_data, dict):
             shadbala_info = shadbala_data.get(planet_name)
-
         if shadbala_info and "required_percentage" in shadbala_info:
             req_pct = float(shadbala_info["required_percentage"])
-            base_score = self._map_shadbala_to_score(req_pct)
-            breakdown["shadbala_base_score"] = base_score
-            total_score = base_score
+            shadbala_raw = self._map_shadbala_to_score(req_pct)
         else:
-            # Fallback to legacy additive heuristics
-            total_score = dignity_score + house_score + state_score + aspect_score
+            shadbala_raw = 50.0 # Neutral fallback
+        shadbala_score = shadbala_raw * 0.10
+        breakdown["shadbala"] = shadbala_score
 
-        # 5. Future Extensibility: Ashtakavarga & Vargas (Phase 3+ enhancements)
-        bav_score = self._evaluate_ashtakavarga(planet_data.get("bav_points", 0)) or 0
-        if bav_score:
-            breakdown["ashtakavarga_support"] = bav_score
-            total_score += bav_score
-            
-        varga_score = self._evaluate_varga_support(planet_data.get("varga_data", {})) or 0
-        if varga_score:
-            breakdown["varga_support"] = varga_score
-            total_score += varga_score
+        # 8. Evaluate Varga Dignity (5%)
+        varga_raw = 50.0 # Placeholder for D9 dignity extraction
+        varga_score = varga_raw * 0.05
+        breakdown["varga_dignity"] = varga_score
+
+        total_score = (dignity_score + house_score + aspect_score + conj_score + 
+                       combust_score + retro_score + shadbala_score + varga_score)
 
         # Clamp final score between 0 and 100
         final_score = clamp_score(total_score)
 
         return {
             "metadata": {
-                "entity_id": planet_data.get("name", "unknown"),
+                "entity_id": planet_name,
                 "entity_type": "planet"
             },
             "final_score": final_score,
             "raw_score": float(total_score),
             "breakdown": breakdown,
-            "modifiers": {
-                "varga_refinement": 0.0,
-                "ashtakavarga_support": 0.0
-            },
-            "temporal_activation": {
-                "timing_multiplier": 1.0,
-                "transit_modifier": 0.0
-            },
             "confidence_flags": self._generate_confidence_flags(total_score, final_score)
         }
 
     # --- Isolated Helper Methods ---
 
-    def _evaluate_dignity(self, dignity: str) -> int:
-        # Normalise: lower-case and replace spaces with underscores so that
-        # both 'Own Sign' (raw PDF form) and 'own_sign' (canonical form) resolve
-        # correctly to the matrix key.  Without this, 'own sign' falls back to
-        # 'neutral' (10) instead of 'own_sign' (35) — a silent scoring error.
+    def _evaluate_dignity(self, dignity: str) -> float:
         key = dignity.lower().replace(" ", "_")
-        return self.scoring_matrix["dignity"].get(key, self.scoring_matrix["dignity"]["neutral"])
+        return float(self.scoring_matrix["dignity"].get(key, self.scoring_matrix["dignity"]["neutral"]))
 
-    def _evaluate_house(self, house_type: str) -> int:
-        # Same normalisation as dignity: 'Own House' -> 'own_house', etc.
+    def _evaluate_house(self, house_type: str) -> float:
         key = house_type.lower().replace(" ", "_")
-        return self.scoring_matrix["house_placement"].get(key, self.scoring_matrix["house_placement"]["neutral"])
+        return float(self.scoring_matrix["house_placement"].get(key, self.scoring_matrix["house_placement"]["neutral"]))
 
+    def _evaluate_aspects(self, benefic_count: int, malefic_count: int) -> float:
+        raw = 50.0 + (benefic_count * self.scoring_matrix["aspects"]["benefic_aspect"]) + (malefic_count * self.scoring_matrix["aspects"]["malefic_aspect"])
+        return max(0.0, min(100.0, raw))
 
-    def _evaluate_state(self, is_combust: bool, is_retrograde: bool) -> int:
-        score = 0
-        if is_combust: score += self.scoring_matrix["state_modifiers"]["combust"]
-        if is_retrograde: score += self.scoring_matrix["state_modifiers"]["retrograde"]
-        return score
-
-    def _evaluate_aspects(self, benefic_count: int, malefic_count: int) -> int:
-        score = (benefic_count * self.scoring_matrix["aspects"]["benefic_aspect"])
-        score += (malefic_count * self.scoring_matrix["aspects"]["malefic_aspect"])
-        return score
+    def _evaluate_conjunctions(self, benefic_count: int, malefic_count: int) -> float:
+        raw = 50.0 + (benefic_count * self.scoring_matrix.get("conjunctions", {}).get("benefic_conjunction", 25)) + (malefic_count * self.scoring_matrix.get("conjunctions", {}).get("malefic_conjunction", -25))
+        return max(0.0, min(100.0, raw))
 
     def _map_shadbala_to_score(self, req_pct: float) -> float:
         """

@@ -15,54 +15,58 @@ and ensures absolute explainability for the final outputs.
 # ---------------------------------------------------------------------------
 PLANET_SCORING_MATRIX = {
     "dignity": {
-        "exalted":     50,   # Maximum dignity — exaltation sign (uccha)
-        "own_sign":    35,   # Own sign (swakshetra) — strong functional strength
-        "friendly":    20,   # Friendly sign — moderate support
-        "neutral":     10,   # Neutral sign — baseline
-        "enemy":        5,   # Enemy sign — weakened
-        "debilitated":  0    # Debilitation (neecha) — minimum dignity
+        "exalted": 100,
+        "own_sign": 80,
+        "friendly": 60,
+        "neutral": 50,
+        "enemy": 20,
+        "debilitated": 0
     },
     "house_placement": {
-        "trikona":  35,   # 5, 9 — highest house type in Parashari
-        "kendra":   30,   # 1, 4, 7, 10 — angular strength
-        "upachaya": 20,   # 3, 6, 10, 11 — growth houses
-        "neutral":  10,   # 2, 11, etc — functional
-        "dusthana": -15   # 6, 8, 12 — houses of challenge
+        "trikona": 100,
+        "kendra": 90,
+        "upachaya": 70,
+        "neutral": 50,
+        "dusthana": 10
     },
     "state_modifiers": {
-        "combust":    -20,  # Combustion loses planetary agency (within Sun's orb)
-        "retrograde":   5   # Cheshta Bala: retrograde motion adds strength
+        "combust_score": 0,       # 0 if combust, 100 if not
+        "retrograde_score": 100,  # 100 if retro, 50 if not
     },
     "aspects": {
-        "benefic_aspect":  10,
-        "malefic_aspect": -10
+        "benefic_aspect": 25,
+        "malefic_aspect": -25
+    },
+    "conjunctions": {
+        "benefic_conjunction": 25,
+        "malefic_conjunction": -25
     }
 }
 
 HOUSE_SCORING_MATRIX = {
     "house_type": {
-        "kendra": 20,    # 1, 4, 7, 10
-        "trikona": 25,   # 1, 5, 9
-        "upachaya": 15,  # 3, 6, 10, 11 (growth)
-        "dusthana": -15, # 6, 8, 12 (challenges)
-        "neutral": 10    # 2, 12, etc.
+        "kendra": 100,
+        "trikona": 100,
+        "upachaya": 70,
+        "neutral": 50,
+        "dusthana": 10
     },
-    "lord_weight": 0.25, # House lord's strength contributes 25% to the house's total capacity
+    "lord_dignity": {
+        "exalted": 100,
+        "own_sign": 80,
+        "friendly": 60,
+        "neutral": 50,
+        "enemy": 20,
+        "debilitated": 0
+    },
     "occupants": {
-        "benefic": 10,
-        "malefic": -10
+        "benefic": 25,
+        "malefic": -25
     },
     "aspects": {
-        "benefic": 10,
-        "malefic": -10
-    },
-    # SAV (Sarvashtakavarga) weight for house scoring.
-    # Applied as: (sav_normalized_score - 50) × sav_weight → contribution in range [-10, +10]
-    # Neutral average (28 bindus) → sav_score=50 → contribution=0 (no change)
-    # Max (40+ bindus) → sav_score=100 → contribution=+10
-    # Zero bindus      → sav_score=0   → contribution=-10
-    # Source: VEDIC_AI_MASTER_ARCHITECTURE.md — Bhava Bala = primary factor
-    "sav_weight": 0.20
+        "benefic_aspect": 25,
+        "malefic_aspect": -25
+    }
 }
 
 NATURAL_BENEFICS = ["jupiter", "venus", "moon", "mercury"]
@@ -149,11 +153,11 @@ SAV_BINDU_SCALE = [
 RASI_SCORING_MATRIX = {
     # Composite formula weights (must sum to 1.0)
     "weights": {
-        "sav":      0.40,
-        "lord":     0.30,
-        "occupant": 0.20,
-        "dignity":  0.10
-    },
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
+        },
     # Occupant quality modifiers (applied per planet)
     "occupant_modifiers": {
         "benefic":        +15,
@@ -263,12 +267,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["2", "11"],
         "varga":           "D9",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1: reduced from 0.07 (SAV is primary timing indicator)
-            "sav":            0.05,   # Calibrated v1.1: raised from 0.03 (SAV bindus are major classical indicator)
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "career": {
@@ -276,12 +278,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["6", "11"],
         "varga":           "D10",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "wealth": {
@@ -289,12 +289,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["5", "9"],
         "varga":           "D2",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "education": {
@@ -302,12 +300,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["4", "9"],
         "varga":           "D24",
         "weights": {
-            "primary_house":  0.25,
-            "support_houses": 0.25,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "children": {
@@ -315,12 +311,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["9", "11"],
         "varga":           "D7",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "property": {
@@ -328,12 +322,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["2", "11"],
         "varga":           "D4",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "health": {
@@ -342,12 +334,10 @@ DOMAIN_CONFIG = {
         "inverted_support": True,
         "varga":           "D6",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
     "spirituality": {
@@ -355,12 +345,10 @@ DOMAIN_CONFIG = {
         "support_houses":  ["5"],
         "varga":           "D20",
         "weights": {
-            "primary_house":  0.30,
-            "support_houses": 0.20,
-            "karaka":         0.25,
-            "lord":           0.15,
-            "varga":          0.05,   # Calibrated v1.1
-            "sav":            0.05,   # Calibrated v1.1
+            "bhava":        0.35,
+            "bhavadhipati": 0.30,
+            "karaka":       0.20,
+            "varga":        0.15,
         }
     },
 }
@@ -368,55 +356,6 @@ DOMAIN_CONFIG = {
 # Affliction penalties — discrete signed values applied after weighted sum
 # Key: affliction flag name (detected from house occupants / planet flags)
 # Value: dict of {domain: penalty} — only listed domains are affected
-# Penalties are capped per domain (see AFFLICTION_CAP below)
-AFFLICTION_PENALTIES = {
-    # Marriage afflictions
-    "rahu_in_7":       {"marriage": -10},
-    "ketu_in_7":       {"marriage": -10},
-    "saturn_in_7":     {"marriage": -15},
-    "mars_in_7":       {"marriage": -10},
-    "venus_combust":   {"marriage": -10, "wealth": -5},
-    # Career afflictions
-    "rahu_in_10":      {"career": -10},
-    "saturn_retro_in_10": {"career": -8},
-    "lord10_in_dusthana": {"career": -12},
-    # Wealth afflictions
-    "saturn_in_2":     {"wealth": -8},
-    "rahu_in_11":      {"wealth": -8},
-    # Education afflictions
-    "mercury_combust": {"education": -10},
-    "rahu_in_5":       {"education": -8, "children": -8},
-    "saturn_in_5":     {"education": -10, "children": -15},
-    "lord5_in_dusthana": {"education": -10, "children": -10},
-    # Children afflictions
-    "ketu_in_5":       {"children": -12},
-    "lord5_debilitated": {"children": -10},
-    # Property afflictions
-    "saturn_in_4":     {"property": -10},
-    "rahu_in_4":       {"property": -8},
-    "lord4_in_dusthana": {"property": -12},
-    "mars_debilitated": {"property": -8},
-    # Health afflictions
-    "saturn_aspects_lagna": {"health": -10},
-    "rahu_in_1":       {"health": -8},
-    "sun_combust":     {"health": -5},
-    # Spirituality afflictions
-    "jupiter_debilitated": {"spirituality": -15},
-    "lord9_combust":   {"spirituality": -10},
-}
-
-# Maximum total affliction penalty per domain (prevents over-penalisation)
-AFFLICTION_CAP = {
-    "marriage":    -25,
-    "career":      -25,
-    "wealth":      -20,
-    "education":   -25,
-    "children":    -30,
-    "property":    -20,
-    "health":      -25,
-    "spirituality":-20,
-}
-
 # Bonus additions (classical yogas) — applied after weighted sum, before cap
 DOMAIN_BONUSES = {
     # Wealth — Dhana Yogas
@@ -556,4 +495,3 @@ TRANSIT_DASHA_SYNC_BONUSES = {
     "transit_same_sign_as_md":     6,   # transit planet in same house as MD lord natal
     "md_transit_bav_high":         8,   # MD lord's BAV in its transit house >= 5 bindus
 }
-

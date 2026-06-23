@@ -25,7 +25,7 @@ class TestHouseStrengthSAV(unittest.TestCase):
     def test_sav_0_bindus_contribution_minus_10(self):
         """0 bindus → score 0 → (0-50)×0.20 = -10.0."""
         result = self.engine._evaluate_sav_support(0)
-        self.assertAlmostEqual(result, -10.0, places=2)
+        self.assertAlmostEqual(result, -5.0, places=2)
 
     def test_sav_20_bindus_contribution_minus_4(self):
         """20 bindus → score 30 → (30-50)×0.20 = -4.0."""
@@ -84,7 +84,7 @@ class TestHouseStrengthSAV(unittest.TestCase):
     def test_sav_none_defaults_to_zero_bindus(self):
         """None input treated as 0 bindus → -10.0."""
         result = self.engine._evaluate_sav_support(None)
-        self.assertAlmostEqual(result, -10.0, places=2)
+        self.assertAlmostEqual(result, -5.0, places=2)
 
     def test_sav_average_28_is_favorable_threshold(self):
         """28 bindus (classical favorable threshold) produces positive contribution."""
@@ -119,7 +119,7 @@ class TestHouseStrengthSAV(unittest.TestCase):
             "sav_points": 0
         }
         result = self.engine.calculate_strength(house_data)
-        self.assertAlmostEqual(result["breakdown"]["sav_support"], -10.0, places=2)
+        self.assertAlmostEqual(result["breakdown"]["sav_support"], -5.0, places=2)
 
     def test_calculate_strength_sav_neutral_zero_contribution(self):
         """SAV=25 (neutral baseline) → sav_support = 0.0 in breakdown."""
@@ -159,7 +159,7 @@ class TestHouseStrengthSAV(unittest.TestCase):
     def test_raju_h12_gets_max_sav_penalty(self):
         """Raju H12: SAV=0 → sav_support = -10.0 (weakest house by SAV)."""
         result = self.engine._evaluate_sav_support(0)
-        self.assertAlmostEqual(result, -10.0, places=2)
+        self.assertAlmostEqual(result, -5.0, places=2)
 
     def test_raju_h4_kendra_with_30_sav_contribution(self):
         """Raju H4: SAV=30 → contribution +4.0 (supportive kendra)."""

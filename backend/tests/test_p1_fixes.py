@@ -214,10 +214,10 @@ class TestDignityNormalisation(unittest.TestCase):
         })
         self.assertEqual(result["breakdown"]["dignity"], 35,
             "Mars 'Own Sign' must give dignity=35, not fall back to neutral=10")
-        self.assertEqual(result["raw_score"], 20.0,
-            "Mars 'Own Sign'+'Dusthana' raw score must be 35-15=20 (not -5)")
-        self.assertEqual(result["final_score"], 20,
-            "Mars must score 20 (not 0) after dignity normalisation fix")
+        self.assertEqual(result["raw_score"], 45.0,
+            "Mars 'Own Sign'+'Dusthana' raw score must be 25+35-15=45 (not -5)")
+        self.assertEqual(result["final_score"], 45,
+            "Mars must score 45 (not 0) after dignity normalisation fix and base addition")
 
     def test_jupiter_raju_dignity_fix(self):
         """
@@ -236,10 +236,10 @@ class TestDignityNormalisation(unittest.TestCase):
         })
         self.assertEqual(result["breakdown"]["dignity"], 35,
             "Jupiter 'Own Sign' must score dignity=35")
-        self.assertEqual(result["raw_score"], 90.0,
-            "Jupiter 'Own Sign'+'Trikona'+2benefic aspects = 35+35+20=90")
-        self.assertEqual(result["final_score"], 90,
-            "Jupiter must score 90 after dignity normalisation fix")
+        self.assertEqual(result["raw_score"], 115.0,
+            "Jupiter 'Own Sign'+'Trikona'+2benefic aspects = 25+35+35+20=115")
+        self.assertEqual(result["final_score"], 100,
+            "Jupiter must score 100 after dignity normalisation fix and base addition")
 
 
 # ---------------------------------------------------------------------------
