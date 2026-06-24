@@ -416,6 +416,8 @@ class TransitEngine:
         ad_natal_house = 0
 
         for lord, data in dasha_results.items():
+            if lord in ("synthesis", "timeline"):
+                continue
             flags = data.get("confidence_flags", [])
             mult  = data.get("temporal_activation", {}).get("timing_multiplier", 1.0)
             n_house = int(natal_planets.get(lord, {}).get("house", 0))
@@ -681,6 +683,8 @@ class TransitEngine:
         # Dasha lord transiting
         active_lords = set()
         for lord, data in (dasha_results or {}).items():
+            if lord in ("synthesis", "timeline"):
+                continue
             cf = data.get("confidence_flags", [])
             if "active_mahadasha" in cf or "active_antardasha" in cf:
                 active_lords.add(lord)

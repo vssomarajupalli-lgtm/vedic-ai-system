@@ -207,7 +207,8 @@ class MasterProbabilityEngine:
         if not dasha_results:
             return self.stub
 
-        entries = list(dasha_results.values())
+        # Filter out non-dictionary entries (like "timeline" list) to prevent attribute errors
+        entries = [e for e in dasha_results.values() if isinstance(e, dict)]
 
         # Identify MD and AD by confidence_flags
         md_data = next(

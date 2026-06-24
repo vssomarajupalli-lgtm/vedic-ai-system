@@ -9,8 +9,14 @@ export interface StructuredQuestionResult {
   };
   dasha_activation: {
     mahadasha: string;
+    mahadasha_start?: string;
+    mahadasha_end?: string;
     antardasha: string;
+    antardasha_start?: string;
+    antardasha_end?: string;
     pratyantardasha: string;
+    pratyantardasha_start?: string;
+    pratyantardasha_end?: string;
     activation_index: string;
     activation_grade: string;
   };
@@ -59,13 +65,42 @@ export const QuestionResultCard: React.FC<Props> = ({ result }) => {
         {/* B. Current Dasha Activation */}
         <section className="border-b border-gray-200 pb-4">
           <h3 className="text-lg font-bold text-blue-800 mb-3 border-b-2 border-blue-200 inline-block">B. Current Dasha Activation</h3>
-          <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-            <div><span className="font-semibold text-gray-600">Mahadasha:</span><br/>{result.dasha_activation.mahadasha}</div>
-            <div><span className="font-semibold text-gray-600">Antardasha:</span><br/>{result.dasha_activation.antardasha}</div>
-            <div><span className="font-semibold text-gray-600">Pratyantardasha:</span><br/>{result.dasha_activation.pratyantardasha}</div>
-            <div></div>
-            <div><span className="font-semibold text-gray-600">Activation Index:</span><br/>{result.dasha_activation.activation_index}</div>
-            <div><span className="font-semibold text-gray-600">Activation Grade:</span><br/>{result.dasha_activation.activation_grade}</div>
+          <div className="space-y-4">
+            {/* Mahadasha */}
+            <div>
+              <div className="font-semibold text-gray-600">Mahadasha</div>
+              <div className="mb-2">{result.dasha_activation.mahadasha}</div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                <div><span className="font-semibold text-gray-500">Start Date:</span><br/>{result.dasha_activation.mahadasha_start || 'Unknown'}</div>
+                <div><span className="font-semibold text-gray-500">End Date:</span><br/>{result.dasha_activation.mahadasha_end || 'Unknown'}</div>
+              </div>
+            </div>
+            <hr className="border-gray-100" />
+            {/* Antardasha */}
+            <div>
+              <div className="font-semibold text-gray-600">Antardasha</div>
+              <div className="mb-2">{result.dasha_activation.antardasha}</div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                <div><span className="font-semibold text-gray-500">Start Date:</span><br/>{result.dasha_activation.antardasha_start || 'Unknown'}</div>
+                <div><span className="font-semibold text-gray-500">End Date:</span><br/>{result.dasha_activation.antardasha_end || 'Unknown'}</div>
+              </div>
+            </div>
+            <hr className="border-gray-100" />
+            {/* Pratyantardasha */}
+            <div>
+              <div className="font-semibold text-gray-600">Pratyantardasha</div>
+              <div className="mb-2">{result.dasha_activation.pratyantardasha}</div>
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                <div><span className="font-semibold text-gray-500">Start Date:</span><br/>{result.dasha_activation.pratyantardasha_start || 'Unknown'}</div>
+                <div><span className="font-semibold text-gray-500">End Date:</span><br/>{result.dasha_activation.pratyantardasha_end || 'Unknown'}</div>
+              </div>
+            </div>
+            <hr className="border-gray-100" />
+            {/* Activation Index */}
+            <div>
+              <div className="font-semibold text-gray-600">Activation Index</div>
+              <div>{result.dasha_activation.activation_index}</div>
+            </div>
           </div>
         </section>
 

@@ -281,7 +281,7 @@ class PipelineRunner:
         # --- Dasha BAV confidence multiplier ---
         bav_mult = modifiers.get("dasha_bav_confidence_multiplier", 1.0)
         for lord, lord_data in dasha_results.items():
-            if lord == "synthesis":
+            if lord in ("synthesis", "timeline"):
                 continue
             temporal = lord_data.get("temporal_activation", {})
             if "timing_multiplier" not in temporal:

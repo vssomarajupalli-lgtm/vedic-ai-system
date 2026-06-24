@@ -98,17 +98,59 @@ class DashaEngine:
         dasha_strength = (md_base_score * 0.50) + (ad_base_score * 0.30) + (pd_base_score * 0.20)
         dasha_strength = max(0.0, min(100.0, dasha_strength))
         
+        # Active index
+        active_idx = timeline.index(active_record)
+
+        # PD Dates
+        pd_start = active_record.get("start_date")
+        pd_end = timeline[active_idx + 1].get("start_date") if active_idx + 1 < len(timeline) else "Unknown"
+
+        # AD Dates
+        ad_start = None
+        for i in range(active_idx, -1, -1):
+            if timeline[i].get("mahadasha", "").lower() != md_lord or timeline[i].get("antardasha", "").lower() != ad_lord:
+                break
+            ad_start = timeline[i].get("start_date")
+
+        ad_end = "Unknown"
+        for i in range(active_idx + 1, len(timeline)):
+            if timeline[i].get("mahadasha", "").lower() != md_lord or timeline[i].get("antardasha", "").lower() != ad_lord:
+                ad_end = timeline[i].get("start_date")
+                break
+
+        # MD Dates
+        md_start = None
+        for i in range(active_idx, -1, -1):
+            if timeline[i].get("mahadasha", "").lower() != md_lord:
+                break
+            md_start = timeline[i].get("start_date")
+
+        md_end = "Unknown"
+        for i in range(active_idx + 1, len(timeline)):
+            if timeline[i].get("mahadasha", "").lower() != md_lord:
+                md_end = timeline[i].get("start_date")
+                break
+
         # Build synthesis
         results["synthesis"] = {
             "active_md": md_lord,
+            "md_start": md_start,
+            "md_end": md_end,
             "active_ad": ad_lord,
+            "ad_start": ad_start,
+            "ad_end": ad_end,
             "active_pd": pd_lord,
+            "pd_start": pd_start,
+            "pd_end": pd_end,
             "md_strength": md_base_score,
             "ad_strength": ad_base_score,
             "pd_strength": pd_base_score,
             "dasha_strength": round(dasha_strength, 2),
             "target_date": target_date
         }
+        
+        # Preserve full timeline for UI transparency layer
+        results["timeline"] = timeline
 
         return results
 

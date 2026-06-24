@@ -28,8 +28,14 @@ class PromiseAssessmentDisplay(BaseModel):
 
 class DashaActivationDisplay(BaseModel):
     mahadasha: str
+    mahadasha_start: Optional[str] = None
+    mahadasha_end: Optional[str] = None
     antardasha: str
+    antardasha_start: Optional[str] = None
+    antardasha_end: Optional[str] = None
     pratyantardasha: str
+    pratyantardasha_start: Optional[str] = None
+    pratyantardasha_end: Optional[str] = None
     activation_index: str
     activation_grade: str
 

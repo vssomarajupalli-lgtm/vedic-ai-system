@@ -70,10 +70,26 @@ class DisplayFormatter:
             
         act_grade_display = DisplayFormatter._map_display_grade(act_grade_internal)
         
+        from datetime import datetime
+        def format_date(date_str: str) -> str:
+            if not date_str or date_str == "Unknown":
+                return "Unknown"
+            try:
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                return dt.strftime("%d-%b-%Y")
+            except ValueError:
+                return date_str
+
         dasha_display = DashaActivationDisplay(
             mahadasha=f"{md_lord} ({round(md_str)}%)",
+            mahadasha_start=format_date(synthesis.get("md_start")),
+            mahadasha_end=format_date(synthesis.get("md_end")),
             antardasha=f"{ad_lord} ({round(ad_str)}%)",
+            antardasha_start=format_date(synthesis.get("ad_start")),
+            antardasha_end=format_date(synthesis.get("ad_end")),
             pratyantardasha=f"{pd_lord} ({round(pd_str)}%)",
+            pratyantardasha_start=format_date(synthesis.get("pd_start")),
+            pratyantardasha_end=format_date(synthesis.get("pd_end")),
             activation_index=f"{activation_index}%",
             activation_grade=act_grade_display
         )
