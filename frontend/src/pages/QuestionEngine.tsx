@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Database } from 'lucide-react';
 import { useChartStore } from '../store/useChartStore';
@@ -14,13 +14,15 @@ export default function QuestionEngine() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchedQuestionRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (location.state) {
       const { initialQuestionId } = location.state;
       if (initialQuestionId) {
-        // Only fetch if we haven't already fetched this question in the current session
-        const alreadyFetched = results.some(r => location.state.initialQuestionText && r.question_title === location.state.initialQuestionText);
-        if (!alreadyFetched) {
+        // Only fetch if we haven't already fetched this question synchronously via ref
+        if (fetchedQuestionRef.current !== initialQuestionId) {
+          fetchedQuestionRef.current = initialQuestionId;
           fetchStructuredQuestion(initialQuestionId);
         }
       }
