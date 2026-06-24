@@ -12,7 +12,13 @@ from app.engines.yoga_engine import YogaEngine
 from app.engines.question_engine import QuestionEngine
 from app.engines.functional_nature_engine import FunctionalNatureEngine
 from app.utils.ephemeris_service import EphemerisService
-from app.config.astrology_constants import SIGNS_IN_ORDER, PROBABILITY_GRADES
+from app.config.astrology_constants import (
+    SIGNS_IN_ORDER, 
+    PROBABILITY_GRADES,
+    EXALTATION_MAP,
+    DEBILITATION_MAP,
+    OWN_SIGN_MAP
+)
 
 class PipelineRunner:
     """
@@ -50,6 +56,24 @@ class PipelineRunner:
         """
         # 1. Normalize the raw data into our strict deterministic schema
         normalized_payload = self.normalizer.normalize(raw_input_data)
+        
+        # 1.2. Dignity Derivation Enrichment (Mathematical Calculation)
+        for planet_id, planet_data in normalized_payload.get("planets", {}).items():
+            sign = planet_data.get("sign")
+            if not sign:
+                continue
+                
+            # Priority: Exalted -> Own Sign -> Debilitated -> Neutral
+            dignity = "neutral"
+            if EXALTATION_MAP.get(planet_id) == sign:
+                dignity = "exalted"
+            elif sign in OWN_SIGN_MAP.get(planet_id, []):
+                dignity = "own_sign"
+            elif DEBILITATION_MAP.get(planet_id) == sign:
+                dignity = "debilitated"
+                
+            planet_data["dignity"] = dignity
+
         
         # 1.5 Functional Nature Mapping (Structural layer)
         lagna = normalized_payload.get("metadata", {}).get("ascendant_sign", "aries")

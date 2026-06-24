@@ -130,6 +130,41 @@ SIGN_LORD_MAP = {
     "pisces":      "jupiter"
 }
 
+# Dignity Maps (Planet -> Sign / List of Signs)
+EXALTATION_MAP = {
+    "sun": "aries",
+    "moon": "taurus",
+    "mars": "capricorn",
+    "mercury": "virgo",
+    "jupiter": "cancer",
+    "venus": "pisces",
+    "saturn": "libra",
+    "rahu": "taurus",
+    "ketu": "scorpio"
+}
+
+DEBILITATION_MAP = {
+    "sun": "libra",
+    "moon": "scorpio",
+    "mars": "cancer",
+    "mercury": "pisces",
+    "jupiter": "capricorn",
+    "venus": "virgo",
+    "saturn": "aries",
+    "rahu": "scorpio",
+    "ketu": "taurus"
+}
+
+OWN_SIGN_MAP = {
+    "sun": ["leo"],
+    "moon": ["cancer"],
+    "mars": ["aries", "scorpio"],
+    "mercury": ["gemini", "virgo"],
+    "jupiter": ["sagittarius", "pisces"],
+    "venus": ["taurus", "libra"],
+    "saturn": ["capricorn", "aquarius"]
+}
+
 # Canonical sign order — index 0 = Aries, index 11 = Pisces
 # Used to derive house number from sign given an ascendant sign
 SIGNS_IN_ORDER = [
