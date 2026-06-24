@@ -1,9 +1,11 @@
 from typing import Any, Dict, List, Union
 from app.config.astrology_constants import (
     DOMAIN_CONFIG, DOMAIN_KARAKA, NATAL_PROMISE_GRADES,
-    DOMAIN_BONUSES, SAV_BINDU_SCALE
+    DOMAIN_BONUSES, SAV_BINDU_SCALE, PLANET_SCORING_MATRIX,
+    SIGN_LORD_MAP, NATURAL_BENEFICS, NATURAL_MALEFICS
 )
 from app.utils.astrology_math import clamp_score
+from app.engines.planet_strength_engine import PlanetStrengthEngine
 
 _NEUTRAL = 50.0
 
@@ -30,6 +32,7 @@ class NatalPromiseEngine:
         self.config   = DOMAIN_CONFIG
         self.karaka   = DOMAIN_KARAKA
         self.grades   = NATAL_PROMISE_GRADES
+        self.planet_engine = PlanetStrengthEngine()
 
     def evaluate(
         self,
@@ -40,15 +43,18 @@ class NatalPromiseEngine:
         av_results:        Dict[str, Any],
         yoga_results:      Dict[str, Any],
         normalized_houses: Dict[str, Any],
+        normalized_vargas: Dict[str, Any] = None,
     ) -> Dict[str, Any]:
         """
         Evaluates natal promise for all 8 domains.
         """
+        if normalized_vargas is None:
+            normalized_vargas = {}
         result = {}
         for domain in self.domains:
             result[domain] = self._score_domain(
                 domain, planet_results, house_results,
-                varga_results, normalized_houses, yoga_results
+                varga_results, normalized_houses, yoga_results, normalized_vargas
             )
         print("NatalPromiseEngine output sample (Marriage):", result.get("marriage", {}).get("score"))
         return result
@@ -61,6 +67,7 @@ class NatalPromiseEngine:
         varga_results:     dict,
         normalized_houses: dict,
         yoga_results:      dict,
+        normalized_vargas: dict,
     ) -> dict:
         cfg     = self.config[domain]
         weights = cfg["weights"]
@@ -84,7 +91,11 @@ class NatalPromiseEngine:
 
         # --- Pillar 4: Varga Validation (15%) ---
         varga_id = cfg["varga"]
-        f_varga = self._varga_score(varga_id, varga_results, karaka_cfg["primary"])
+        f_varga = self._varga_score(
+            varga_id,
+            normalized_vargas,
+            karaka_cfg["primary"]
+        )
 
         # --- Weighted sum ---
         raw = (
@@ -170,23 +181,23 @@ class NatalPromiseEngine:
     def _varga_score(
         self,
         varga_id:      str,
-        varga_results: dict,
+        normalized_vargas: dict,
         primary_karaka: str,
     ) -> float:
-        varga = varga_results.get(varga_id, {})
-        if not varga:
+        varga = normalized_vargas.get(varga_id, {})
+        if not varga or "planets" not in varga:
             return _NEUTRAL
 
-        net = 0.0
-        planets_in_varga = varga.get("planets", {})
-        for planet_data in planets_in_varga.values():
-            mods = planet_data.get("modifiers", {})
-            net += sum(mods.values())
-            if planet_data.get("is_vargottama"):
-                net += 15.0 
+        varga_planets = varga["planets"]
+        karaka_data = varga_planets.get(primary_karaka)
+        
+        if not karaka_data:
+            return _NEUTRAL
 
-        score = clamp_score(_NEUTRAL + net)
-        return score
+        # Evaluate the Karaka inside the Varga using PlanetStrengthEngine
+        # shadbala_data is intentionally empty because Vargas don't have D1 astronomical states
+        result = self.planet_engine.calculate_strength(karaka_data, shadbala_data={})
+        return float(result.get("final_score", _NEUTRAL))
 
     def _promise_grade(self, score: int) -> str:
         for threshold, label in self.grades:

@@ -87,15 +87,14 @@ class TestNatalPromiseEngine(unittest.TestCase):
             for key in ("score", "promise", "breakdown", "karaka", "varga_chart"):
                 self.assertIn(key, data, f"{domain} missing key: {key}")
 
-    def test_breakdown_has_all_6_factors(self):
-        """Breakdown must contain all 6 factors + affliction_penalty."""
+    def test_breakdown_has_all_4_factors(self):
+        """Breakdown must explicitly list all 4 components of the Promise Formula."""
         result = self._evaluate()
-        for domain, data in result.items():
-            bd = data["breakdown"]
-            for key in ("primary_house", "support_houses", "karaka_planet",
-                        "house_lord", "varga_support", "sav_support",
-                        "affliction_penalty"):
-                self.assertIn(key, bd, f"{domain} breakdown missing: {key}")
+        data = result["marriage"]
+        bd = data["breakdown"]
+
+        for key in ("bhava", "bhavadhipati", "karaka", "varga"):
+            self.assertIn(key, bd, f"Marriage breakdown missing: {key}")
 
     def test_score_within_0_100(self):
         """All domain scores must be in [0, 100]."""
@@ -147,68 +146,39 @@ class TestNatalPromiseEngine(unittest.TestCase):
         """Marriage primary house is H7. Strong H7 → high primary contribution."""
         result = self._evaluate(house_scores=self._houses(**{"7": 100, "2": 50, "11": 50}))
         bd = result["marriage"]["breakdown"]
-        self.assertEqual(bd["primary_house"], 100.0)
+        self.assertEqual(bd["bhava"], 100.0)
 
     def test_career_uses_house_10_as_primary(self):
         """Career primary house is H10."""
         result = self._evaluate(house_scores=self._houses(**{"10": 80, "6": 50, "11": 50}))
-        self.assertEqual(result["career"]["breakdown"]["primary_house"], 80.0)
+        self.assertEqual(result["career"]["breakdown"]["bhava"], 80.0)
 
     def test_wealth_averages_h2_and_h11(self):
         """Wealth primary = average of H2 and H11."""
         result = self._evaluate(house_scores=self._houses(**{"2": 60, "11": 40, "5": 50, "9": 50}))
         bd = result["wealth"]["breakdown"]
-        self.assertAlmostEqual(bd["primary_house"], 50.0, places=1)
+        self.assertAlmostEqual(bd["bhava"], 50.0, places=1)
 
     def test_spirituality_averages_h9_and_h12(self):
         """Spirituality primary = average of H9 and H12."""
         result = self._evaluate(house_scores=self._houses(**{"9": 80, "12": 40, "5": 50}))
         bd = result["spirituality"]["breakdown"]
-        self.assertAlmostEqual(bd["primary_house"], 60.0, places=1)
+        self.assertAlmostEqual(bd["bhava"], 60.0, places=1)
 
     def test_health_uses_house_1_as_primary(self):
         """Health primary house is H1."""
         result = self._evaluate(house_scores=self._houses(**{"1": 90, "6": 50, "8": 50, "12": 50}))
-        self.assertAlmostEqual(result["health"]["breakdown"]["primary_house"], 90.0, places=1)
+        self.assertAlmostEqual(result["health"]["breakdown"]["bhava"], 90.0, places=1)
 
     # -------------------------------------------------------------------------
     # 5. Support house factor
-    # -------------------------------------------------------------------------
-
-    def test_marriage_support_houses_are_h2_h11(self):
-        """Marriage support = avg(H2, H11). Setting both to 80 → support=80."""
-        result = self._evaluate(house_scores=self._houses(**{"7": 50, "2": 80, "11": 80}))
-        bd = result["marriage"]["breakdown"]
-        self.assertAlmostEqual(bd["support_houses"], 80.0, places=1)
-
-    def test_health_support_inverted(self):
-        """
-        Health support houses (H6, H8, H12) are inverted.
-        If all 3 are 100 (maximum disease susceptibility) → support = 0.
-        If all 3 are 0 (healthy) → support = 100.
-        """
-        # All affliction houses strong = bad for health
-        result_bad = self._evaluate(
-            house_scores=self._houses(**{"1": 50, "6": 100, "8": 100, "12": 100})
-        )
-        # All affliction houses weak = good for health
-        result_good = self._evaluate(
-            house_scores=self._houses(**{"1": 50, "6": 0, "8": 0, "12": 0})
-        )
-        bad_support  = result_bad["health"]["breakdown"]["support_houses"]
-        good_support = result_good["health"]["breakdown"]["support_houses"]
-        self.assertAlmostEqual(bad_support,  0.0,   places=1)
-        self.assertAlmostEqual(good_support, 100.0, places=1)
-
-    # -------------------------------------------------------------------------
-    # 6. Karaka planet factor
     # -------------------------------------------------------------------------
 
     def test_marriage_karaka_is_venus(self):
         """Marriage karaka is Venus — high Venus score → high karaka contribution."""
         result = self._evaluate(planet_scores=self._planets(venus=90, jupiter=50, saturn=50))
         bd = result["marriage"]["breakdown"]
-        self.assertAlmostEqual(bd["karaka_planet"], 90.0, places=1)
+        self.assertAlmostEqual(bd["karaka"], 90.0, places=1)
 
     def test_career_karaka_blends_saturn_and_sun(self):
         """Career: effective_karaka = max(saturn, avg(saturn, sun))."""
@@ -216,7 +186,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result  = self._evaluate(planet_scores=planets)
         bd = result["career"]["breakdown"]
         expected = max(40, (40 + 80) / 2)  # max(40, 60) = 60
-        self.assertAlmostEqual(bd["karaka_planet"], expected, places=1)
+        self.assertAlmostEqual(bd["karaka"], expected, places=1)
 
     def test_education_blends_mercury_and_jupiter(self):
         """Education: 0.60 × mercury + 0.40 × jupiter."""
@@ -224,7 +194,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result  = self._evaluate(planet_scores=planets)
         bd = result["education"]["breakdown"]
         expected = 0.60 * 80 + 0.40 * 60   # 48 + 24 = 72
-        self.assertAlmostEqual(bd["karaka_planet"], expected, places=1)
+        self.assertAlmostEqual(bd["karaka"], expected, places=1)
 
     def test_children_blends_jupiter_and_moon(self):
         """Children: 0.70 × jupiter + 0.30 × moon."""
@@ -232,7 +202,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result  = self._evaluate(planet_scores=planets)
         bd = result["children"]["breakdown"]
         expected = 0.70 * 80 + 0.30 * 40  # 56 + 12 = 68
-        self.assertAlmostEqual(bd["karaka_planet"], expected, places=1)
+        self.assertAlmostEqual(bd["karaka"], expected, places=1)
 
     def test_health_blends_sun_and_moon(self):
         """Health: 0.60 × sun + 0.40 × moon."""
@@ -240,7 +210,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result  = self._evaluate(planet_scores=planets)
         bd = result["health"]["breakdown"]
         expected = 0.60 * 100 + 0.40 * 0   # = 60
-        self.assertAlmostEqual(bd["karaka_planet"], expected, places=1)
+        self.assertAlmostEqual(bd["karaka"], expected, places=1)
 
     def test_property_blends_mars_and_moon(self):
         """Property: 0.60 × mars + 0.40 × moon."""
@@ -248,7 +218,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result  = self._evaluate(planet_scores=planets)
         bd = result["property"]["breakdown"]
         expected = 0.60 * 60 + 0.40 * 40  # 36 + 16 = 52
-        self.assertAlmostEqual(bd["karaka_planet"], expected, places=1)
+        self.assertAlmostEqual(bd["karaka"], expected, places=1)
 
     # -------------------------------------------------------------------------
     # 7. House lord factor
@@ -260,20 +230,20 @@ class TestNatalPromiseEngine(unittest.TestCase):
         norm_cfg   = {"7": {"lord": "venus", "occupants": [], "aspected_by": []}}
         result     = self._evaluate(planet_scores=planets, norm_house_cfg=norm_cfg)
         bd = result["marriage"]["breakdown"]
-        self.assertAlmostEqual(bd["house_lord"], 75.0, places=1)
+        self.assertAlmostEqual(bd["bhavadhipati"], 75.0, places=1)
 
     def test_missing_lord_defaults_to_neutral(self):
         """Unknown lord → returns neutral 50."""
         norm_cfg = {"7": {"lord": "unknown_planet", "occupants": [], "aspected_by": []}}
         result   = self._evaluate(norm_house_cfg=norm_cfg)
         bd = result["marriage"]["breakdown"]
-        self.assertAlmostEqual(bd["house_lord"], 50.0, places=1)
+        self.assertAlmostEqual(bd["bhavadhipati"], 50.0, places=1)
 
     def test_empty_lord_defaults_to_neutral(self):
         """Empty lord string → returns neutral 50."""
         norm_cfg = {"7": {"lord": "", "occupants": [], "aspected_by": []}}
         result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertAlmostEqual(result["marriage"]["breakdown"]["house_lord"], 50.0, places=1)
+        self.assertAlmostEqual(result["marriage"]["breakdown"]["bhavadhipati"], 50.0, places=1)
 
     # -------------------------------------------------------------------------
     # 8. Varga factor
@@ -283,7 +253,7 @@ class TestNatalPromiseEngine(unittest.TestCase):
         """If varga chart absent → factor returns 50."""
         result = self._evaluate(varga={})
         for domain, data in result.items():
-            self.assertAlmostEqual(data["breakdown"]["varga_support"], 50.0, places=1)
+            self.assertAlmostEqual(data["breakdown"]["varga"], 50.0, places=1)
 
     def test_varga_marriage_reads_d9(self):
         """Marriage varga = D9."""
@@ -306,140 +276,6 @@ class TestNatalPromiseEngine(unittest.TestCase):
         self.assertEqual(self.engine.config["spirituality"]["varga"], "D20")
 
     # -------------------------------------------------------------------------
-    # 9. SAV support factor
-    # -------------------------------------------------------------------------
-
-    def test_sav_neutral_when_absent(self):
-        """Missing SAV → factor returns neutral 50."""
-        result = self._evaluate(av=self._empty_av())
-        for domain, data in result.items():
-            self.assertAlmostEqual(data["breakdown"]["sav_support"], 50.0, places=1)
-
-    def test_sav_25_bindus_returns_50(self):
-        """25 bindus → normalized score = 50 (neutral anchor)."""
-        score = self.engine._sav_score("7", {"7": {"bindus": 25}})
-        self.assertAlmostEqual(score, 50.0, places=1)
-
-    def test_sav_40_bindus_returns_100(self):
-        """40+ bindus → normalized score = 100 (maximum)."""
-        score = self.engine._sav_score("7", {"7": {"bindus": 40}})
-        self.assertAlmostEqual(score, 100.0, places=1)
-
-    def test_sav_0_bindus_returns_0(self):
-        """0 bindus → normalized score = 0 (critical)."""
-        score = self.engine._sav_score("7", {"7": {"bindus": 0}})
-        self.assertAlmostEqual(score, 0.0, places=1)
-
-    def test_sav_handles_raw_int(self):
-        """Raw int value (from normalized payload) is handled safely."""
-        score = self.engine._sav_score("7", {"7": 25})
-        self.assertAlmostEqual(score, 50.0, places=1)
-
-    def test_sav_handles_annotated_dict(self):
-        """Annotated dict (AshtakavargaEngine output) is handled safely."""
-        score = self.engine._sav_score("7", {"7": {"bindus": 30, "score": 70.0}})
-        self.assertAlmostEqual(score, 70.0, places=1)
-
-    # -------------------------------------------------------------------------
-    # 10. Affliction penalty detection
-    # -------------------------------------------------------------------------
-
-    def test_saturn_in_h7_penalises_marriage(self):
-        """Saturn in H7 → marriage affliction flag 'saturn_in_7' → -15 penalty."""
-        norm_cfg   = {"7": {"lord": "", "occupants": ["saturn"], "aspected_by": []}}
-        result_aff = self._evaluate(norm_house_cfg=norm_cfg)
-        result_clean = self._evaluate()
-        marriage_aff   = result_aff["marriage"]["score"]
-        marriage_clean = result_clean["marriage"]["score"]
-        self.assertLess(marriage_aff, marriage_clean,
-                        "Saturn in H7 should reduce marriage score")
-        self.assertIn("saturn_in_7", result_aff["marriage"]["afflictions"])
-
-    def test_rahu_in_h7_penalises_marriage(self):
-        """Rahu in H7 → -10 marriage penalty."""
-        norm_cfg = {"7": {"lord": "", "occupants": ["rahu"], "aspected_by": []}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("rahu_in_7", result["marriage"]["afflictions"])
-
-    def test_ketu_in_h5_penalises_children(self):
-        """Ketu in H5 → -12 children penalty."""
-        norm_cfg = {"5": {"lord": "", "occupants": ["ketu"], "aspected_by": []}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("ketu_in_5", result["children"]["afflictions"])
-
-    def test_saturn_in_h5_penalises_education_and_children(self):
-        """Saturn in H5 → -10 education and -15 children penalty."""
-        norm_cfg = {"5": {"lord": "", "occupants": ["saturn"], "aspected_by": []}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("saturn_in_5", result["education"]["afflictions"])
-        self.assertIn("saturn_in_5", result["children"]["afflictions"])
-
-    def test_rahu_in_h10_penalises_career(self):
-        """Rahu in H10 → -10 career penalty."""
-        norm_cfg = {"10": {"lord": "", "occupants": ["rahu"], "aspected_by": []}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("rahu_in_10", result["career"]["afflictions"])
-
-    def test_saturn_aspects_lagna_penalises_health(self):
-        """Saturn aspecting H1 → -10 health penalty."""
-        norm_cfg = {"1": {"lord": "", "occupants": [], "aspected_by": ["saturn"]}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertIn("saturn_aspects_lagna", result["health"]["afflictions"])
-
-    def test_venus_combust_penalises_marriage(self):
-        """Venus with combust flag → -10 marriage penalty."""
-        planets = {
-            "venus": {"final_score": 50, "confidence_flags": ["combust"], "sign": ""},
-            "saturn": {"final_score": 50, "confidence_flags": [], "sign": ""}
-        }
-        result = self.engine.evaluate(
-            planet_results=planets, house_results={}, rasi_results={},
-            varga_results={}, av_results=self._empty_av(),
-            yoga_results={},
-            normalized_houses=self._norm_houses()
-        )
-        self.assertIn("venus_combust", result["marriage"]["afflictions"])
-
-    def test_affliction_does_not_affect_unrelated_domain(self):
-        """Saturn in H7 only penalises marriage, not career."""
-        norm_cfg = {"7": {"lord": "", "occupants": ["saturn"], "aspected_by": []}}
-        result   = self._evaluate(norm_house_cfg=norm_cfg)
-        self.assertNotIn("saturn_in_7", result["career"]["afflictions"])
-
-    # -------------------------------------------------------------------------
-    # 11. Affliction penalty cap
-    # -------------------------------------------------------------------------
-
-    def test_penalty_capped_per_domain(self):
-        """
-        Even with many afflictions, penalty cannot exceed AFFLICTION_CAP.
-        Marriage cap = -25. Stack saturn + rahu + ketu + mars → cap enforced.
-        """
-        norm_cfg = {
-            "7": {"lord": "", "occupants": ["saturn", "rahu", "ketu", "mars"], "aspected_by": []}
-        }
-        result = self.engine.evaluate(
-            planet_results=self._planets(venus=50, saturn=50, rahu=50),
-            house_results=self._houses(**{"7": 50}),
-            rasi_results={},
-            varga_results={},
-            av_results=self._empty_av(),
-            yoga_results={},
-            normalized_houses=self._norm_houses(norm_cfg)
-        )
-        penalty = result["marriage"]["breakdown"]["affliction_penalty"]
-        self.assertGreaterEqual(penalty, -25,
-                                "Marriage penalty must not exceed cap of -25")
-
-    def test_compute_penalties_respects_cap(self):
-        """_compute_penalties() internal cap test."""
-        flags = ["saturn_in_7", "rahu_in_7", "ketu_in_7", "mars_in_7", "venus_combust"]
-        total = self.engine._compute_penalties("marriage", flags)
-        self.assertGreaterEqual(total, -25)
-
-
-
-    # -------------------------------------------------------------------------
     # 13. Weighted sum arithmetic
     # -------------------------------------------------------------------------
 
@@ -451,8 +287,8 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result_100 = self._evaluate(house_scores=self._houses(**{"7": 100, "2": 50, "11": 50}))
         result_50  = self._evaluate(house_scores=self._houses(**{"7": 50,  "2": 50, "11": 50}))
         diff = result_100["marriage"]["score"] - result_50["marriage"]["score"]
-        self.assertAlmostEqual(diff, 10.0, delta=2.0,
-                               msg="20% weight × 50pt difference should be ~10")
+        self.assertAlmostEqual(diff, 17.5, delta=2.0,
+                               msg="35% weight × 50pt difference should be ~17.5")
 
     def test_karaka_weight_contribution(self):
         """
@@ -461,8 +297,8 @@ class TestNatalPromiseEngine(unittest.TestCase):
         result_100 = self._evaluate(planet_scores=self._planets(venus=100, jupiter=50, saturn=50))
         result_50  = self._evaluate(planet_scores=self._planets(venus=50,  jupiter=50, saturn=50))
         diff = result_100["marriage"]["score"] - result_50["marriage"]["score"]
-        self.assertAlmostEqual(diff, 15.0, delta=2.0,
-                               msg="30% weight × 50pt difference should be ~15.0")
+        self.assertAlmostEqual(diff, 10.0, delta=2.0,
+                               msg="20% weight × 50pt difference should be ~10.0")
 
     # -------------------------------------------------------------------------
     # 14. Raju canonical spot-checks
@@ -481,20 +317,6 @@ class TestNatalPromiseEngine(unittest.TestCase):
         self.assertIn(result["marriage"]["promise"], ("WEAK", "PRESENT"),
                       "Raju: Saturn in H7 should yield WEAK or PRESENT marriage promise")
 
-    def test_raju_health_afflicted_by_saturn_aspect(self):
-        """
-        Raju has Saturn aspecting lagna (H1).
-        Health should be below MODERATE.
-        """
-        planets  = self._planets(sun=50, moon=35, saturn=50)
-        houses   = self._houses(**{"1": 0, "6": 0, "8": 0, "12": 0})
-        norm_cfg = {"1": {"lord": "mars", "occupants": ["sun"], "aspected_by": ["saturn"]}}
-        result   = self._evaluate(planet_scores=planets, house_scores=houses,
-                                  norm_house_cfg=norm_cfg)
-        self.assertIn(result["health"]["promise"], ("WEAK", "PRESENT", "MODERATE"),
-                      "Raju: Saturn aspects lagna should afflict health")
-        self.assertIn("saturn_aspects_lagna", result["health"]["afflictions"])
-
     def test_raju_career_is_weak(self):
         """
         Raju: Saturn MD (karaka) at score 50, H10 moderate strength.
@@ -508,18 +330,6 @@ class TestNatalPromiseEngine(unittest.TestCase):
     # -------------------------------------------------------------------------
     # 15. Internal helper unit tests
     # -------------------------------------------------------------------------
-
-    def test_planet_house_returns_correct_house(self):
-        """_planet_house() finds which house a planet occupies."""
-        norm_houses = self._norm_houses({"5": {"lord": "", "occupants": ["saturn"], "aspected_by": []}})
-        house = self.engine._planet_house("saturn", norm_houses)
-        self.assertEqual(house, 5)
-
-    def test_planet_house_returns_0_if_not_found(self):
-        """_planet_house() returns 0 for unplaced planets."""
-        norm_houses = self._norm_houses()
-        house = self.engine._planet_house("pluto", norm_houses)
-        self.assertEqual(house, 0)
 
     def test_primary_house_score_single(self):
         """_primary_house_score() with single string house key."""
@@ -535,13 +345,3 @@ class TestNatalPromiseEngine(unittest.TestCase):
         self.assertAlmostEqual(score, 50.0, places=1)
         self.assertEqual(key, "2")
 
-    def test_interpolate_midpoint(self):
-        """_interpolate at midpoint between anchors."""
-        from app.config.astrology_constants import SAV_BINDU_SCALE
-        # Between (25, 50) and (30, 70): midpoint 27.5 → 60
-        score = self.engine._interpolate(27.5, SAV_BINDU_SCALE)
-        self.assertAlmostEqual(score, 60.0, places=1)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -155,7 +155,8 @@ class PipelineRunner:
             varga_results     = varga_results,
             av_results        = av_results,
             yoga_results      = yoga_results,
-            normalized_houses = normalized_payload.get("houses", {})
+            normalized_houses = normalized_payload.get("houses", {}),
+            normalized_vargas = normalized_payload.get("vargas", {})
         )
         engine_outputs["natal_promise"] = natal_results
 
