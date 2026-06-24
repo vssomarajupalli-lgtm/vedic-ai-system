@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useChartStore } from '../../store/useChartStore';
-import { Home, Upload, FileText, MessageSquare, Download } from 'lucide-react';
+import { Home, Upload, FileText, MessageSquare, Download, Terminal } from 'lucide-react';
 
 export default function Layout() {
   const location = useLocation();
@@ -12,6 +12,7 @@ export default function Layout() {
     { name: 'Results', path: '/results', icon: FileText, show: hasData },
     { name: 'Ask Question', path: '/browse', icon: MessageSquare, show: hasData },
     { name: 'Export Report', path: '/export', icon: Download, show: hasData },
+    { name: 'Formula Verification', path: '/verify', icon: Terminal, show: hasData },
   ];
 
   return (
