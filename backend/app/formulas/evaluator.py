@@ -2,28 +2,6 @@ from typing import Dict, Any, List
 from app.formulas.schema import FormulaSchema, FormulaEvaluationResult
 
 class FormulaEvaluator:
-    @staticmethod
-    def extract_signals(payload: Dict[str, Any], required_signals: List[str]) -> Dict[str, Any]:
-        """
-        Plucks only the specific variables defined in a formula's required_signals.
-        """
-        isolated = {}
-        
-        def find_keys(d: Dict[str, Any], keys_to_find: set) -> Dict[str, Any]:
-            found = {}
-            for k, v in d.items():
-                if k in keys_to_find:
-                    found[k] = v
-                elif isinstance(v, dict):
-                    found.update(find_keys(v, keys_to_find))
-                elif isinstance(v, list):
-                    for item in v:
-                        if isinstance(item, dict):
-                            found.update(find_keys(item, keys_to_find))
-            return found
-
-        isolated = find_keys(payload, set(required_signals))
-        return isolated
 
     @staticmethod
     def check_engine_degradation(formula: FormulaSchema, payload: Dict[str, Any]) -> List[str]:
@@ -48,20 +26,19 @@ class FormulaEvaluator:
         return warnings
 
     @staticmethod
-    def evaluate(formula: FormulaSchema, chart_response: Any) -> FormulaEvaluationResult:
+    def evaluate(formula: FormulaSchema, engine_outputs: Dict[str, Any], isolated_signals: Dict[str, Any]) -> FormulaEvaluationResult:
         # Convert response to dict for extraction
-        if isinstance(chart_response, dict):
-            payload = chart_response
+        if isinstance(engine_outputs, dict):
+            payload = engine_outputs
         else:
             try:
-                payload = chart_response.model_dump()
+                payload = engine_outputs.model_dump()
             except AttributeError:
-                payload = dict(chart_response)
+                payload = dict(engine_outputs)
             
         system_warnings = FormulaEvaluator.check_engine_degradation(formula, payload)
         
         # Missing payload handling (Risk-FR-05)
-        isolated_signals = FormulaEvaluator.extract_signals(payload, formula.required_signals)
         for sig in formula.required_signals:
             if sig not in isolated_signals:
                 system_warnings.append(f"Missing Payload: requested signal '{sig}' not found.")

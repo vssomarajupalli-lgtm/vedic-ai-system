@@ -33,6 +33,7 @@ export interface StructuredQuestionResult {
   };
   supporting_factors: string[];
   attention_factors: string[];
+  isolated_signals?: Record<string, any>;
   mandali_commentary: string;
 }
 

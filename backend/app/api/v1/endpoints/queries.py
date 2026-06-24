@@ -119,14 +119,15 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         loader = FormulaRepositoryLoader()
         f = FormulaRepositoryLoader().get_formula(route_result["formula_key"])
         
-        # Translate payload for semantic matching
-        translated_payload = SignalTranslator.translate(f.required_signals, internal_payload)
+        engine_outputs_dict = internal_payload.get("engine_outputs", internal_payload)
+        
+        # Extract precise semantic signals deterministically
+        isolated_signals = SignalTranslator.translate(f.required_signals, engine_outputs_dict)
         
         # Get dynamic textual outcome
-        evaluation_result = FormulaEvaluator.evaluate(f, translated_payload)
+        evaluation_result = FormulaEvaluator.evaluate(f, engine_outputs_dict, isolated_signals)
         
         # Build the structured result
-        engine_outputs_dict = internal_payload.get("engine_outputs", internal_payload)
         natal_promise = engine_outputs_dict.get("natal_promise", {})
         dashas = engine_outputs_dict.get("dashas", {})
         

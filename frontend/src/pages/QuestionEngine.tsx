@@ -6,7 +6,7 @@ import { apiService } from '../api/backend';
 import { QuestionResultCard, type StructuredQuestionResult } from '../components/Questionnaire/QuestionResultCard';
 
 export default function QuestionEngine() {
-  const { rawOutputs } = useChartStore();
+  const { rawOutputs, setQuestionResults } = useChartStore();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -44,7 +44,11 @@ export default function QuestionEngine() {
     try {
       const response = await apiService.askStructuredQuestion(id, rawOutputs);
       if (response.results && response.results.length > 0) {
-        setResults(prev => [...prev, ...response.results]);
+        setResults(prev => {
+          const next = [...prev, ...response.results];
+          setQuestionResults(next);
+          return next;
+        });
       }
     } catch (err: any) {
       setError(`Error: ${err.response?.data?.detail || err.message}`);

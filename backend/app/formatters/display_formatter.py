@@ -133,5 +133,6 @@ class DisplayFormatter:
             timing_window=timing_window,
             supporting_factors=supporting_factors,
             attention_factors=attention_factors,
+            isolated_signals=isolated_signals,
             mandali_commentary="Reserved for Phase 15. Do not implement yet."
         )

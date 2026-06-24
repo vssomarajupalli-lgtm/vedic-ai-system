@@ -54,10 +54,10 @@ class SignalTranslator:
     def translate(cls, required_signals: List[str], engine_outputs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Translates structural pipeline payload into a flattened semantic dictionary.
-        Returns a new payload dictionary that includes both the original engine_outputs 
-        (so degradation checks pass) AND the semantic aliased keys at the top level.
+        Returns isolated_signals directly, safely extracting rich planet/house data 
+        using deterministic namespace routing.
         """
-        translated = {}
+        isolated_signals = {}
         
         planets_data = engine_outputs.get("planets", {})
         houses_data = engine_outputs.get("houses", {})
@@ -67,13 +67,13 @@ class SignalTranslator:
             if signal in cls.PLANET_MAP:
                 sanskrit_name = cls.PLANET_MAP[signal]
                 if sanskrit_name in planets_data:
-                    translated[signal] = planets_data[sanskrit_name]
+                    isolated_signals[signal] = planets_data[sanskrit_name]
                     
             # 2. Static House Mapping
             elif signal in cls.HOUSE_MAP:
                 house_idx = cls.HOUSE_MAP[signal]
                 if house_idx in houses_data:
-                    translated[signal] = houses_data[house_idx]
+                    isolated_signals[signal] = houses_data[house_idx]
                     
             # 3. Dynamic Lord Resolution
             elif signal in cls.LORD_MAP:
@@ -81,7 +81,7 @@ class SignalTranslator:
                 if house_idx in houses_data:
                     lord_name = houses_data[house_idx].get("metadata", {}).get("lord")
                     if lord_name and lord_name in planets_data:
-                        translated[signal] = planets_data[lord_name]
+                        isolated_signals[signal] = planets_data[lord_name]
                         
             # 4. Derived Signals (Stubs for future expansion)
             elif signal == "upapada_lagna":
@@ -89,8 +89,4 @@ class SignalTranslator:
             elif signal == "darakaraka":
                 pass
                 
-        # Merge translated keys with the original payload
-        final_payload = dict(engine_outputs)
-        final_payload.update(translated)
-        
-        return final_payload
+        return isolated_signals

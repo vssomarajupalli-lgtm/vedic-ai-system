@@ -58,6 +58,7 @@ class StructuredQuestionResult(BaseModel):
     timing_window: TimingWindowDisplay
     supporting_factors: List[str]
     attention_factors: List[str]
+    isolated_signals: Optional[Dict[str, Any]] = None
     mandali_commentary: str = "Reserved for Phase 15. Do not implement yet."
 
 class StructuredQuestionResponse(BaseModel):

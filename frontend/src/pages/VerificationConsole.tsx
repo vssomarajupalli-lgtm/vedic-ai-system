@@ -58,7 +58,7 @@ const JsonViewer = ({ data }: { data: any }) => (
 );
 
 export default function VerificationConsole() {
-  const { rawOutputs } = useChartStore();
+  const { rawOutputs, questionResults } = useChartStore();
 
   if (!rawOutputs || !rawOutputs.breakdown) {
     return (
@@ -74,6 +74,11 @@ export default function VerificationConsole() {
   const planets = engineOutputs.planets || {};
   const houses = engineOutputs.houses || {};
   const dashas = engineOutputs.dashas || {};
+  
+  const latestResult = questionResults && questionResults.length > 0 
+    ? questionResults[questionResults.length - 1] 
+    : null;
+  const isolatedSignals = latestResult?.isolated_signals || null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -287,15 +292,90 @@ export default function VerificationConsole() {
       <CollapsibleSection 
         title="F. Signal Trace Console" 
         source="isolated_signals" 
-        status="NOT EXPOSED"
+        status="LIVE DATA"
+        defaultOpen
       >
-        <div className="bg-amber-50 border border-amber-200 p-8 rounded-lg text-center flex flex-col items-center justify-center">
-          <Database className="w-12 h-12 text-amber-300 mb-4" />
-          <h3 className="text-lg font-bold text-amber-900 mb-2">Signal Trace not yet exposed by backend API.</h3>
-          <p className="text-amber-700 max-w-lg">
-            The isolated_signals trace requires backend schema hydration before it can be rendered dynamically in the verification console. (See Audit Phase 15G.2)
-          </p>
-        </div>
+        {!latestResult ? (
+          <div className="bg-amber-50 border border-amber-200 p-8 rounded-lg text-center flex flex-col items-center justify-center">
+            <Database className="w-12 h-12 text-amber-300 mb-4" />
+            <h3 className="text-lg font-bold text-amber-900 mb-2">Signal Trace requires an active query.</h3>
+            <p className="text-amber-700 max-w-lg">
+              Ask a structured question in the Question Browser to hydrate the signal trace.
+            </p>
+          </div>
+        ) : !isolatedSignals || Object.keys(isolatedSignals).length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No signals isolated for "{latestResult.question_title}".</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg mb-4">
+              <p className="text-indigo-900 font-bold text-sm">Target Formula: <span className="font-normal">{latestResult.question_title}</span></p>
+            </div>
+            {Object.entries(isolatedSignals).map(([signalKey, signalData]: [string, any]) => {
+              const bd = signalData.breakdown || {};
+              const meta = signalData.metadata || {};
+              
+              return (
+                <details key={signalKey} className="group bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                  <summary className="flex cursor-pointer items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <span className="capitalize text-lg font-bold text-slate-800 w-32">
+                        {signalKey.replace(/_/g, ' ')}
+                      </span>
+                      {signalData.final_score !== undefined && (
+                        <span className={`px-3 py-1 rounded text-sm font-bold shadow-sm ${signalData.final_score >= 50 ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-red-100 text-red-900 border border-red-200'}`}>
+                          Score: {signalData.final_score}
+                        </span>
+                      )}
+                    </div>
+                    <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="p-4 bg-slate-50 border-t border-slate-200">
+                    
+                    {/* Metadata Row */}
+                    <div className="flex gap-4 mb-4">
+                      <span className="bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-mono uppercase tracking-wider">
+                        Type: {meta.entity_type || 'Unknown'}
+                      </span>
+                      <span className="bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-mono uppercase tracking-wider">
+                        ID: {meta.entity_id || signalKey}
+                      </span>
+                    </div>
+
+                    {/* Breakdown Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      {Object.entries(bd).map(([k, v]: [string, any]) => (
+                        <div key={k} className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                          <span className="text-slate-500 block mb-1 text-xs uppercase font-bold tracking-wider">
+                            {k.replace(/_/g, ' ')}
+                          </span>
+                          <span className="font-mono text-slate-800">
+                            {typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : String(v)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Confidence Flags */}
+                    {signalData.confidence_flags && signalData.confidence_flags.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <span className="text-slate-500 block mb-2 text-xs uppercase font-bold tracking-wider">Confidence Flags</span>
+                        <div className="flex flex-wrap gap-2">
+                          {signalData.confidence_flags.map((flag: string, idx: number) => (
+                            <span key={idx} className="bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded text-xs font-bold">
+                              {flag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        )}
       </CollapsibleSection>
 
       {/* G. Engine Output Snapshot */}
