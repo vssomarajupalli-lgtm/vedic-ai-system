@@ -102,7 +102,7 @@ export const QuestionResultCard: React.FC<Props> = ({ result }) => {
               {result.supporting_factors.map((f, i) => <li key={i}>{f}</li>)}
             </ul>
           ) : (
-            <p className="text-gray-500 italic">None currently active.</p>
+            <p className="text-gray-500 italic">No supporting factors found.</p>
           )}
         </section>
 
@@ -114,7 +114,7 @@ export const QuestionResultCard: React.FC<Props> = ({ result }) => {
               {result.attention_factors.map((f, i) => <li key={i}>{f}</li>)}
             </ul>
           ) : (
-            <p className="text-gray-500 italic">None currently active.</p>
+            <p className="text-gray-500 italic">No attention factors found.</p>
           )}
         </section>
 

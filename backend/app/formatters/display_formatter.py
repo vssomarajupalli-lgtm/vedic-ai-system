@@ -94,9 +94,20 @@ class DisplayFormatter:
         )
         
         # 5. Supporting / Attention Factors
-        # In a real implementation we would scan isolated_signals for favorable/unfavorable indicators.
-        supporting_factors = ["Primary lord is strong."] if p_score >= 50 else []
-        attention_factors = ["Primary house lacks support."] if p_score < 50 else []
+        def format_signal_name(signal: str) -> str:
+            return " ".join(word.capitalize() for word in signal.split('_'))
+
+        supporting_factors = []
+        attention_factors = []
+        
+        for signal_key, signal_data in isolated_signals.items():
+            name = format_signal_name(signal_key)
+            score = signal_data.get("final_score", 0)
+            
+            if score >= 50:
+                supporting_factors.append(f"{name} provides strong support ({round(score)}/100).")
+            else:
+                attention_factors.append(f"{name} lacks strength ({round(score)}/100).")
         
         return StructuredQuestionResult(
             question_title=question_title,
