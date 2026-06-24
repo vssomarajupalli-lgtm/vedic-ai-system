@@ -435,9 +435,97 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
-      {/* I. Engine Output Snapshot */}
+      {/* I. Varga Trace Console */}
       <CollapsibleSection 
-        title="I. Engine Output Snapshot" 
+        title="I. Varga Trace Console" 
+        source="breakdown.engine_outputs.vargas" 
+        status="LIVE DATA"
+      >
+        <div className="space-y-6">
+          {['D9', 'D10'].map(vargaId => {
+            const vargaData = rawOutputs.breakdown?.engine_outputs?.vargas?.[vargaId]?.planets || {};
+            if (Object.keys(vargaData).length === 0) return null;
+            
+            return (
+              <div key={vargaId} className="space-y-3">
+                <h3 className="text-md font-bold text-slate-700 border-b pb-2">{vargaId} Planets</h3>
+                {Object.entries(vargaData).map(([planet, data]: [string, any]) => {
+                  const bd = data.breakdown || {};
+                  return (
+                    <details key={`${vargaId}-${planet}`} className="group bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                      <summary className="flex cursor-pointer items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <span className="capitalize text-lg font-bold text-slate-800 sm:w-32">
+                            {planet}
+                          </span>
+                          <span className="bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1 rounded text-sm font-bold shadow-sm">
+                            Final Score: {data.final_score}
+                          </span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" />
+                      </summary>
+                      <div className="p-4 bg-slate-50 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        {/* Breakdown */}
+                        <div>
+                          <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Breakdown</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            {Object.entries(bd).map(([k, v]: [string, any]) => (
+                              <div key={k} className="bg-white p-2 rounded border border-slate-100 flex justify-between items-center gap-2">
+                                <span className="text-slate-500 capitalize truncate" title={k.replace(/_/g, ' ')}>{k.replace(/_/g, ' ')}</span>
+                                <span className="font-mono font-medium text-slate-800 whitespace-nowrap">
+                                  {typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : String(v)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Modifiers & Flags */}
+                        <div className="space-y-4">
+                          {data.modifiers && Object.keys(data.modifiers).length > 0 && (
+                            <div>
+                              <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Modifiers</h4>
+                              <div className="grid grid-cols-1 gap-2 text-sm">
+                                {Object.entries(data.modifiers).map(([k, v]: [string, any]) => (
+                                  <div key={k} className="bg-white p-2 rounded border border-slate-100 flex justify-between items-center gap-2">
+                                    <span className="text-slate-500 capitalize truncate" title={k.replace(/_/g, ' ')}>{k.replace(/_/g, ' ')}</span>
+                                    <span className="font-mono font-medium text-slate-800 whitespace-nowrap">
+                                      {typeof v === 'number' && v > 0 ? `+${v}` : v}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {data.confidence_flags && data.confidence_flags.length > 0 && (
+                            <div>
+                              <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Flags</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {data.confidence_flags.map((flag: string, idx: number) => (
+                                  <span key={idx} className="bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded text-xs font-bold">
+                                    {flag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </CollapsibleSection>
+
+      {/* J. Engine Output Snapshot */}
+      <CollapsibleSection 
+        title="J. Engine Output Snapshot" 
         source="breakdown" 
         status="LIVE DATA"
       >

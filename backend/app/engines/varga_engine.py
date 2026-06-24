@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
 from app.config.astrology_constants import D9_SCORES, D10_SCORES, VARGOTTAMA_BONUS
+from app.engines.planet_strength_engine import PlanetStrengthEngine
 
 class VargaEngine:
     """
@@ -18,6 +19,7 @@ class VargaEngine:
         self.D9_SCORES = D9_SCORES
         self.D10_SCORES = D10_SCORES
         self.VARGOTTAMA_BONUS = VARGOTTAMA_BONUS
+        self.planet_engine = PlanetStrengthEngine()
 
     def evaluate(self, normalized_data: Dict[str, Any], dependency_scores: Dict[str, Any] = None) -> Dict[str, Any]:
         """
@@ -59,13 +61,20 @@ class VargaEngine:
                 modifiers["D9_vargottama_bonus"] = self.VARGOTTAMA_BONUS
                 confidence_flags.append("D9_vargottama")
 
+            d9_strength_result = {}
+            if d9_data:
+                d9_strength_result = self.planet_engine.calculate_strength(d9_data, shadbala_data={})
+
+            d9_final_score = float(d9_strength_result.get("final_score", 50.0))
+            d9_breakdown = d9_strength_result.get("breakdown", {})
+
             results["D9"]["planets"][planet_name] = {
                 "metadata": {
                     "entity_id": planet_name,
                     "entity_type": "planet"
                 },
-                "final_score": base_score,
-                "breakdown": {},
+                "final_score": d9_final_score,
+                "breakdown": d9_breakdown,
                 "modifiers": modifiers,
                 "temporal_activation": {},
                 "confidence_flags": confidence_flags
@@ -83,13 +92,20 @@ class VargaEngine:
                 modifiers["D10_dignity_modifier"] = d10_score
                 confidence_flags.append(f"D10_{d10_dignity}")
 
+            d10_strength_result = {}
+            if d10_data:
+                d10_strength_result = self.planet_engine.calculate_strength(d10_data, shadbala_data={})
+
+            d10_final_score = float(d10_strength_result.get("final_score", 50.0))
+            d10_breakdown = d10_strength_result.get("breakdown", {})
+
             results["D10"]["planets"][planet_name] = {
                 "metadata": {
                     "entity_id": planet_name,
                     "entity_type": "planet"
                 },
-                "final_score": base_score,
-                "breakdown": {},
+                "final_score": d10_final_score,
+                "breakdown": d10_breakdown,
                 "modifiers": modifiers,
                 "temporal_activation": {},
                 "confidence_flags": confidence_flags

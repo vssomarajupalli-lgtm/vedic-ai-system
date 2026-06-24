@@ -5,7 +5,6 @@ from app.config.astrology_constants import (
     SIGN_LORD_MAP, NATURAL_BENEFICS, NATURAL_MALEFICS
 )
 from app.utils.astrology_math import clamp_score
-from app.engines.planet_strength_engine import PlanetStrengthEngine
 
 _NEUTRAL = 50.0
 
@@ -32,7 +31,6 @@ class NatalPromiseEngine:
         self.config   = DOMAIN_CONFIG
         self.karaka   = DOMAIN_KARAKA
         self.grades   = NATAL_PROMISE_GRADES
-        self.planet_engine = PlanetStrengthEngine()
 
     def evaluate(
         self,
@@ -93,7 +91,7 @@ class NatalPromiseEngine:
         varga_id = cfg["varga"]
         f_varga = self._varga_score(
             varga_id,
-            normalized_vargas,
+            varga_results,
             karaka_cfg["primary"]
         )
 
@@ -181,23 +179,12 @@ class NatalPromiseEngine:
     def _varga_score(
         self,
         varga_id:      str,
-        normalized_vargas: dict,
+        varga_results: dict,
         primary_karaka: str,
     ) -> float:
-        varga = normalized_vargas.get(varga_id, {})
-        if not varga or "planets" not in varga:
-            return _NEUTRAL
-
-        varga_planets = varga["planets"]
-        karaka_data = varga_planets.get(primary_karaka)
-        
-        if not karaka_data:
-            return _NEUTRAL
-
-        # Evaluate the Karaka inside the Varga using PlanetStrengthEngine
-        # shadbala_data is intentionally empty because Vargas don't have D1 astronomical states
-        result = self.planet_engine.calculate_strength(karaka_data, shadbala_data={})
-        return float(result.get("final_score", _NEUTRAL))
+        varga_planets = varga_results.get(varga_id, {}).get("planets", {})
+        karaka_data = varga_planets.get(primary_karaka, {})
+        return float(karaka_data.get("final_score", _NEUTRAL))
 
     def _promise_grade(self, score: int) -> str:
         for threshold, label in self.grades:
