@@ -34,3 +34,8 @@ export interface QuestionResponse {
     answer_text: string;
     referenced_yogas: string[];
 }
+
+export interface StructuredQuestionResponse {
+    question_id: string;
+    results: any[]; // Using any[] to avoid circular dependency with QuestionResultCard
+}

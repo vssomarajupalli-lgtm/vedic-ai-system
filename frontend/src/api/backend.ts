@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ChartProcessResponse, FinalReportSchema, QuestionResponse } from '../types/schema';
+import type { ChartProcessResponse, FinalReportSchema, QuestionResponse, StructuredQuestionResponse } from '../types/schema';
 
 // Use an environment variable or fallback to local backend for development
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
@@ -45,6 +45,19 @@ export const apiService = {
     if (questionId) payload.question_id = questionId;
 
     const response = await backendApi.post<QuestionResponse>('/ask-question', payload);
+    return response.data;
+  },
+
+  /**
+   * Asks a structured question using Phase 14H.1 structured display format
+   */
+  async askStructuredQuestion(questionId: string, engineOutputs: any): Promise<StructuredQuestionResponse> {
+    const payload: any = {
+      engine_outputs: engineOutputs,
+      question_id: questionId
+    };
+
+    const response = await backendApi.post<StructuredQuestionResponse>('/ask-structured-question', payload);
     return response.data;
   },
 
