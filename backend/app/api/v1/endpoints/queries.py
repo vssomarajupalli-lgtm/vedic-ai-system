@@ -126,8 +126,9 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         evaluation_result = FormulaEvaluator.evaluate(f, translated_payload)
         
         # Build the structured result
-        natal_promise = internal_payload.get("natal_promise", {})
-        dashas = internal_payload.get("dashas", {})
+        engine_outputs_dict = internal_payload.get("engine_outputs", internal_payload)
+        natal_promise = engine_outputs_dict.get("natal_promise", {})
+        dashas = engine_outputs_dict.get("dashas", {})
         
         formatted_result = DisplayFormatter.format_question_result(
             question_title=question_title,
