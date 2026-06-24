@@ -77,6 +77,7 @@ export default function VerificationConsole() {
   const yogas = engineOutputs.yogas || {};
   const yogaTraces = yogas.yoga_traces || {};
   const rasis = engineOutputs.rasis || {};
+  const ashtakavarga = engineOutputs.ashtakavarga || {};
   const masterProbability = rawOutputs.breakdown.master_probability || null;
   
   const latestResult = questionResults && questionResults.length > 0 
@@ -671,6 +672,129 @@ export default function VerificationConsole() {
         status="LIVE DATA"
       >
         <JsonViewer data={rawOutputs.breakdown} />
+      </CollapsibleSection>
+
+      {/* K. Ashtakavarga Trace Console */}
+      <CollapsibleSection 
+        title="K. Ashtakavarga Trace" 
+        source="breakdown.engine_outputs.ashtakavarga" 
+        status="LIVE DATA"
+      >
+        {Object.keys(ashtakavarga).length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No Ashtakavarga data available.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            
+            {/* SAV Summary Table */}
+            <div>
+              <h3 className="text-md font-bold text-slate-700 border-b pb-2 mb-3">A. SAV Summary Table (Sarvashtakavarga)</h3>
+              <div className="overflow-x-auto pb-2">
+                <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden text-center text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200 bg-slate-200">House</th>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <th key={i + 1} className="px-3 py-2 font-bold text-slate-700">{i + 1}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    <tr>
+                      <td className="px-3 py-2 font-bold text-slate-900 border-r border-slate-200 bg-slate-50">SAV</td>
+                      {Array.from({ length: 12 }, (_, i) => {
+                        const houseData = ashtakavarga.sav_chart?.[(i + 1).toString()] || {};
+                        const bindus = houseData.bindus || 0;
+                        const isHigh = bindus >= 30;
+                        const isLow = bindus <= 25;
+                        return (
+                          <td key={i + 1} className={`px-3 py-2 font-mono font-bold ${isHigh ? 'text-emerald-600 bg-emerald-50' : isLow ? 'text-red-600 bg-red-50' : 'text-slate-700'}`}>
+                            {bindus}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* BAV Matrix Grid */}
+            <div>
+              <h3 className="text-md font-bold text-slate-700 border-b pb-2 mb-3">B. BAV Matrix (Bhinnashtakavarga)</h3>
+              <div className="overflow-x-auto pb-2">
+                <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden text-center text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 font-bold text-slate-700 uppercase tracking-wider border-r border-slate-200 bg-slate-200 text-left">Planet</th>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <th key={i + 1} className="px-3 py-2 font-bold text-slate-700 text-xs text-slate-500">H{i + 1}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn'].map(planet => {
+                      const planetData = ashtakavarga.bav_charts?.[planet] || {};
+                      return (
+                        <tr key={planet} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 font-bold text-slate-900 capitalize border-r border-slate-200 bg-slate-50 text-left flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+                            {planet}
+                          </td>
+                          {Array.from({ length: 12 }, (_, i) => {
+                            const bindus = planetData[(i + 1).toString()]?.bindus ?? '-';
+                            const isHigh = bindus >= 5;
+                            const isLow = bindus <= 3;
+                            return (
+                              <td key={i + 1} className={`px-3 py-2 font-mono ${isHigh ? 'text-emerald-600 font-bold' : isLow ? 'text-slate-400' : 'text-slate-700'}`}>
+                                {bindus}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Analytics Card */}
+            {ashtakavarga.sav_analytics && (
+              <div>
+                <h3 className="text-md font-bold text-slate-700 border-b pb-2 mb-3">C. Analytics Card</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm text-center">
+                    <p className="text-xs uppercase font-bold text-slate-500 mb-1">Strongest House</p>
+                    <p className="text-2xl font-black text-emerald-600 font-mono">H{ashtakavarga.sav_analytics.peak_house}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm text-center">
+                    <p className="text-xs uppercase font-bold text-slate-500 mb-1">Weakest House</p>
+                    <p className="text-2xl font-black text-red-600 font-mono">H{ashtakavarga.sav_analytics.weakest_house}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm text-center">
+                    <p className="text-xs uppercase font-bold text-slate-500 mb-1">Total Bindus</p>
+                    <p className="text-2xl font-black text-indigo-600 font-mono">{ashtakavarga.sav_analytics.total_bindus}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm text-center">
+                    <p className="text-xs uppercase font-bold text-slate-500 mb-1">Avg Per House</p>
+                    <p className="text-2xl font-black text-slate-700 font-mono">{ashtakavarga.sav_analytics.average_per_house}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg shadow-sm text-center flex flex-col justify-center items-center">
+                    <p className="text-xs uppercase font-bold text-slate-500 mb-2">Math Validation</p>
+                    {ashtakavarga.sav_analytics.bav_consistency_check ? (
+                      <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded text-xs font-bold w-full">PASSED</span>
+                    ) : (
+                      <span className="bg-red-100 text-red-800 border border-red-200 px-3 py-1 rounded text-xs font-bold w-full">FAILED</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+          </div>
+        )}
       </CollapsibleSection>
 
     </div>
