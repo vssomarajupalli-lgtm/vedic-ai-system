@@ -76,6 +76,8 @@ export default function VerificationConsole() {
   const dashas = engineOutputs.dashas || {};
   const yogas = engineOutputs.yogas || {};
   const yogaTraces = yogas.yoga_traces || {};
+  const rasis = engineOutputs.rasis || {};
+  const masterProbability = rawOutputs.breakdown.master_probability || null;
   
   const latestResult = questionResults && questionResults.length > 0 
     ? questionResults[questionResults.length - 1] 
@@ -91,7 +93,7 @@ export default function VerificationConsole() {
 
       {/* A. Domain Formula Trace */}
       <CollapsibleSection 
-        title="B. Domain Formula Trace" 
+        title="A. Domain Formula Trace" 
         source="breakdown.engine_outputs.natal_promise" 
         status="LIVE DATA" 
         defaultOpen
@@ -127,9 +129,9 @@ export default function VerificationConsole() {
         </div>
       </CollapsibleSection>
 
-      {/* C. Planet Strength Breakdown */}
+      {/* B. Planet Strength Breakdown */}
       <CollapsibleSection 
-        title="C. Planet Strength Breakdown" 
+        title="B. Planet Strength Breakdown" 
         source="breakdown.engine_outputs.planets" 
         status="LIVE DATA"
       >
@@ -187,9 +189,9 @@ export default function VerificationConsole() {
         </div>
       </CollapsibleSection>
 
-      {/* D. House Strength Breakdown */}
+      {/* C. House Strength Breakdown */}
       <CollapsibleSection 
-        title="D. House Strength Breakdown" 
+        title="C. House Strength Breakdown" 
         source="breakdown.engine_outputs.houses" 
         status="LIVE DATA"
       >
@@ -239,9 +241,9 @@ export default function VerificationConsole() {
         </div>
       </CollapsibleSection>
 
-      {/* E. Dasha Formula Console */}
+      {/* D. Dasha Formula Console */}
       <CollapsibleSection 
-        title="E. Dasha Formula Console" 
+        title="D. Dasha Formula Console" 
         source="breakdown.engine_outputs.dashas.synthesis" 
         status="LIVE DATA"
       >
@@ -290,9 +292,9 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
-      {/* F. Signal Trace Console */}
+      {/* E. Signal Trace Console */}
       <CollapsibleSection 
-        title="F. Signal Trace Console" 
+        title="E. Signal Trace Console" 
         source="isolated_signals" 
         status="LIVE DATA"
         defaultOpen
@@ -380,9 +382,9 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
-      {/* H. Yoga Trace Console */}
+      {/* F. Yoga Trace Console */}
       <CollapsibleSection 
-        title="H. Yoga Trace Console" 
+        title="F. Yoga Trace Console" 
         source="breakdown.engine_outputs.yogas.yoga_traces" 
         status="LIVE DATA"
       >
@@ -435,9 +437,9 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
-      {/* I. Varga Trace Console */}
+      {/* G. Varga Trace Console */}
       <CollapsibleSection 
-        title="I. Varga Trace Console" 
+        title="G. Varga Trace Console" 
         source="breakdown.engine_outputs.vargas" 
         status="LIVE DATA"
       >
@@ -521,6 +523,145 @@ export default function VerificationConsole() {
             );
           })}
         </div>
+      </CollapsibleSection>
+
+      {/* H. Master Probability Trace */}
+      <CollapsibleSection 
+        title="H. Master Probability Trace" 
+        source="breakdown.master_probability" 
+        status="LIVE DATA"
+      >
+        {!masterProbability ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No master probability data available.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-6 rounded-lg">
+              <div>
+                <h3 className="text-indigo-900 font-bold uppercase tracking-wider text-sm mb-1">Final Probability</h3>
+                <p className="text-indigo-700 text-sm">Aggregated from all active engine contributors</p>
+              </div>
+              <div className="text-4xl font-black text-indigo-700 font-mono">
+                {masterProbability.final_score}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Contributor</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Score</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Weight</th>
+                    <th className="px-4 py-3 text-left text-xs font-black text-slate-700 uppercase tracking-wider">Weighted Contribution</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                  {masterProbability.live_factors?.map((factor: string) => {
+                    const score = masterProbability.breakdown?.[factor] ?? 0;
+                    const weight = masterProbability.weights?.[factor] ?? 0;
+                    const contribution = score * weight;
+                    return (
+                      <tr key={factor} className="hover:bg-slate-50">
+                        <td className="px-4 py-3 whitespace-nowrap font-bold text-slate-900 capitalize">{factor.replace(/_/g, ' ')}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-600 font-mono">{score.toFixed(1)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-600 font-mono">× {weight.toFixed(2)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap font-black text-slate-800 font-mono bg-slate-50">= {contribution.toFixed(2)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="bg-slate-100 border-t-2 border-slate-300">
+                    <td colSpan={3} className="px-4 py-3 text-right font-bold text-slate-700 uppercase tracking-wider">Raw Calculation</td>
+                    <td className="px-4 py-3 whitespace-nowrap font-black text-indigo-700 font-mono">{masterProbability.raw_score?.toFixed(2) ?? '-'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </CollapsibleSection>
+
+      {/* I. Rasi Trace Console */}
+      <CollapsibleSection 
+        title="I. Rasi Trace Console" 
+        source="breakdown.engine_outputs.rasis" 
+        status="LIVE DATA"
+      >
+        {Object.keys(rasis).length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No Rasi strength data available.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {Object.entries(rasis).map(([sign, data]: [string, any]) => {
+              const bd = data.breakdown || {};
+              return (
+                <details key={sign} className="group bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+                  <summary className="flex cursor-pointer items-center justify-between p-4 hover:bg-slate-100 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <span className="capitalize text-lg font-bold text-slate-800 w-24">{sign}</span>
+                      <span className="bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1 rounded text-sm font-bold shadow-sm">
+                        Final Score: {data.final_score}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="p-4 bg-white border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Breakdown */}
+                    <div>
+                      <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Breakdown</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                        {Object.entries(bd).map(([k, v]: [string, any]) => (
+                          <div key={k} className="bg-white p-2 rounded border border-slate-100 flex justify-between items-center gap-2">
+                            <span className="text-slate-500 capitalize truncate" title={k.replace(/_/g, ' ')}>{k.replace(/_/g, ' ')}</span>
+                            <span className="font-mono font-medium text-slate-800 whitespace-nowrap">
+                              {typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : String(v)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Modifiers & Flags */}
+                    <div className="space-y-4">
+                      {data.modifiers && Object.keys(data.modifiers).length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Modifiers</h4>
+                          <div className="grid grid-cols-1 gap-2 text-sm">
+                            {Object.entries(data.modifiers).map(([k, v]: [string, any]) => (
+                              <div key={k} className="bg-white p-2 rounded border border-slate-100 flex justify-between items-center gap-2">
+                                <span className="text-slate-500 capitalize truncate" title={k.replace(/_/g, ' ')}>{k.replace(/_/g, ' ')}</span>
+                                <span className="font-mono font-medium text-slate-800 whitespace-nowrap">
+                                  {typeof v === 'number' && v > 0 ? `+${v}` : v}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {data.confidence_flags && data.confidence_flags.length > 0 && (
+                        <div>
+                          <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2 border-b border-slate-200 pb-1">Flags</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {data.confidence_flags.map((flag: string, idx: number) => (
+                              <span key={idx} className="bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded text-xs font-bold">
+                                {flag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        )}
       </CollapsibleSection>
 
       {/* J. Engine Output Snapshot */}
