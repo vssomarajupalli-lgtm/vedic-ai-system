@@ -74,6 +74,8 @@ export default function VerificationConsole() {
   const planets = engineOutputs.planets || {};
   const houses = engineOutputs.houses || {};
   const dashas = engineOutputs.dashas || {};
+  const yogas = engineOutputs.yogas || {};
+  const yogaTraces = yogas.yoga_traces || {};
   
   const latestResult = questionResults && questionResults.length > 0 
     ? questionResults[questionResults.length - 1] 
@@ -378,9 +380,64 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
-      {/* G. Engine Output Snapshot */}
+      {/* H. Yoga Trace Console */}
       <CollapsibleSection 
-        title="G. Engine Output Snapshot" 
+        title="H. Yoga Trace Console" 
+        source="breakdown.engine_outputs.yogas.yoga_traces" 
+        status="LIVE DATA"
+      >
+        {Object.keys(yogaTraces).length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No yoga trace data available.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(yogaTraces).map(([yogaName, trace]: [string, any]) => (
+              <details key={yogaName} className="group bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                <summary className="flex cursor-pointer items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <span className="capitalize text-lg font-bold text-slate-800 sm:w-64">
+                      {yogaName}
+                    </span>
+                    <span className={`px-3 py-1 rounded text-sm font-bold shadow-sm ${trace.status === 'PASSED' ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                      {trace.status}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="p-4 bg-slate-50 border-t border-slate-200">
+                  <div className="space-y-2 mb-4">
+                    <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">Condition Trace:</h4>
+                    {trace.rules.map((rule: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className={rule.result ? "text-emerald-500 font-bold" : "text-red-500 font-bold"}>
+                          {rule.result ? "[✓]" : "[✗]"}
+                        </span>
+                        <span className={`text-sm ${rule.result ? "text-slate-800 font-medium" : "text-slate-500 line-through"}`}>
+                          {rule.rule}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {trace.failure_reason && (
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <h4 className="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">Conclusion:</h4>
+                      <p className="text-sm text-red-700 bg-red-50 p-3 rounded border border-red-100">
+                        <span className="font-bold">Failure Reason:</span> {trace.failure_reason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
+      </CollapsibleSection>
+
+      {/* I. Engine Output Snapshot */}
+      <CollapsibleSection 
+        title="I. Engine Output Snapshot" 
         source="breakdown" 
         status="LIVE DATA"
       >

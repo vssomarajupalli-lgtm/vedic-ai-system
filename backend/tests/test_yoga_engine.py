@@ -24,9 +24,12 @@ class TestYogaEngine(unittest.TestCase):
         
         # Check no score logic
         for key, value in res.items():
-            self.assertIsInstance(value, list)
-            for item in value:
-                self.assertIsInstance(item, str, "Yogas must be returned as string names only, no dictionaries or scores.")
+            if key == "yoga_traces":
+                self.assertIsInstance(value, dict)
+            else:
+                self.assertIsInstance(value, list)
+                for item in value:
+                    self.assertIsInstance(item, str, "Yogas must be returned as string names only, no dictionaries or scores.")
 
     def test_gaja_kesari_yoga(self):
         chart_data = {"planets": {"moon": {"house": 1}, "jupiter": {"house": 4}}}
