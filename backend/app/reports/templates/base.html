@@ -218,7 +218,7 @@
         {% endif %}
 
         <!-- Lifetime Dasha Projection (Technical) -->
-        {% if report.dasha_analysis and report.dasha_analysis.data_points.get('raw_data', {}).get('timeline') %}
+        {% if report.master_probability.data_points.get('lifetime_projection') %}
         <div class="card page-break">
             <h2>Lifetime MD-AD-PD Strength Analysis (Technical)</h2>
             <p>Deterministic projection of Planet Strength through the Vimshottari timeline.</p>
@@ -235,20 +235,24 @@
                             <th style="padding: 8px;">PD</th>
                             <th style="padding: 8px;">PD Strength</th>
                             <th style="padding: 8px;">Activation %</th>
+                            <th style="padding: 8px;">Final Prob %</th>
+                            <th style="padding: 8px;">Grade</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in report.dasha_analysis.data_points.get('raw_data', {}).get('timeline', []) %}
+                        {% for row in report.master_probability.data_points.get('lifetime_projection', []) %}
                         <tr style="border-bottom: 1px solid var(--border);">
                             <td style="padding: 8px; white-space: nowrap;">{{ row.get('start_date') }}</td>
                             <td style="padding: 8px; white-space: nowrap;">{{ row.get('end_date') }}</td>
-                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('mahadasha') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('md') }}</td>
                             <td style="padding: 8px;">{{ row.get('md_planet_strength') }}</td>
-                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('antardasha') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('ad') }}</td>
                             <td style="padding: 8px;">{{ row.get('ad_planet_strength') }}</td>
-                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('pratyantardasha') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('pd') }}</td>
                             <td style="padding: 8px;">{{ row.get('pd_planet_strength') }}</td>
-                            <td style="padding: 8px;"><strong>{{ row.get('dasha_activation') }}</strong></td>
+                            <td style="padding: 8px;"><strong>{{ row.get('activation_pct') }}</strong></td>
+                            <td style="padding: 8px;"><strong>{{ row.get('final_probability_pct') }}</strong></td>
+                            <td style="padding: 8px;"><span class="badge">{{ row.get('grade') }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>

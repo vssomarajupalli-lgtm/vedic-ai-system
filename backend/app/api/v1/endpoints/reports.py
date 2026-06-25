@@ -34,8 +34,16 @@ def generate_report(
         raw_data["_machine_index"] = request.machine_index
         outputs = pipeline.process(raw_data)
         
+        # 1.5. Execute Question Engine to generate opportunity windows
+        default_questions = [
+            "What is my career outlook?",
+            "Will I have wealth?",
+            "Will I get married?"
+        ]
+        q_responses = [pipeline.answer_question(q, outputs) for q in default_questions]
+        
         # 2. Extract into final schema
-        report = report_builder.build_json_report(outputs, request.machine_index)
+        report = report_builder.build_json_report(outputs, request.machine_index, questions=q_responses)
         
         # 3. Handle export formats
         if format.lower() == "json":

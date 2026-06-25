@@ -346,7 +346,8 @@ class PipelineRunner:
                 "breakdown": {
                     "domain_contribution": domain_score * 0.60,
                     "dasha_contribution": dasha_score * 0.40
-                }
+                },
+                "lifetime_projection": pipeline_output.get("master_probability", {}).get("lifetime_projection", [])
             }
         else:
             final_probability = pipeline_output.get("master_probability", {})

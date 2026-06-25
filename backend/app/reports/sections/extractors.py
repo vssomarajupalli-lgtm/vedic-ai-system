@@ -7,11 +7,16 @@ class MasterProbabilitySection(BaseReportSection):
         master = pipeline_data.get("master_probability", {})
         score = master.get("final_score", 0.0)
         grade = master.get("grade", "UNKNOWN")
+        lifetime_projection = master.get("lifetime_projection", [])
         
         return ReportSectionData(
             title="Master Probability Analysis",
             summary_text=f"The overall chart strength is rated as {grade} with a final score of {score:.1f}/100.",
-            data_points={"final_score": score, "grade": grade}
+            data_points={
+                "final_score": score, 
+                "grade": grade,
+                "lifetime_projection": lifetime_projection
+            }
         )
 
 class YogaAnalysisSection(BaseReportSection):
