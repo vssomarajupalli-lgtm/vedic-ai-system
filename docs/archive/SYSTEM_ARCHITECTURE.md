@@ -272,6 +272,13 @@ AI must NEVER generate astrology math.
 Rule 8:
 No Double Penalty Rule. A planetary condition or affliction must be evaluated exactly once at its root (e.g., House or Planet Engine) and shall not be re-applied or compounded downstream.
 
+Rule 9:
+Engine Dependency Hierarchy is permanently FROZEN as a strict Directed Acyclic Graph (DAG). Lower engines must never depend on higher engines.
+
+Rule 10:
+Engine Output Contracts are permanently FROZEN. All mathematical logic changes must retain the standard JSON contract structure (`final_score`, `raw_score`, `breakdown`, `modifiers`, `confidence_flags`, `metadata`).
+
+
 ---
 
 # 14. FOUR PILLAR PROMISE ARCHITECTURE
@@ -364,12 +371,16 @@ Currently implemented and stabilized:
 - Varga Engine (Fallback 50.0)
 - Ashtakavarga Engine
 - Dasha Engine (Timeline contract)
-- Transit Engine (Mandali Gochara)
+- Transit Engine (Moon-Centered Nine-Pada Mandali Gochara - FROZEN)
 - Yoga Engine (Detection Only)
 - Natal Promise Engine (Four Pillar locked)
 - Master Probability Synthesis
 - Pipeline Runner
 - deterministic testing structure (Passed)
+- Verification Console (Phase 15 Transparency)
+- Phase 16A Architecture Constitution (Approved)
+- Ownership Matrix & Formula Ownership Register (Finalized)
+- Calibration Version Governance & Migration Strategy (Frozen)
 
 Not yet implemented:
 - AI interpretation systems

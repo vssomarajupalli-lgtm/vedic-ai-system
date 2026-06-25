@@ -7,6 +7,18 @@ Do NOT hallucinate architecture. Do NOT invent speculative future systems. When 
 
 ---
 
+## Phase 16A Conclusion (Architecture Constitution Freeze)
+- **Transparency:** Phase 15 Transparency and Formula Verification Console successfully completed.
+- **Constitution:** Architecture Constitution fully approved. Governance is frozen.
+- **Ownership:** Ownership Matrix and Formula Ownership Register strictly finalized.
+- **Dependency Hierarchy:** Engine Dependency Hierarchy permanently frozen as a strict DAG.
+- **Contracts:** Engine Output Contracts frozen.
+- **Calibration Governance:** Calibration Version Governance and Migration Strategy frozen.
+- **Gochara:** Moon-Centered Nine-Pada Mandali Governance frozen.
+- **Next Phase:** Phase 16A.3 – Calibration Architecture.
+
+---
+
 ## Phase 7 Conclusion (Mandali Gochara & Stabilization)
 - **Mandali Gochara Migration:** Successful. Test fixtures updated. No production logic changes were required to mathematical boundaries.
 - **Dasha Timeline Contract:** Standardized to a `timeline[]` array successfully.
