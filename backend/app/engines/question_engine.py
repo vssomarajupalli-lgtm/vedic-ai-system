@@ -84,10 +84,13 @@ class QuestionEngine:
     natal promise, dasha confidence, and transit evidence.
     """
 
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         self.keywords        = DOMAIN_KEYWORDS
         self.priority        = DOMAIN_PRIORITY
-        self.promise_grades  = NATAL_PROMISE_GRADES
+        self.promise_grades  = calibration.natal_promise.get('NATAL_PROMISE_GRADES', [])
 
     # -------------------------------------------------------------------------
     # Public Interface

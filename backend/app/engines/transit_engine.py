@@ -67,16 +67,19 @@ class TransitEngine:
     _BENEFIC_PLANETS = set(NATURAL_BENEFICS)   # jupiter, venus, moon, mercury
     _MALEFIC_PLANETS = set(NATURAL_MALEFICS)   # saturn, mars, sun, rahu, ketu
 
-    def __init__(self):
-        self.weights       = TRANSIT_WEIGHTS
-        self.vedha_pairs   = VEDHA_PAIRS
-        self.house_quality = TRANSIT_HOUSE_QUALITY
-        self.conj_matrix   = TRANSIT_CONJUNCTION_MATRIX
-        self.aspect_weights = TRANSIT_ASPECT_WEIGHTS
-        self.special_aspects = TRANSIT_SPECIAL_ASPECTS
-        self.special_weight  = TRANSIT_SPECIAL_ASPECT_WEIGHT
-        self.vedha_cap     = TRANSIT_VEDHA_CAP
-        self.sync_bonuses  = TRANSIT_DASHA_SYNC_BONUSES
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.weights       = calibration.transit.get('TRANSIT_WEIGHTS', {})
+        self.vedha_pairs   = calibration.transit.get('VEDHA_PAIRS', {})
+        self.house_quality = calibration.transit.get('TRANSIT_HOUSE_QUALITY', {})
+        self.conj_matrix   = calibration.transit.get('TRANSIT_CONJUNCTION_MATRIX', {})
+        self.aspect_weights = calibration.transit.get('TRANSIT_ASPECT_WEIGHTS', {})
+        self.special_aspects = calibration.transit.get('TRANSIT_SPECIAL_ASPECTS', {})
+        self.special_weight  = calibration.transit.get('TRANSIT_SPECIAL_ASPECT_WEIGHT', 0)
+        self.vedha_cap     = calibration.transit.get('TRANSIT_VEDHA_CAP', 0)
+        self.sync_bonuses  = calibration.transit.get('TRANSIT_DASHA_SYNC_BONUSES', {})
         self.stub_score    = 50.0
 
     # -------------------------------------------------------------------------

@@ -8,9 +8,12 @@ class PlanetStrengthEngine:
     No AI reasoning is used in these calculations.
     """
 
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         # Load scoring constants from central config to improve maintainability
-        self.scoring_matrix = PLANET_SCORING_MATRIX
+        self.scoring_matrix = calibration.planet_strength.get('PLANET_SCORING_MATRIX', {})
 
     def calculate_strength(self, planet_data: dict, shadbala_data: dict = None) -> dict:
         """

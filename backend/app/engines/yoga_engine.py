@@ -6,7 +6,10 @@ class YogaEngine:
     No scores, probabilities, or mathematical weights are applied.
     """
     
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         self.registry = YOGA_REGISTRY
 
     def evaluate(self, chart_data: dict, planet_results: dict = None, house_results: dict = None) -> dict:

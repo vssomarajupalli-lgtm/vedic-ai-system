@@ -36,13 +36,16 @@ class AshtakavargaEngine:
         - All constants in astrology_constants.py.
     """
 
-    def __init__(self):
-        self.sav_scale         = SAV_BINDU_SCALE
-        self.bav_grade_map     = BAV_GRADE_THRESHOLDS
-        self.planet_modifier   = BAV_PLANET_MODIFIER
-        self.dasha_confidence  = DASHA_BAV_CONFIDENCE
-        self.excluded_planets  = BAV_EXCLUDED_PLANETS
-        self.bav_planets       = BAV_PLANETS
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.sav_scale         = calibration.rasi_strength.get('SAV_BINDU_SCALE', {})
+        self.bav_grade_map     = calibration.ashtakavarga.get('BAV_GRADE_THRESHOLDS', {})
+        self.planet_modifier   = calibration.ashtakavarga.get('BAV_PLANET_MODIFIER', {})
+        self.dasha_confidence  = calibration.ashtakavarga.get('DASHA_BAV_CONFIDENCE', 0)
+        self.excluded_planets  = calibration.ashtakavarga.get('BAV_EXCLUDED_PLANETS', [])
+        self.bav_planets       = calibration.ashtakavarga.get('BAV_PLANETS', [])
 
     # -------------------------------------------------------------------------
     # Public Interface

@@ -12,8 +12,11 @@ class DashaEngine:
     It focuses exclusively on relationship analysis and timing multipliers.
     """
 
-    def __init__(self):
-        self.scoring_matrix = DASHA_SCORING_MATRIX
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.scoring_matrix = calibration.dasha.get('DASHA_SCORING_MATRIX', {})
 
     def evaluate(self, normalized_data: Dict[str, Any], dependency_scores: Dict[str, Any] = None, target_date: str = None) -> Dict[str, Any]:
         """

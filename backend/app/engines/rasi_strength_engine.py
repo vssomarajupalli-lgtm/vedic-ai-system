@@ -29,11 +29,14 @@ class RasiStrengthEngine:
         - All scoring constants sourced from astrology_constants.py. (Rule 7)
     """
 
-    def __init__(self):
-        self.matrix     = RASI_SCORING_MATRIX
-        self.weights    = RASI_SCORING_MATRIX["weights"]
-        self.benefics   = set(NATURAL_BENEFICS)
-        self.malefics   = set(NATURAL_MALEFICS)
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.matrix     = calibration.rasi_strength.get('RASI_SCORING_MATRIX', {})
+        self.weights    = self.matrix.get('weights', {})
+        self.benefics   = set(calibration.planet_strength.get('NATAL_BENEFICS', []))
+        self.malefics   = set(calibration.planet_strength.get('NATAL_MALEFICS', []))
 
     # -------------------------------------------------------------------------
     # Public Interface

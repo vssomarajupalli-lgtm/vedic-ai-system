@@ -14,11 +14,14 @@ class VargaEngine:
     - Additive modifiers only (Immutable D1 Rule).
     """
 
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         # Load scoring constants from central config
-        self.D9_SCORES = D9_SCORES
-        self.D10_SCORES = D10_SCORES
-        self.VARGOTTAMA_BONUS = VARGOTTAMA_BONUS
+        self.D9_SCORES = calibration.varga.get('D9_SCORES', {})
+        self.D10_SCORES = calibration.varga.get('D10_SCORES', {})
+        self.VARGOTTAMA_BONUS = calibration.varga.get('VARGOTTAMA_BONUS', 0)
         self.planet_engine = PlanetStrengthEngine()
 
     def evaluate(self, normalized_data: Dict[str, Any], dependency_scores: Dict[str, Any] = None) -> Dict[str, Any]:

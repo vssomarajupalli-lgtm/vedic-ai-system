@@ -8,11 +8,14 @@ class HouseStrengthEngine:
     No AI reasoning is used in these calculations.
     """
 
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         # Load scoring constants from central config
-        self.scoring_matrix = HOUSE_SCORING_MATRIX
-        self.benefics = NATURAL_BENEFICS
-        self.malefics = NATURAL_MALEFICS
+        self.scoring_matrix = calibration.house_strength.get('HOUSE_SCORING_MATRIX', {})
+        self.benefics = calibration.planet_strength.get('NATAL_BENEFICS', [])
+        self.malefics = calibration.planet_strength.get('NATAL_MALEFICS', [])
 
     def calculate_strength(self, house_data: dict, bhava_bala_data: dict = None) -> dict:
         """
@@ -155,4 +158,4 @@ class HouseStrengthEngine:
             flags.append("clamped_to_100")
         elif raw_score > 75:
             flags.append("strongly_supported")
-        return flags
+        return flags

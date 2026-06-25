@@ -120,7 +120,10 @@ class FunctionalNatureEngine:
         }
     }
 
-    def __init__(self):
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
         pass
 
     def get_functional_nature(self, lagna: str) -> dict:

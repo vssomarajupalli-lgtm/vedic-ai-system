@@ -43,8 +43,11 @@ class MasterProbabilityEngine:
         - No AI/ML. Pure arithmetic weighted average.
     """
 
-    def __init__(self):
-        self.weights = MASTER_WEIGHTS
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.weights = calibration.master_probability.get('MASTER_WEIGHTS', {})
         self.stub    = _STUB_SCORE
 
     # -------------------------------------------------------------------------

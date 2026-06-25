@@ -1,9 +1,4 @@
 from typing import Any, Dict, List, Union
-from app.config.astrology_constants import (
-    DOMAIN_CONFIG, DOMAIN_KARAKA, NATAL_PROMISE_GRADES,
-    DOMAIN_BONUSES, SAV_BINDU_SCALE, PLANET_SCORING_MATRIX,
-    SIGN_LORD_MAP, NATURAL_BENEFICS, NATURAL_MALEFICS
-)
 from app.utils.astrology_math import clamp_score
 
 _NEUTRAL = 50.0
@@ -26,11 +21,16 @@ class NatalPromiseEngine:
         - No AI/ML. Pure arithmetic.
     """
 
-    def __init__(self):
-        self.domains  = list(DOMAIN_CONFIG.keys())
-        self.config   = DOMAIN_CONFIG
-        self.karaka   = DOMAIN_KARAKA
-        self.grades   = NATAL_PROMISE_GRADES
+    def __init__(self, calibration=None):
+        if calibration is None:
+            from app.calibration.calibration_manager import CalibrationManager
+            calibration = CalibrationManager()
+        self.config   = calibration.natal_promise.get("DOMAIN_CONFIG", {})
+        self.domains  = list(self.config.keys())
+        self.karaka   = calibration.natal_promise.get("DOMAIN_KARAKA", {})
+        self.grades   = calibration.natal_promise.get("NATAL_PROMISE_GRADES", [])
+        self.bonuses  = calibration.natal_promise.get("DOMAIN_BONUSES", {})
+        self.sign_lord_map = calibration.rasi_strength.get("SIGN_LORD_MAP", {})
 
     def evaluate(
         self,
