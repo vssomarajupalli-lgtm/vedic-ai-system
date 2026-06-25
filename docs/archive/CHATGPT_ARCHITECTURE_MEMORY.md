@@ -9,7 +9,16 @@
 4. **Frozen Governance.** Phase 16A Architecture Constitution is strictly enforced. The Engine Dependency Hierarchy, Output Contracts, and Ownership Matrix are completely locked.
 
 ## Current System State
-The system is fully green, passing all 613 Pytest test suites. Phase 15 Transparency and Verification Console are complete. Phase 16A Architecture Constitution is approved. Moon-Centered Nine-Pada Mandali Governance, Calibration Version Governance, and Calibration Migration Strategy are frozen.
+The system is fully green, passing all legacy test suites. Phase 16A.3 is COMPLETE. The mathematical Calibration Layer has been fully injected via `CalibrationManager`. The architecture guarantees one active calibration profile, immutable read-only runtime, and complete engine isolation without hardcoded math. Exact numerical parity with legacy baseline has been secured. Next phase is 16B (Mathematical Calibration Round 1).
+
+## Phase 16A.3 Memory
+* **Completion**: Phase 16A.3 achieved total extraction of constants into JSON without changing engine formulas.
+* **Calibration Architecture**: `CalibrationManager` acts as the sole provider, delivering scoped JSON fragments to engines.
+* **Constants**: Categorized systematically via the Inventory.
+* **Dependency Map**: Ensured acyclic and strict one-to-one ownership of calibration values to engines.
+* **Numerical Parity Workflow**: Strict baseline matching proved that engines were mathematically untouched.
+* **Tuple Restoration Lesson**: Discovered that JSON serialization coerces Python tuple keys (`("benefic", "benefic")`) into strings (`"benefic_benefic"`). Created targeted interceptors in `CalibrationManager` to restore tuples specifically for matrices, solving a Transit Engine regression.
+* **Future Calibration Governance**: Phase 16B will refine weights purely by editing `v1.0.0_base.json` without engine modification.
 
 ## Restrictions
 - NEVER modify engine mathematics.

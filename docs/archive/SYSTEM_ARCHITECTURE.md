@@ -422,3 +422,17 @@ Avoid premature expansion into:
 - oversized synthesis systems
 
 The software should evolve carefully and remain maintainable.
+
+---
+
+# 22. CALIBRATION ARCHITECTURE
+
+Documenting the mathematical Calibration Layer implemented in Phase 16A.3:
+
+*   **CalibrationManager**: The singleton provider of configuration. Safely deserializes JSON tuning values into Python types (including restoring integer and tuple keys).
+*   **Calibration Profiles**: 100% of the mathematical weights, matrices, and scores reside externally in JSON profiles.
+*   **Dependency Injection**: Engines are initialized dynamically (`__init__(self, calibration=None)`) replacing hardcoded constant imports.
+*   **One Active Profile Rule**: Only one uniform calibration profile can be loaded per pipeline execution to ensure consistent calculations.
+*   **Immutable Runtime**: The `CalibrationManager` provides read-only fragments. No engine can mutate calibration math.
+*   **Engine Independence**: Engines do not communicate mathematical changes to each other; they strictly query the central profile.
+*   **Numerical Parity Principle**: The baseline implementation was mandated to achieve 100% parity against legacy hardcoded math before unlocking any tuning capabilities.
