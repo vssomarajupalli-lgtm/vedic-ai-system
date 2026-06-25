@@ -583,6 +583,55 @@ export default function VerificationConsole() {
         )}
       </CollapsibleSection>
 
+      {/* L. Lifetime Projection Trace */}
+      <CollapsibleSection 
+        title="L. Lifetime Projection Trace (MD-AD-PD Timeline)" 
+        source="breakdown.master_probability.lifetime_projection" 
+        status="LIVE DATA"
+      >
+        {!masterProbability?.lifetime_projection || masterProbability.lifetime_projection.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
+            <p className="text-slate-500">No lifetime projection data available.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden text-sm text-center">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="px-3 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">Period</th>
+                  <th className="px-3 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">MD</th>
+                  <th className="px-3 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">AD</th>
+                  <th className="px-3 py-2 text-left font-bold text-slate-700 uppercase tracking-wider">PD</th>
+                  <th className="px-3 py-2 text-center font-bold text-slate-700 uppercase tracking-wider">Activation</th>
+                  <th className="px-3 py-2 text-right font-black text-indigo-700 uppercase tracking-wider bg-indigo-50">Final Prob</th>
+                  <th className="px-3 py-2 text-center font-bold text-slate-700 uppercase tracking-wider">Grade</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-200">
+                {masterProbability.lifetime_projection.map((proj: any, idx: number) => (
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="px-3 py-2 whitespace-nowrap text-left text-slate-800">
+                      <span className="block font-medium">{proj.start_date || 'Unknown'}</span>
+                      <span className="block text-xs text-slate-500">to {proj.end_date || 'Unknown'}</span>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap capitalize text-slate-600 border-l border-slate-100">{proj.md} ({proj.md_planet_strength?.toFixed(1) ?? '-'})</td>
+                    <td className="px-3 py-2 whitespace-nowrap capitalize text-slate-600 border-l border-slate-100">{proj.ad} ({proj.ad_planet_strength?.toFixed(1) ?? '-'})</td>
+                    <td className="px-3 py-2 whitespace-nowrap capitalize text-slate-600 border-l border-slate-100">{proj.pd} ({proj.pd_planet_strength?.toFixed(1) ?? '-'})</td>
+                    <td className="px-3 py-2 whitespace-nowrap font-mono text-emerald-600 border-l border-slate-100">{proj.activation_pct?.toFixed(1)}%</td>
+                    <td className="px-3 py-2 whitespace-nowrap font-mono font-bold text-indigo-700 bg-indigo-50/30 border-l border-slate-100">{proj.final_probability_pct?.toFixed(1)}%</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-center">
+                      <span className="px-2 py-1 text-[10px] uppercase font-bold rounded bg-slate-100 text-slate-700">
+                        {proj.grade}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CollapsibleSection>
+
       {/* I. Rasi Trace Console */}
       <CollapsibleSection 
         title="I. Rasi Trace Console" 

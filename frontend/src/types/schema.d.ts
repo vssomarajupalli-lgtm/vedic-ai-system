@@ -18,7 +18,7 @@ export interface FinalReportSchema {
     dasha_analysis: ReportSectionData;
     transit_analysis: ReportSectionData;
     ashtakavarga_analysis: ReportSectionData;
-    question_responses: Record<string, string>[];
+    question_responses: Record<string, any>[];
 }
 
 export interface ChartProcessResponse {
