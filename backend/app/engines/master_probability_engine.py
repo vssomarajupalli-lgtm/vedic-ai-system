@@ -71,6 +71,32 @@ class MasterProbabilityEngine:
         score   = clamp_score(round(raw))
         grade   = self._grade(score)
 
+        # Mode 2: Lifetime Projection
+        timeline = engine_outputs.get("dashas", {}).get("timeline", [])
+        projected_timeline = []
+        for record in timeline:
+            temp_factors = factors.copy()
+            # Substitute the specific period's Dasha Activation
+            temp_factors["dasha_activation"] = record.get("dasha_activation", 50.0)
+            
+            temp_raw = self._weighted_sum(temp_factors)
+            temp_score = clamp_score(round(temp_raw))
+            temp_grade = self._grade(temp_score)
+            
+            projected_timeline.append({
+                "start_date": record.get("start_date", "Unknown"),
+                "end_date": record.get("end_date", "Unknown"),
+                "md": record.get("mahadasha", "unknown"),
+                "ad": record.get("antardasha", "unknown"),
+                "pd": record.get("pratyantardasha", "unknown"),
+                "md_planet_strength": record.get("md_planet_strength", 0.0),
+                "ad_planet_strength": record.get("ad_planet_strength", 0.0),
+                "pd_planet_strength": record.get("pd_planet_strength", 0.0),
+                "activation_pct": record.get("dasha_activation", 50.0),
+                "final_probability_pct": temp_score,
+                "grade": temp_grade
+            })
+
         return {
             "final_score":  score,
             "raw_score":    round(raw, 4),
@@ -81,7 +107,8 @@ class MasterProbabilityEngine:
             "live_factors": [
                 "natal_promise", "planet_strength", "house_strength", "rasi_strength",
                 "varga_validation", "dasha_activation", "transit_trigger"
-            ]
+            ],
+            "lifetime_projection": projected_timeline
         }
 
     # -------------------------------------------------------------------------

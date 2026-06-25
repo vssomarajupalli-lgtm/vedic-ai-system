@@ -153,6 +153,27 @@ class DashaEngine:
         }
         
         # Preserve full timeline for UI transparency layer
+        for i, record in enumerate(timeline):
+            md = record.get("mahadasha", "unknown").lower()
+            ad = record.get("antardasha", "unknown").lower()
+            pd = record.get("pratyantardasha", "unknown").lower()
+            
+            md_s = dependency_scores.get(md, {}).get("final_score", 0.0)
+            ad_s = dependency_scores.get(ad, {}).get("final_score", 0.0)
+            pd_s = dependency_scores.get(pd, {}).get("final_score", 0.0)
+            
+            record["md_planet_strength"] = md_s
+            record["ad_planet_strength"] = ad_s
+            record["pd_planet_strength"] = pd_s
+            
+            d_str = (md_s * 0.50) + (ad_s * 0.30) + (pd_s * 0.20)
+            record["dasha_activation"] = round(max(0.0, min(100.0, d_str)), 2)
+            
+            if i + 1 < len(timeline):
+                record["end_date"] = timeline[i+1].get("start_date")
+            else:
+                record["end_date"] = "Unknown"
+            
         results["timeline"] = timeline
 
         return results

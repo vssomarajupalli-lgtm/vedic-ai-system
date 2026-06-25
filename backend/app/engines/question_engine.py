@@ -183,6 +183,28 @@ class QuestionEngine:
             ]
             answer_text = " ".join(lines)
 
+        # Step 4: Extract Top Future Opportunities (from MasterProbabilityEngine projection)
+        import datetime
+        now = datetime.datetime.now().strftime('%Y-%m-%d')
+        
+        lifetime_projection = final_probability.get("lifetime_projection", [])
+        future_opps = []
+        for record in lifetime_projection:
+            start_date = record.get("start_date", "1900-01-01")
+            if start_date >= now:
+                future_opps.append({
+                    "period": f"{start_date} to {record.get('end_date', 'Unknown')}",
+                    "activation_pct": record.get("activation_pct", 50.0),
+                    "final_probability_pct": record.get("final_probability_pct", 50.0),
+                    "grade": record.get("grade", "UNKNOWN"),
+                    "md": record.get("md", "unknown"),
+                    "ad": record.get("ad", "unknown"),
+                    "pd": record.get("pd", "unknown")
+                })
+        
+        future_opps.sort(key=lambda x: x["final_probability_pct"], reverse=True)
+        top_opportunities = future_opps[:5]
+
         return {
             "question":      question,
             "domain":        domain,
@@ -204,6 +226,7 @@ class QuestionEngine:
             },
             "yogas": yogas or {},
             "factor_breakdown": final_probability.get("breakdown", {}),
+            "top_opportunities": top_opportunities,
             "answer_text": answer_text,
         }
 

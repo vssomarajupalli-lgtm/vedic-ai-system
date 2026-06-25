@@ -173,6 +173,90 @@
             </div>
         </div>
 
+        <!-- Question Responses & Opportunities -->
+        {% if report.question_responses %}
+        <div class="card page-break">
+            <h2>Question Analysis & Future Opportunities</h2>
+            {% for qr in report.question_responses %}
+            <div style="border: 1px solid var(--border); padding: 16px; border-radius: 6px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0; color: var(--primary);">Q: {{ qr.get('question') }}</h3>
+                <p><strong>Domain:</strong> {{ qr.get('domain', 'Unknown') | title }}</p>
+                <p><strong>Answer:</strong> {{ qr.get('answer_text') }}</p>
+                
+                {% if qr.get('top_opportunities') %}
+                <h4 style="margin-bottom: 8px;">Top 3-5 Future Opportunity Windows</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
+                            <th style="padding: 8px;">Period</th>
+                            <th style="padding: 8px;">MD</th>
+                            <th style="padding: 8px;">AD</th>
+                            <th style="padding: 8px;">PD</th>
+                            <th style="padding: 8px;">Dasha Act. %</th>
+                            <th style="padding: 8px;">Final Prob. %</th>
+                            <th style="padding: 8px;">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opp in qr.get('top_opportunities') %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 8px;">{{ opp.get('period') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ opp.get('md') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ opp.get('ad') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ opp.get('pd') }}</td>
+                            <td style="padding: 8px;">{{ opp.get('activation_pct') }}</td>
+                            <td style="padding: 8px;"><strong>{{ opp.get('final_probability_pct') }}</strong></td>
+                            <td style="padding: 8px;"><span class="badge">{{ opp.get('grade') }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Lifetime Dasha Projection (Technical) -->
+        {% if report.dasha_analysis and report.dasha_analysis.data_points.get('raw_data', {}).get('timeline') %}
+        <div class="card page-break">
+            <h2>Lifetime MD-AD-PD Strength Analysis (Technical)</h2>
+            <p>Deterministic projection of Planet Strength through the Vimshottari timeline.</p>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
+                            <th style="padding: 8px;">Start Date</th>
+                            <th style="padding: 8px;">End Date</th>
+                            <th style="padding: 8px;">MD</th>
+                            <th style="padding: 8px;">MD Strength</th>
+                            <th style="padding: 8px;">AD</th>
+                            <th style="padding: 8px;">AD Strength</th>
+                            <th style="padding: 8px;">PD</th>
+                            <th style="padding: 8px;">PD Strength</th>
+                            <th style="padding: 8px;">Activation %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.dasha_analysis.data_points.get('raw_data', {}).get('timeline', []) %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 8px; white-space: nowrap;">{{ row.get('start_date') }}</td>
+                            <td style="padding: 8px; white-space: nowrap;">{{ row.get('end_date') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('mahadasha') }}</td>
+                            <td style="padding: 8px;">{{ row.get('md_planet_strength') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('antardasha') }}</td>
+                            <td style="padding: 8px;">{{ row.get('ad_planet_strength') }}</td>
+                            <td style="padding: 8px; text-transform: capitalize;">{{ row.get('pratyantardasha') }}</td>
+                            <td style="padding: 8px;">{{ row.get('pd_planet_strength') }}</td>
+                            <td style="padding: 8px;"><strong>{{ row.get('dasha_activation') }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </body>
 </html>
