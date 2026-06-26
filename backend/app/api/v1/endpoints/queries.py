@@ -131,13 +131,16 @@ def ask_structured_question(request: QuestionRequest) -> Any:
         natal_promise = engine_outputs_dict.get("natal_promise", {})
         dashas = engine_outputs_dict.get("dashas", {})
         
+        client_metadata = request.engine_outputs.get("metadata", {})
+        
         formatted_result = DisplayFormatter.format_question_result(
             question_title=question_title,
             domain=domain,
             natal_promise=natal_promise,
             dasha_activation=dashas,
             final_state=evaluation_result.final_state,
-            isolated_signals=evaluation_result.isolated_signals
+            isolated_signals=evaluation_result.isolated_signals,
+            client_metadata=client_metadata
         )
         
         try:

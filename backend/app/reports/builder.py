@@ -2,13 +2,8 @@ from typing import Dict, Any, List
 from datetime import datetime, timezone
 
 from app.reports.schemas import FinalReportSchema
-from app.reports.sections.extractors import (
-    MasterProbabilitySection,
-    YogaAnalysisSection,
-    NatalPromiseSection,
-    ExecutiveSummarySection,
-    GenericSection
-)
+from app.reports.schemas import FinalReportSchema
+from app.formatters.display_formatter import DisplayFormatter
 
 class ReportBuilder:
     """
@@ -17,22 +12,11 @@ class ReportBuilder:
     """
     
     def __init__(self):
-        # Register the extractors
-        self.master_extractor = MasterProbabilitySection()
-        self.yoga_extractor = YogaAnalysisSection()
-        self.promise_extractor = NatalPromiseSection()
-        self.executive_extractor = ExecutiveSummarySection()
-        
-        # Generic extractors for raw passthrough with titles
-        self.planet_extractor = GenericSection("planets", "Planetary Strength Analysis")
-        self.house_extractor = GenericSection("houses", "House Strength Analysis")
-        self.dasha_extractor = GenericSection("dashas", "Vimshottari Dasha Analysis")
-        self.transit_extractor = GenericSection("transit", "Gochara (Transit) Analysis")
-        self.av_extractor = GenericSection("ashtakavarga", "Ashtakavarga Analysis")
+        pass
 
-    def build_json_report(self, pipeline_data: Dict[str, Any], machine_index: Dict[str, Any], questions: List[Dict[str, str]] = None) -> FinalReportSchema:
+    def build_json_report(self, pipeline_data: Dict[str, Any], machine_index: Dict[str, Any], questions: List[Dict[str, Any]] = None) -> FinalReportSchema:
         """
-        Builds the complete immutable report schema.
+        Builds the complete immutable report schema (Phase 16E format).
         """
         
         # Extract basic client info if available
@@ -52,23 +36,28 @@ class ReportBuilder:
             "dob": metadata.get("dob") or native.get("dob", "Unknown"),
             "tob": metadata.get("tob") or native.get("tob", "Unknown"),
             "pob": metadata.get("pob") or native.get("pob", "Unknown"),
-            "latitude": metadata.get("latitude") or native.get("lat") or native.get("latitude"),
-            "longitude": metadata.get("longitude") or native.get("lon") or native.get("longitude"),
-            "timezone": metadata.get("timezone") or native.get("tz") or native.get("timezone"),
+            "latitude": metadata.get("latitude") or native.get("lat") or native.get("latitude") or 0.0,
+            "longitude": metadata.get("longitude") or native.get("lon") or native.get("longitude") or 0.0,
+            "timezone": metadata.get("timezone") or native.get("tz") or native.get("timezone") or "UTC",
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
+            
+        exec_summary = DisplayFormatter.format_executive_summary(pipeline_data)
+        lifetime_intel = DisplayFormatter.format_lifetime_dashboard(pipeline_data)
+        
+        # Tech lifetime analysis is usually present inside questions or we can dump it here.
+        # For now, it's just raw dashas.
+        tech_analysis = pipeline_data.get("dashas", {}).get("timeline", [])
+        
+        # Formula verification
+        formula_ver = pipeline_data
             
         return FinalReportSchema(
             generated_at=client_profile_data["generated_at"],
             client_profile=client_profile_data,
-            executive_summary=self.executive_extractor.extract(pipeline_data),
-            master_probability=self.master_extractor.extract(pipeline_data),
-            natal_promise_analysis=self.promise_extractor.extract(pipeline_data),
-            planet_analysis=self.planet_extractor.extract(pipeline_data),
-            house_analysis=self.house_extractor.extract(pipeline_data),
-            yoga_analysis=self.yoga_extractor.extract(pipeline_data),
-            dasha_analysis=self.dasha_extractor.extract(pipeline_data),
-            transit_analysis=self.transit_extractor.extract(pipeline_data),
-            ashtakavarga_analysis=self.av_extractor.extract(pipeline_data),
-            question_responses=questions or []
+            executive_summary=exec_summary,
+            lifetime_intelligence=lifetime_intel,
+            question_responses=questions or [],
+            technical_lifetime_analysis=tech_analysis,
+            formula_verification=formula_ver
         )

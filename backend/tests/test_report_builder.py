@@ -12,10 +12,8 @@ class TestReportBuilder(unittest.TestCase):
         """
         report = self.builder.build_json_report({}, {})
         
-        self.assertEqual(report.master_probability.data_points.get("final_score"), 0.0)
-        self.assertEqual(report.master_probability.data_points.get("grade"), "UNKNOWN")
-        self.assertEqual(report.yoga_analysis.data_points.get("active_yogas"), [])
-        self.assertEqual(report.executive_summary.data_points.get("top_domains"), [])
+        self.assertEqual(report.executive_summary.overall_score, 50)
+        self.assertEqual(len(report.lifetime_intelligence.life_areas), 0)
 
     def test_extracts_correct_data(self):
         """
@@ -23,27 +21,28 @@ class TestReportBuilder(unittest.TestCase):
         """
         mock_pipeline = {
             "master_probability": {"final_score": 85.5, "grade": "EXCELLENT"},
-            "engine_outputs": {
-                "natal_promise": {
-                    "wealth": {"score": 90, "grade": "HIGH"},
-                    "career": {"score": 50, "grade": "MODERATE"}
-                },
-                # Phase 9 Step 2: Use actual synthesis schema for dashas
-                "dashas": {"synthesis": {"active_md": "Venus", "active_ad": "Jupiter", "active_pd": "Rahu"}},
-                "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
-            }
+            "natal_promise": {
+                "wealth": {"score": 90, "promise": "HIGH"},
+                "career": {"score": 50, "promise": "MODERATE"}
+            },
+            "dashas": {"synthesis": {"active_md": "Venus", "active_ad": "Jupiter", "active_pd": "Rahu"}},
+            "yogas": {"active_yogas": [{"yoga_name": "Ruchaka Yoga", "strength": 80.0}]}
         }
-        
+
         mock_machine = {
             "native_info": {"name": "Test User"}
         }
 
         report = self.builder.build_json_report(mock_pipeline, mock_machine)
-        
+
         self.assertEqual(report.client_profile.name, "Test User")
-        self.assertEqual(report.master_probability.data_points["final_score"], 85.5)
-        self.assertIn("Ruchaka Yoga", report.yoga_analysis.data_points["summary_map"])
         
-        # Wealth should be the top domain in executive summary
-        self.assertEqual(report.executive_summary.data_points["top_domains"][0], "Wealth")
-        self.assertEqual(report.executive_summary.data_points["current_dasha"], "Venus-Jupiter-Rahu")
+        # Test executive summary
+        self.assertEqual(report.executive_summary.overall_score, 70) # (90+50)/2
+        self.assertEqual(report.executive_summary.current_mahadasha, "Venus")
+        
+        # Test lifetime intelligence (dynamic from promise)
+        self.assertEqual(len(report.lifetime_intelligence.life_areas), 2)
+        themes = {t.domain_name: t.promise_percentage for t in report.lifetime_intelligence.life_areas}
+        self.assertEqual(themes["Wealth"], 90)
+        self.assertEqual(themes["Career"], 50)

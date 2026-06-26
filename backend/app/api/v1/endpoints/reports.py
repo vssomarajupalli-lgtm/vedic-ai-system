@@ -34,13 +34,40 @@ def generate_report(
         raw_data["_machine_index"] = request.machine_index
         outputs = pipeline.process(raw_data)
         
-        # 1.5. Execute Question Engine to generate opportunity windows
-        default_questions = [
-            "What is my career outlook?",
-            "Will I have wealth?",
-            "Will I get married?"
-        ]
-        q_responses = [pipeline.answer_question(q, outputs) for q in default_questions]
+        # 1.5. Execute Question Engine to generate structured opportunity windows
+        from app.core.question_router import QuestionRouter
+        from app.formulas.loader import FormulaRepositoryLoader
+        from app.formulas.signal_translator import SignalTranslator
+        from app.formulas.evaluator import FormulaEvaluator
+        from app.formatters.display_formatter import DisplayFormatter
+        
+        router_instance = QuestionRouter()
+        default_q_ids = ["10.1", "2.1", "7.1"]
+        q_responses = []
+        
+        for q_id in default_q_ids:
+            try:
+                route_result = router_instance.route_question(q_id)
+                f = FormulaRepositoryLoader().get_formula(route_result["formula_key"])
+                domain = route_result["registry_record"]["domain_name"].lower()
+                title = route_result["metadata"].get("question_name", "Astrological Query")
+                
+                engine_outputs_dict = outputs.get("engine_outputs", outputs)
+                isolated_signals = SignalTranslator.translate(f.required_signals, engine_outputs_dict)
+                eval_res = FormulaEvaluator.evaluate(f, engine_outputs_dict, isolated_signals)
+                
+                fmt = DisplayFormatter.format_question_result(
+                    question_title=title,
+                    domain=domain,
+                    natal_promise=engine_outputs_dict.get("natal_promise", {}),
+                    dasha_activation=engine_outputs_dict.get("dashas", {}),
+                    final_state=eval_res.final_state,
+                    isolated_signals=eval_res.isolated_signals,
+                    client_metadata=request.machine_index.get("native_info", {}) if isinstance(request.machine_index, dict) else {}
+                )
+                q_responses.append(fmt.dict())
+            except Exception as e:
+                log.warning(f"Failed to generate structured report for {q_id}: {str(e)}")
         
         # 2. Extract into final schema
         report = report_builder.build_json_report(outputs, request.machine_index, questions=q_responses)
