@@ -115,7 +115,6 @@ class StructuredQuestionResult(BaseModel):
     supporting_factors: List[SupportingFactorDisplay]
     attention_factors: List[AttentionFactorDisplay]
     lifetime_summary: LifetimeSummaryDisplay
-    technical_lifetime_analysis: List[TechnicalLifetimeRecord]
     formula_verification: FormulaVerificationDisplay
 
 class StructuredQuestionResponse(BaseModel):

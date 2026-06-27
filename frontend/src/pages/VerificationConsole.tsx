@@ -83,7 +83,7 @@ export default function VerificationConsole() {
   const latestResult = questionResults && questionResults.length > 0 
     ? questionResults[questionResults.length - 1] 
     : null;
-  const isolatedSignals = latestResult?.isolated_signals || null;
+  const isolatedSignals = latestResult?.formula_verification?.data_lineage || null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -310,7 +310,7 @@ export default function VerificationConsole() {
           </div>
         ) : !isolatedSignals || Object.keys(isolatedSignals).length === 0 ? (
           <div className="bg-slate-50 border border-slate-200 p-8 rounded-lg text-center">
-            <p className="text-slate-500">No signals isolated for "{latestResult.question_title}".</p>
+            <p className="text-slate-500">No isolated signals were generated for this question.</p>
           </div>
         ) : (
           <div className="space-y-4">

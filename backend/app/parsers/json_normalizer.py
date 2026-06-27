@@ -99,7 +99,7 @@ class JsonNormalizer:
             "name": self._clean_string(raw_metadata.get("name", "Unknown")),
             "ascendant_sign": self._clean_name(raw_metadata.get("lagna", ""), self.sign_map) or "aries",
             "ascendant_degree": self._extract_float(raw_metadata.get("lagna_degree", 0.0)),
-            "dob": self._clean_string(raw_metadata.get("birth_date") or raw_metadata.get("dob") or raw_metadata.get("date_of_birth") or "Unknown"),
+            "dob": self._normalize_date(raw_metadata.get("birth_date") or raw_metadata.get("dob") or raw_metadata.get("date_of_birth") or ""),
             "tob": self._clean_string(raw_metadata.get("birth_time") or raw_metadata.get("tob") or raw_metadata.get("time_of_birth") or "Unknown"),
             "pob": self._clean_string(raw_metadata.get("birth_place") or raw_metadata.get("pob") or raw_metadata.get("place_of_birth") or "Unknown"),
             "latitude": self._extract_float(raw_metadata.get("latitude") or raw_metadata.get("lat", 0.0)) or None,
@@ -207,7 +207,7 @@ class JsonNormalizer:
                     "mahadasha": self._clean_name(row.get("mahadasha", ""), self.planet_map),
                     "antardasha": self._clean_name(row.get("antardasha", ""), self.planet_map),
                     "pratyantardasha": self._clean_name(row.get("pratyantardasha", ""), self.planet_map),
-                    "start_date": row.get("start_date", ""),
+                    "start_date": self._normalize_date(row.get("start_date", "")),
                     "age_years": self._extract_float(row.get("age_years", 0.0))
                 })
             normalized["timeline"] = timeline
@@ -388,6 +388,20 @@ class JsonNormalizer:
 
     def _clean_string(self, val: any) -> str:
         return str(val).strip().lower() if val else ""
+
+    def _normalize_date(self, date_str: str) -> str:
+        if not date_str or str(date_str).strip().lower() == "unknown":
+            return "Unknown"
+        import datetime
+        val = str(date_str).strip()
+        formats = ["%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d", "%d %b %Y", "%d %B %Y"]
+        for fmt in formats:
+            try:
+                dt = datetime.datetime.strptime(val, fmt)
+                return dt.strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+        return val
 
     def _clean_name(self, val: str, mapping_dict: dict) -> str:
         cleaned = self._clean_string(val)

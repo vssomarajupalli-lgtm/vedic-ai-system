@@ -64,12 +64,13 @@ class VargaEngine:
                 modifiers["D9_vargottama_bonus"] = self.VARGOTTAMA_BONUS
                 confidence_flags.append("D9_vargottama")
 
-            d9_strength_result = {}
             if d9_data:
                 d9_strength_result = self.planet_engine.calculate_strength(d9_data, shadbala_data={})
-
-            d9_final_score = float(d9_strength_result.get("final_score", 50.0))
-            d9_breakdown = d9_strength_result.get("breakdown", {})
+                d9_final_score = float(d9_strength_result.get("final_score", 50.0))
+                d9_breakdown = d9_strength_result.get("breakdown", {})
+            else:
+                d9_final_score = "Data Unavailable"
+                d9_breakdown = {}
 
             results["D9"]["planets"][planet_name] = {
                 "metadata": {
@@ -95,12 +96,13 @@ class VargaEngine:
                 modifiers["D10_dignity_modifier"] = d10_score
                 confidence_flags.append(f"D10_{d10_dignity}")
 
-            d10_strength_result = {}
             if d10_data:
                 d10_strength_result = self.planet_engine.calculate_strength(d10_data, shadbala_data={})
-
-            d10_final_score = float(d10_strength_result.get("final_score", 50.0))
-            d10_breakdown = d10_strength_result.get("breakdown", {})
+                d10_final_score = float(d10_strength_result.get("final_score", 50.0))
+                d10_breakdown = d10_strength_result.get("breakdown", {})
+            else:
+                d10_final_score = "Data Unavailable"
+                d10_breakdown = {}
 
             results["D10"]["planets"][planet_name] = {
                 "metadata": {

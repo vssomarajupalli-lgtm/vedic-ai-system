@@ -360,7 +360,7 @@ class PipelineRunner:
             transit_activation=transit_activation,
             final_probability=final_probability,
             bav_timing_confidence=bav_confidence,
-            yogas=pipeline_output.get("yogas", {})
+            yogas=engine_outputs.get("yogas", {})
         )
 
 # --- Sample Execution Example ---

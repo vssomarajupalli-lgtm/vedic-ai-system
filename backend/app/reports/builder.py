@@ -43,7 +43,7 @@ class ReportBuilder:
         }
             
         exec_summary = DisplayFormatter.format_executive_summary(pipeline_data)
-        lifetime_intel = DisplayFormatter.format_lifetime_dashboard(pipeline_data)
+        lifetime_intel = DisplayFormatter.format_lifetime_dashboard(pipeline_data, client_metadata=client_profile_data)
         
         # Tech lifetime analysis is usually present inside questions or we can dump it here.
         # For now, it's just raw dashas.

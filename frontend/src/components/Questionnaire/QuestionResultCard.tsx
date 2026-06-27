@@ -58,23 +58,6 @@ export interface StructuredQuestionResult {
     longest_strong_window: string;
     current_lifetime_rank: string;
   };
-  technical_lifetime_analysis: Array<{
-    rank: number;
-    start_date: string;
-    end_date: string;
-    age: string;
-    mahadasha: string;
-    md_planet_strength: string;
-    antardasha: string;
-    ad_planet_strength: string;
-    pratyantardasha: string;
-    pd_planet_strength: string;
-    dasha_activation_display: string;
-    final_probability_display: string;
-    is_current_period: boolean;
-    remaining_duration: string | null;
-    ends_on: string | null;
-  }>;
   formula_verification: {
     data_lineage: Record<string, any>;
   };
@@ -276,77 +259,6 @@ export const QuestionResultCard: React.FC<Props> = ({ result }) => {
             <div><span className="font-semibold text-gray-500">Highest Prob:</span><br/><span className="text-gray-800 font-bold text-lg">{result.lifetime_summary.highest_probability_display}</span></div>
             <div className="col-span-2"><span className="font-semibold text-gray-500">Best Window:</span><br/><span className="text-gray-800 font-bold text-lg">{result.lifetime_summary.best_lifetime_window}</span></div>
             <div className="col-span-2"><span className="font-semibold text-gray-500">Rank:</span><br/><span className="text-gray-800 font-bold text-lg">{result.lifetime_summary.current_lifetime_rank}</span></div>
-          </div>
-        </details>
-
-        {/* H. Technical Lifetime Analysis */}
-        <details className="group border border-gray-200 rounded-lg">
-          <summary className="bg-gray-50 p-4 font-bold text-lg cursor-pointer flex justify-between items-center text-gray-800 rounded-t-lg group-open:border-b border-gray-200">
-            H. Technical Lifetime MD-AD-PD Strength Analysis
-            <span className="transition group-open:rotate-180">▼</span>
-          </summary>
-          <div className="p-4">
-            {/* Desktop Table */}
-            <div className="hidden lg:block overflow-x-auto max-h-[600px] overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-200 relative">
-                <thead className="bg-gray-100 sticky top-0 shadow-sm z-10">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MD (Str)</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AD (Str)</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PD (Str)</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Act %</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-200 font-bold">Prob %</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {result.technical_lifetime_analysis.map((row, idx) => (
-                    <tr key={idx} className={`${row.is_current_period ? 'bg-blue-50 border-l-4 border-blue-500' : (idx % 2 === 0 ? 'bg-white' : 'bg-gray-50')}`}>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.start_date}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.end_date}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.mahadasha} <span className="text-gray-400 text-xs">({row.md_planet_strength})</span></td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.antardasha} <span className="text-gray-400 text-xs">({row.ad_planet_strength})</span></td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.pratyantardasha} <span className="text-gray-400 text-xs">({row.pd_planet_strength})</span></td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">{row.dasha_activation_display}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-bold bg-gray-50/50">{row.final_probability_display}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="lg:hidden space-y-4">
-              {result.technical_lifetime_analysis.map((row, idx) => (
-                <div key={idx} className={`border rounded p-4 ${row.is_current_period ? 'bg-blue-50 border-blue-500' : 'bg-white'}`}>
-                  {row.is_current_period && <div className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wide">Current Period ({row.remaining_duration})</div>}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-gray-700">{row.start_date} to {row.end_date}</span>
-                    <span className="font-bold text-blue-600">{row.final_probability_display}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-sm text-gray-600 mb-2">
-                    <div><span className="font-semibold">MD:</span> {row.mahadasha} <br/><span className="text-xs text-gray-400">{row.md_planet_strength}</span></div>
-                    <div><span className="font-semibold">AD:</span> {row.antardasha} <br/><span className="text-xs text-gray-400">{row.ad_planet_strength}</span></div>
-                    <div><span className="font-semibold">PD:</span> {row.pratyantardasha} <br/><span className="text-xs text-gray-400">{row.pd_planet_strength}</span></div>
-                  </div>
-                  <div className="text-sm">
-                    <span className="font-semibold">Act:</span> {row.dasha_activation_display}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </details>
-
-        {/* I. Formula Verification */}
-        <details className="group border border-gray-200 rounded-lg">
-          <summary className="bg-gray-50 p-4 font-bold text-lg cursor-pointer flex justify-between items-center text-gray-600 rounded-t-lg group-open:border-b border-gray-200">
-            I. Formula Verification
-            <span className="transition group-open:rotate-180">▼</span>
-          </summary>
-          <div className="p-4 bg-gray-900 text-green-400 font-mono text-xs overflow-x-auto rounded">
-            <pre>{JSON.stringify(result.formula_verification.data_lineage, null, 2)}</pre>
           </div>
         </details>
 

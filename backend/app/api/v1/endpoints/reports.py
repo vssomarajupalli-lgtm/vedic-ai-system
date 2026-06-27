@@ -61,6 +61,7 @@ def generate_report(
                     domain=domain,
                     natal_promise=engine_outputs_dict.get("natal_promise", {}),
                     dasha_activation=engine_outputs_dict.get("dashas", {}),
+                    lifetime_projection=outputs.get("master_probability", {}).get("lifetime_projection", []),
                     final_state=eval_res.final_state,
                     isolated_signals=eval_res.isolated_signals,
                     client_metadata=request.machine_index.get("native_info", {}) if isinstance(request.machine_index, dict) else {}

@@ -113,6 +113,7 @@ class DisplayFormatter:
         domain: str,
         natal_promise: Dict[str, Any],
         dasha_activation: Dict[str, Any],
+        lifetime_projection: List[Dict[str, Any]],
         final_state: str,
         isolated_signals: Dict[str, Any],
         client_metadata: Dict[str, Any] = None
@@ -154,73 +155,53 @@ class DisplayFormatter:
             ends_on=ends_on
         )
         
-        timeline = dasha_activation.get("timeline", [])
-        tech_records = []
         future_windows = []
         
-        def get_act_score(item):
-            t_md_str = item.get("md_strength", 50)
-            t_ad_str = item.get("ad_strength", 50)
-            t_pd_str = item.get("pd_strength", 50)
-            return round((t_md_str + t_ad_str + t_pd_str) / 3.0)
-            
-        ranked_timeline = sorted(timeline, key=get_act_score, reverse=True)
-        
-        strong_count = mod_count = weak_count = highest_act = highest_prob = 0
-        best_window = "Unknown"
-        
-        for rank, item in enumerate(ranked_timeline, 1):
-            t_md = item.get("md", "unknown").capitalize()
-            t_ad = item.get("ad", "unknown").capitalize()
-            t_pd = item.get("pd", "unknown").capitalize()
-            
-            t_md_str = item.get("md_strength", 50)
-            t_ad_str = item.get("ad_strength", 50)
-            t_pd_str = item.get("pd_strength", 50)
-            
-            t_act = get_act_score(item)
-            t_prob = round((p_score * 0.6) + (t_act * 0.4))
-            
-            t_start_raw = item.get("pd_start", "Unknown")
-            t_end_raw = item.get("pd_end", "Unknown")
-            
-            t_start = DisplayFormatter.format_date(t_start_raw)
-            t_end = DisplayFormatter.format_date(t_end_raw)
-            t_age = str(DisplayFormatter.calculate_age(dob, t_start_raw)) + " yrs"
-            
-            if t_act >= 70: strong_count += 1
-            elif t_act >= 50: mod_count += 1
-            else: weak_count += 1
-                
-            if t_act > highest_act: highest_act = t_act
-            if t_prob > highest_prob:
-                highest_prob = t_prob
-                best_window = f"{t_start} - {t_end}"
-                
-            is_current = (t_md == current_md and t_ad == current_ad and t_pd == current_pd)
-            t_act_display = DisplayFormatter.format_percentage(t_act)
-            t_prob_display = DisplayFormatter.format_percentage(t_prob)
-            
-            rec = TechnicalLifetimeRecord(
-                rank=rank,
-                start_date=t_start,
-                end_date=t_end,
-                age=t_age,
-                mahadasha=t_md,
-                md_planet_strength=DisplayFormatter.format_percentage(t_md_str),
-                antardasha=t_ad,
-                ad_planet_strength=DisplayFormatter.format_percentage(t_ad_str),
-                pratyantardasha=t_pd,
-                pd_planet_strength=DisplayFormatter.format_percentage(t_pd_str),
-                dasha_activation_display=t_act_display,
-                final_probability_display=t_prob_display,
-                is_current_period=is_current,
-                remaining_duration=remaining_duration if is_current else None,
-                ends_on=ends_on if is_current else None
+        if lifetime_projection:
+            # Sort by final_probability_pct (descending)
+            ranked_timeline = sorted(
+                lifetime_projection, 
+                key=lambda x: x.get("final_probability_pct", 0), 
+                reverse=True
             )
-            tech_records.append(rec)
             
-            if rank <= 5:
+            strong_count = mod_count = weak_count = highest_act = highest_prob = 0
+            best_window = "Unknown"
+            
+            # First pass: gather lifetime summary statistics (on chronological or ranked, doesn't matter for aggregate)
+            for item in lifetime_projection:
+                t_act = int(item.get("activation_pct", 50))
+                t_prob = int(item.get("final_probability_pct", 50))
+                
+                t_start_raw = item.get("start_date", "Unknown")
+                t_end_raw = item.get("end_date", "Unknown")
+                t_start = DisplayFormatter.format_date(t_start_raw)
+                t_end = DisplayFormatter.format_date(t_end_raw)
+                
+                if t_act >= 70: strong_count += 1
+                elif t_act >= 50: mod_count += 1
+                else: weak_count += 1
+                    
+                if t_act > highest_act: highest_act = t_act
+                if t_prob > highest_prob:
+                    highest_prob = t_prob
+                    best_window = f"{t_start} - {t_end}"
+            
+            # Second pass: extract top 5 future windows
+            for rank, item in enumerate(ranked_timeline[:5], 1):
+                t_md = item.get("md", "unknown").capitalize()
+                t_ad = item.get("ad", "unknown").capitalize()
+                t_pd = item.get("pd", "unknown").capitalize()
+                
+                t_prob = int(item.get("final_probability_pct", 50))
+                t_prob_display = DisplayFormatter.format_percentage(t_prob)
+                
+                t_start_raw = item.get("start_date", "Unknown")
+                t_end_raw = item.get("end_date", "Unknown")
+                t_start = DisplayFormatter.format_date(t_start_raw)
+                t_end = DisplayFormatter.format_date(t_end_raw)
+                t_age = str(DisplayFormatter.calculate_age(dob, t_start_raw)) + " yrs"
+                
                 fw = FutureOpportunityWindowDisplay(
                     rank=rank,
                     start_date=t_start,
@@ -233,8 +214,9 @@ class DisplayFormatter:
                     astrological_driver=f"{t_md} MD, {t_ad} AD"
                 )
                 future_windows.append(fw)
-
-        tech_records.sort(key=lambda x: datetime.strptime(x.start_date, "%d %b %Y") if x.start_date != "Unknown" else datetime.min)
+        else:
+            strong_count = mod_count = weak_count = highest_act = highest_prob = 0
+            best_window = "Unknown"
 
         overall_direction = "Stable"
         if strong_count > weak_count * 2: overall_direction = "Improving"
@@ -306,7 +288,7 @@ class DisplayFormatter:
 
         return StructuredQuestionResult(
             question_title=question_title,
-            domain=domain,
+            domain=domain.replace("_", " ").title(),
             executive_summary=exec_summary,
             current_dasha_status=current_dasha,
             future_opportunities=future_windows,
@@ -314,15 +296,15 @@ class DisplayFormatter:
             supporting_factors=supporting_factors,
             attention_factors=attention_factors,
             lifetime_summary=lifetime_summary,
-            technical_lifetime_analysis=tech_records,
             formula_verification=formula_verification
         )
 
     @staticmethod
     def format_executive_summary(pipeline_data: Dict[str, Any]) -> GlobalExecutiveSummaryDisplay:
-        promise = pipeline_data.get("natal_promise", {})
-        dashas = pipeline_data.get("dashas", {}).get("timeline", [])
-        synthesis = pipeline_data.get("dashas", {}).get("synthesis", {})
+        engine_outputs = pipeline_data.get("engine_outputs", {})
+        promise = engine_outputs.get("natal_promise", {})
+        dashas = engine_outputs.get("dashas", {}).get("timeline", [])
+        synthesis = engine_outputs.get("dashas", {}).get("synthesis", {})
         
         total_score = 0
         count = 0
@@ -349,12 +331,12 @@ class DisplayFormatter:
         if overall_score >= 70: trend = "Improving"
         elif overall_score < 40: trend = "Challenging"
 
-        planets = pipeline_data.get("planet_strength", {})
+        planets = engine_outputs.get("planets", {})
         sorted_planets = sorted([(k, v.get("score", 50)) for k, v in planets.items() if k not in ["ascendant", "lagna"]], key=lambda x: x[1], reverse=True)
         best_planet = sorted_planets[0][0].capitalize() if sorted_planets else "Unknown"
         weak_planet = sorted_planets[-1][0].capitalize() if sorted_planets else "Unknown"
 
-        houses = pipeline_data.get("house_strength", {})
+        houses = engine_outputs.get("houses", {})
         sorted_houses = sorted([(k, v.get("score", 50)) for k, v in houses.items() if k.endswith("_house")], key=lambda x: x[1], reverse=True)
         best_house = sorted_houses[0][0].replace("_house", "").capitalize() if sorted_houses else "Unknown"
         weak_house = sorted_houses[-1][0].replace("_house", "").capitalize() if sorted_houses else "Unknown"
@@ -382,12 +364,13 @@ class DisplayFormatter:
         client_metadata = client_metadata or {}
         dob = client_metadata.get("dob", "Unknown")
         
-        planets = pipeline_data.get("planet_strength", {})
-        houses = pipeline_data.get("house_strength", {})
-        promise = pipeline_data.get("natal_promise", {})
-        synthesis = pipeline_data.get("dashas", {}).get("synthesis", {})
-        timeline_raw = pipeline_data.get("dashas", {}).get("timeline", [])
-        yogas = pipeline_data.get("yogas", {}).get("active_yogas", [])
+        engine_outputs = pipeline_data.get("engine_outputs", {})
+        planets = engine_outputs.get("planets", {})
+        houses = engine_outputs.get("houses", {})
+        promise = engine_outputs.get("natal_promise", {})
+        synthesis = engine_outputs.get("dashas", {}).get("synthesis", {})
+        timeline_raw = pipeline_data.get("master_probability", {}).get("lifetime_projection", [])
+        yogas = engine_outputs.get("yogas", {}).get("active_yogas", [])
 
         # House Intelligence
         house_domain_map = {
@@ -428,14 +411,14 @@ class DisplayFormatter:
             planet_list.append(PlanetIntelligenceDisplay(
                 planet_name=p_key.capitalize(),
                 strength_score=p_score,
-                functional_nature="Neutral",
+                functional_nature=pipeline_data.get("functional_nature", {}).get(p_key, "Neutral").capitalize(),
                 dignity=p_data.get("dignity", "neutral").capitalize(),
                 lordship=[],
                 occupation="Unknown",
-                positive_contributions=["TBD"],
-                negative_contributions=["TBD"],
-                life_themes=["TBD"],
-                supporting_yogas=["TBD"]
+                positive_contributions=[f"Strong influence when dignified"] if p_score >= 60 else [],
+                negative_contributions=[f"May cause delays if afflicted"] if p_score < 40 else [],
+                life_themes=[f"Matters related to {p_key.capitalize()}"],
+                supporting_yogas=[]
             ))
 
         # Life Areas
@@ -453,11 +436,11 @@ class DisplayFormatter:
                     supporting_houses=[],
                     supporting_planets=[],
                     supporting_yogas=[],
-                    current_dasha_influence="Neutral",
-                    long_term_outlook="Stable",
-                    attention_factors=[],
-                    interpretation=f"General interpretation for {d_key.replace('_', ' ').title()}.",
-                    recommendations=["Requires steady effort."]
+                    current_dasha_influence="Positive" if d_score >= 60 else "Neutral",
+                    long_term_outlook="Promising" if d_score >= 70 else "Stable" if d_score >= 40 else "Challenging",
+                    attention_factors=[f"Requires attention due to lower strength"] if d_score < 50 else [],
+                    interpretation=f"The domain of {d_key.replace('_', ' ').title()} indicates {d_grade.lower()} promise based on planetary and house strengths.",
+                    recommendations=[f"Focus on strengthening the factors related to {d_key.replace('_', ' ').title()}."] if d_score < 50 else [f"Leverage your natural strengths in {d_key.replace('_', ' ').title()}."]
                 ))
 
         # Yogas
@@ -469,8 +452,8 @@ class DisplayFormatter:
                 yoga_name=y_name,
                 status="Present",
                 strength=int(y_str),
-                meaning="Enhances fortune",
-                supporting_area="General"
+                meaning=y.get("meaning", f"Enhances {y_name}"),
+                supporting_area=y.get("supporting_area", "General")
             ))
 
         # Current Dasha Status
@@ -494,7 +477,7 @@ class DisplayFormatter:
             current_activation=DisplayFormatter.format_percentage(act_score),
             current_probability=int(act_score),
             current_grade=act_grade,
-            interpretation="Current period focuses on related planetary themes."
+            interpretation=f"Current period focuses on themes related to {current_md} and {current_ad}."
         )
 
         # Timeline
@@ -503,13 +486,16 @@ class DisplayFormatter:
             t_md = item.get("md", "unknown").capitalize()
             t_ad = item.get("ad", "unknown").capitalize()
             t_pd = item.get("pd", "unknown").capitalize()
-            t_start_raw = item.get("pd_start", "Unknown")
-            t_end_raw = item.get("pd_end", "Unknown")
+            t_start_raw = item.get("start_date", "Unknown")
+            t_end_raw = item.get("end_date", "Unknown")
             
-            t_md_str = int(item.get("md_strength", 50))
-            t_ad_str = int(item.get("ad_strength", 50))
-            t_pd_str = int(item.get("pd_strength", 50))
-            t_act = round((t_md_str + t_ad_str + t_pd_str) / 3.0)
+            t_md_str = int(item.get("md_planet_strength", 50))
+            t_ad_str = int(item.get("ad_planet_strength", 50))
+            t_pd_str = int(item.get("pd_planet_strength", 50))
+            
+            t_act = int(item.get("activation_pct", 50))
+            t_prob = int(item.get("final_probability_pct", 50))
+            t_grade = item.get("grade", "UNKNOWN")
             
             timeline_rows.append(DashaTimelineRowDisplay(
                 age=DisplayFormatter.calculate_age(dob, t_start_raw),
@@ -522,20 +508,46 @@ class DisplayFormatter:
                 ad_strength=t_ad_str,
                 pd_strength=t_pd_str,
                 activation_percentage=t_act,
-                probability_percentage=t_act,
-                grade=DisplayFormatter._map_display_grade("STRONG" if t_act >= 70 else "MODERATE")
+                probability_percentage=t_prob,
+                grade=DisplayFormatter._map_display_grade(t_grade)
             ))
             
         timeline_rows.sort(key=lambda x: datetime.strptime(x.start_date, "%d %b %Y") if x.start_date != "Unknown" else datetime.min)
 
+        # Dynamic Snapshot Logic
+        total_score = 0
+        count = 0
+        for k, v in promise.items():
+            if isinstance(v, dict) and 'score' in v:
+                total_score += v.get("score", 50)
+                count += 1
+        overall_score = round(total_score / count) if count > 0 else 50
+        overall_promise_disp = DisplayFormatter.format_percentage(overall_score)
+        
+        current_trend = "Stable"
+        if overall_score >= 70: current_trend = "Improving"
+        elif overall_score < 40: current_trend = "Challenging"
+        
+        sorted_areas = sorted([(k, v.get("score", 50)) for k, v in promise.items() if isinstance(v, dict)], key=lambda x: x[1], reverse=True)
+        current_opp = sorted_areas[0][0].replace("_", " ").title() if sorted_areas else "None"
+        current_chal = sorted_areas[-1][0].replace("_", " ").title() if sorted_areas else "None"
+        
+        best_future_period = "Unknown"
+        highest_act = 0
+        for item in timeline_raw:
+            t_act = int(item.get("activation_pct", 50))
+            if t_act > highest_act:
+                highest_act = t_act
+                best_future_period = item.get("start_date", "Unknown")
+        
         # Snapshot
         snapshot = LifetimeSnapshotDisplay(
-            overall_promise="Excellent", # derived in Exec summary usually
-            current_trend="Improving",
-            current_opportunity="Career Growth",
-            current_challenge="Health Precautions",
+            overall_promise=overall_promise_disp,
+            current_trend=current_trend,
+            current_opportunity=current_opp,
+            current_challenge=current_chal,
             current_dasha=f"{current_md}-{current_ad}",
-            best_future_period="Upcoming",
+            best_future_period=DisplayFormatter.format_date(best_future_period),
             current_activation=DisplayFormatter.format_percentage(act_score),
             current_grade=act_grade
         )
